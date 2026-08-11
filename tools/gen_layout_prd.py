@@ -24,6 +24,8 @@ from pathlib import Path
 
 
 PROJ = Path(__file__).resolve().parent.parent
+
+from layout_qa.fsutil import ensure_output_dir  # noqa: E402
 DEFAULT_REPORT = PROJ / 'reports' / 'layout-qa-report.json'
 DEFAULT_PRD = PROJ / 'scripts' / 'ralph' / 'prd.json'
 DEFAULT_EXCLUDED = PROJ / 'config' / 'layout-fitting-excluded.json'
@@ -134,7 +136,7 @@ def main() -> int:
         'userStories': stories,
     }
 
-    args.output.parent.mkdir(parents=True, exist_ok=True)
+    ensure_output_dir(args.output.parent)
     args.output.write_text(
         json.dumps(prd, indent=2, ensure_ascii=False) + '\n',
         encoding='utf-8',

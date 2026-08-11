@@ -19,6 +19,8 @@ from datetime import date, datetime
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional
 
+from layout_qa.fsutil import ensure_output_dir
+
 
 # Keys to copy verbatim from the full report into the trimmed snapshot.
 _TOP_LEVEL_KEPT = (
@@ -131,7 +133,7 @@ def write_snapshot(
         'note': note,
     }
     trimmed = trim(report, snapshot=snap_meta)
-    history_dir.mkdir(parents=True, exist_ok=True)
+    ensure_output_dir(history_dir)
     path = snapshot_path(history_dir, label=label, when=when, suffix='.json')
     path.write_text(json.dumps(trimmed, ensure_ascii=False, indent=2),
                     encoding='utf-8')

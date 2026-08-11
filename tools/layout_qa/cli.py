@@ -32,6 +32,7 @@ from layout_qa.classifier import classify_entries, Classification  # noqa: E402
 from layout_qa.simulator import simulate_entry  # noqa: E402
 from layout_qa.metrics import aggregate, bucket_status  # noqa: E402
 from layout_qa.choices import analyze_choice_fit  # noqa: E402
+from layout_qa.fsutil import ensure_output_dir  # noqa: E402
 from layout_qa import worklist as worklist_mod  # noqa: E402
 from layout_qa import readiness as readiness_mod  # noqa: E402
 from layout_qa import snapshot as snapshot_mod  # noqa: E402
@@ -766,7 +767,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         exempt_applied=sorted(exemptions.keys()),
     )
 
-    args.output.parent.mkdir(parents=True, exist_ok=True)
+    ensure_output_dir(args.output.parent)
     args.output.write_text(json.dumps(report, indent=2, ensure_ascii=False),
                             encoding='utf-8')
 

@@ -22,6 +22,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Tuple
 
+from layout_qa.fsutil import ensure_output_dir
+
 
 # ---------------------------------------------------------------------------
 # Issue grouping — readiness criteria vs polish criteria.
@@ -408,6 +410,6 @@ def write_markdown(report: Dict[str, Any], path: Path, **kwargs) -> int:
     Accepts the same kwargs as `render_markdown` (top_n_files, source).
     """
     text = render_markdown(report, **kwargs)
-    path.parent.mkdir(parents=True, exist_ok=True)
+    ensure_output_dir(path.parent)
     path.write_text(text, encoding='utf-8')
     return len(text)

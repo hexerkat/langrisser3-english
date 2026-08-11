@@ -31,6 +31,8 @@ from typing import Any, Dict, List, Optional
 
 PROJ = Path(__file__).resolve().parent.parent
 
+from layout_qa.fsutil import ensure_output_dir  # noqa: E402
+
 # In-game scenario titles (mirror the guide's guide.json).
 TITLES = {
     1: "Assault on the Floating Castle", 2: "Madness in Laffel",
@@ -183,7 +185,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     if args.report.exists():
         report = json.loads(args.report.read_text(encoding='utf-8'))
     text = render(build_order(), report)
-    args.output.parent.mkdir(parents=True, exist_ok=True)
+    ensure_output_dir(args.output.parent)
     args.output.write_text(text, encoding='utf-8')
     print(f"polish order → {args.output} "
           f"({len(all_scens_in_order())} scens"

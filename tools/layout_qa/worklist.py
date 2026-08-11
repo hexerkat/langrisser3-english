@@ -36,6 +36,7 @@ if str(_TOOLS_DIR) not in sys.path:
 
 from layout_qa.parser import parse_scenario  # noqa: E402
 from layout_qa.classifier import visible_text  # noqa: E402
+from layout_qa.fsutil import ensure_output_dir  # noqa: E402
 
 
 SNIPPET_MAX = 80
@@ -156,7 +157,7 @@ CSV_FIELDS = [
 
 
 def write_csv(rows: Iterable[WorklistRow], path: Path) -> int:
-    path.parent.mkdir(parents=True, exist_ok=True)
+    ensure_output_dir(path.parent)
     n = 0
     with path.open('w', encoding='utf-8', newline='') as f:
         w = csv.DictWriter(f, fieldnames=CSV_FIELDS)
@@ -176,7 +177,7 @@ def write_markdown(
     path: Path,
     top_n: Optional[int] = None,
 ) -> int:
-    path.parent.mkdir(parents=True, exist_ok=True)
+    ensure_output_dir(path.parent)
     shown = rows if top_n is None else rows[:top_n]
     total = len(rows)
     lines: List[str] = []
