@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """dump_cn_scripts.py — bulk-decode CN D00.DAT and PLOT.DAT into scripts/cn/.
 
-For every section of CN D00.DAT, emits scripts/cn/scenNNN_cn.txt with each
+For every section of CN D00.DAT, emits scripts/cn/scenNNNC.txt with each
 entry rendered as interleaved hanzi + control codes. Tiles missing from the
 seed map render as [?NNNN] (4-digit decimal tile id) so they can be looked up
 directly in data/cn/font_cn_decoded.bin.
 
-Also emits scripts/cn/plot_cn.txt for the 35-block PLOT.DAT, and
-scripts/cn/_unmapped_ranking.txt listing entries ordered by count of
+Also emits scripts/cn/plotC.txt for the 35-block PLOT.DAT, and
+research/data/cn_unmapped_ranking.txt listing entries ordered by count of
 unmapped tiles (worst first) — that's the queue for individual hanzi
 disambiguation.
 
@@ -29,6 +29,8 @@ CN_D00 = PROJ / "data" / "cn" / "d00_cn.dat"
 CN_PLOT = PROJ / "data" / "cn" / "plot_cn.dat"
 SEED_MAP = PROJ / "data" / "cn" / "tile_char_map_seed.json"
 OUT_DIR = PROJ / "scripts" / "cn"
+# Decoding analysis, not a script: filed with the tools that produce it.
+RANKING_OUT = PROJ / "research" / "data" / "cn_unmapped_ranking.txt"
 
 CTRL_CODES = {
     0xFFFE: "<$FFFE>",
@@ -141,7 +143,7 @@ def main() -> int:
                     "scen", s_idx, e_idx, len(unmapped), unmapped,
                     text[:80].replace("\n", " "),
                 ))
-        out = OUT_DIR / f"scen{s_idx:03d}_cn.txt"
+        out = OUT_DIR / f"scen{s_idx:03d}C.txt"
         out.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
     # --- PLOT.DAT ---
@@ -167,7 +169,7 @@ def main() -> int:
                     "plot", b_idx, 0, len(unmapped), unmapped,
                     text[:80].replace("\n", " "),
                 ))
-        (OUT_DIR / "plot_cn.txt").write_text(
+        (OUT_DIR / "plotC.txt").write_text(
             "\n".join(plines), encoding="utf-8")
 
     # --- ranking ---
@@ -192,10 +194,11 @@ def main() -> int:
             f"  distinct={len(distinct):3d}  ids={distinct[:12]}"
             f"{'...' if len(distinct) > 12 else ''}  text: {excerpt!r}"
         )
-    (OUT_DIR / "_unmapped_ranking.txt").write_text(
+    RANKING_OUT.parent.mkdir(parents=True, exist_ok=True)
+    RANKING_OUT.write_text(
         "\n".join(rank_lines) + "\n", encoding="utf-8")
 
-    print(f"wrote {len(secs)} scen files + plot_cn.txt + _unmapped_ranking.txt")
+    print(f"wrote {len(secs)} scen files + plotC.txt + cn_unmapped_ranking.txt")
     print(f"total entries: {total_entries};  total tiles: {total_tiles};"
           f"  unmapped: {total_unmapped_tiles}"
           f" ({total_unmapped_tiles/total_tiles*100:.1f}%)")

@@ -3,7 +3,7 @@
 DEMO, A0LANG, PROG_7. Reads JP and CN ISOs directly (no need for
 pre-extracted JP files).
 
-Output: scripts/cn/<name>_cn.txt for each file with text content.
+Output: scripts/cn/<name>C.txt for each file with text content.
 
 Strategy per file:
   - Same JP/CN size + small diff (SYSWIN, DEMO, A0LANG, PROG_7):
@@ -45,11 +45,11 @@ CN_DEFAULT = Path(
 # mode: "diff" — same-size files, dump only diff regions
 #       "full" — different size, dump all FFFF-delimited entries
 TARGETS = [
-    ("LANG/FNT_SYS.BIN", "fnt_sys", "full"),
+    ("LANG/FNT_SYS.BIN", "fntsys", "full"),
     ("LANG/BATTLE/SYSWIN.BIN", "syswin", "diff"),
     ("LANG/DEMO.BIN", "demo", "diff"),
     ("A0LANG.BIN", "a0lang", "diff"),
-    ("LANG/PROG_7.BIN", "prog_7", "diff"),
+    ("LANG/PROG_7.BIN", "prog7", "diff"),
 ]
 
 CTRL = {
@@ -300,9 +300,9 @@ def main() -> int:
         if mode == "diff":
             text = dump_diff(out_name, jp_b, cn_b, seed, max_tile_id)
         else:
-            skip = HEADER_SKIP_BYTES if out_name == "fnt_sys" else 0
+            skip = HEADER_SKIP_BYTES if out_name == "fntsys" else 0
             text = dump_full(out_name, jp_b, cn_b, seed, max_tile_id, skip)
-        out_file = OUT_DIR / f"{out_name}_cn.txt"
+        out_file = OUT_DIR / f"{out_name}C.txt"
         out_file.write_text(text, encoding="utf-8")
         # parse header line for summary
         first_line = text.split("\n", 1)[0]
