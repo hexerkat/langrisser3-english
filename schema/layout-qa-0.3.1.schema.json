@@ -411,7 +411,7 @@
         "polishRate"
       ],
       "properties": {
-        "id": { "type": "string", "pattern": "^scen\\d{3}$" },
+        "id": { "type": "string", "pattern": "^(scen\\d{3}|plot)$" },
         "path": { "type": "string" },
         "entryCount": { "type": "integer", "minimum": 0 },
         "byStatus": { "$ref": "#/$defs/ByStatusCounts" },

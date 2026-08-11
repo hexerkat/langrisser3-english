@@ -136,6 +136,25 @@ def test_schema_validates_trimmed_snapshot(schema, rich_report):
     jsonschema.validate(trimmed, schema)
 
 
+def test_schema_accepts_the_plot_pseudo_scenario(schema):
+    """RED (2026-08-11): `id` was pinned to `^scen\\d{3}$`, but the
+    analyzer reports 126 scenarios — the 125 scens plus `plot`
+    (PLOT.DAT, via plot_reflow). So every snapshot the tool produced
+    was rejected by its own contract. The drift went unnoticed while
+    `reports/` was a dangling symlink, which made the real-snapshot
+    test skip."""
+    report = aggregate([_scenario('plot', [_entry(0, 'POLISHED')])])
+    jsonschema.validate(report, schema)
+
+
+def test_schema_still_rejects_an_arbitrary_scenario_id(schema):
+    """Relaxing the pattern must not turn `id` into a free-form string."""
+    report = aggregate([_scenario('scen001', [_entry(0, 'POLISHED')])])
+    report['scenarios'][0]['id'] = 'notascenario'
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate(report, schema)
+
+
 def test_schema_validates_real_history_snapshots(schema):
     """Every committable snapshot under reports/history/ whose
     schemaVersion matches the schema target must validate. Older
