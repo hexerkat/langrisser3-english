@@ -17,7 +17,9 @@ import sys
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
+PROJ = SCRIPT_DIR.parent
 sys.path.insert(0, str(SCRIPT_DIR))
+sys.path.insert(0, str(PROJ / 'tools'))   # research/ reads the project's tools
 
 from iso_tools import build_file_index, extract_file_data
 

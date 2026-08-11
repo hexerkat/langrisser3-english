@@ -10,6 +10,8 @@ import struct
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / 'tools'))
+
 from d00_tools import parse_d00, D00Section
 
 

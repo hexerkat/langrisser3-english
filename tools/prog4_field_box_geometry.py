@@ -1,4 +1,4 @@
-"""tools/prog4_field_box_geometry.py — field 2x2 command-box geometry fix.
+r"""tools/prog4_field_box_geometry.py — field 2x2 command-box geometry fix.
 
 FOUR owned byte patches over the **JP** `LANG/PROG_4.BIN` (roadmap T11,
 2026-06-10). Ours (RG) — 0.2 patch never fixed this geometry; his v0.2 worked
