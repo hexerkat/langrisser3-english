@@ -6,6 +6,16 @@ The repository ships only source: you build the patched game from your own Japan
 (see the [README](README.md)). No copyrighted game data is included. Format loosely
 follows [Keep a Changelog](https://keepachangelog.com/); dates are `YYYY-MM-DD`.
 
+## [Unreleased]
+
+### Fixed
+- Building the English opening movie with `--encode-movie` works on Windows. It used to
+  stop with an ffmpeg error about "No option name" because the patcher did not hand your
+  folder name to ffmpeg correctly when it contained a drive letter such as `C:`. Folders
+  with a comma, an apostrophe, or square brackets in the name work now too. ([#8])
+
+[#8]: https://github.com/ralfguth/langrisser3-english/issues/8
+
 ## [0.7.1] - 2026-08-05
 
 Bugfix release. The patcher works on a plain Python again, and it can now build the

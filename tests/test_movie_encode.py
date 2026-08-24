@@ -187,18 +187,72 @@ def test_missing_ffmpeg_is_caught_before_the_build_starts(monkeypatch):
 # --- Windows portability ------------------------------------------------------
 
 def test_fontsdir_is_escaped_for_the_filtergraph(movie_tools):
-    """Red state: the subtitles filter got the fonts directory as a raw absolute
-    path. On Windows that is 'C:\\...\\data\\fonts', and inside an ffmpeg
-    filtergraph both ':' and '\\' are escape characters — the filter fails to
-    parse and --encode-movie dies on the one platform most users are on.
-    POSIX paths must stay byte-identical."""
+    """Red state (issue #8): the fonts directory was escaped ONE level deep, so
+    a Windows path went into the filtergraph as 'C\\:/Users/...'. ffmpeg parses
+    filter arguments TWICE — the filtergraph parser strips one layer of '\\',
+    then the filter's own option parser splits what is left on ':' — so the lone
+    backslash was eaten and the surviving ':' cut the value in half:
+    "No option name near '/Users/...'". --encode-movie died on Windows, which is
+    where most users are.
+
+    Green: escape per level. ':' and '=' are special only to the inner option
+    parser, so they need a backslash that itself survives the outer one ('\\\\:');
+    ',', ';', '[' and ']' are special only to the outer parser (one backslash);
+    a literal quote needs three. POSIX paths without special characters stay
+    byte-identical."""
     assert movie_tools.ff_filter_path("/home/x/data/fonts") == "/home/x/data/fonts"
     assert (movie_tools.ff_filter_path(r"C:\Users\me\data\fonts")
-            == r"C\:/Users/me/data/fonts")
+            == r"C\\:/Users/me/data/fonts")
+    # a path with the other filtergraph metacharacters in it
+    assert (movie_tools.ff_filter_path(r"D:\Sam, Jr's [x]\fonts")
+            == r"D\\:/Sam\, Jr\\\'s \[x\]/fonts")
 
 
 def test_subtitles_filter_uses_the_escaped_path(movie_tools):
     """The escaping has to be wired into the filter the encoder actually runs,
     not just available as a helper."""
     f = movie_tools.subtitles_filter("opening_en.pixel.ass", r"C:\fonts")
-    assert f == r"subtitles=opening_en.pixel.ass:fontsdir=C\:/fonts"
+    assert f == r"subtitles=opening_en.pixel.ass:fontsdir=C\\:/fonts"
+
+
+@pytest.mark.skipif(sys.platform == "win32",
+                    reason="needs a ':' in a directory name (POSIX-only)")
+def test_ffmpeg_really_parses_a_windows_style_fonts_dir(movie_tools, tmp_path):
+    """The escaping is only worth anything if ffmpeg ITSELF accepts it, so pin
+    the effective behaviour: put the real font under a directory literally named
+    'C:' (legal on POSIX, identical to what Windows hands us) and burn a
+    subtitle with it. Red state: ffmpeg exits non-zero with 'No option name'.
+
+    Rendering from the escaped directory must also produce the SAME picture as
+    rendering from a plain path — if the fonts dir were silently dropped, libass
+    would substitute a different face and the pixel count would change."""
+    if not shutil.which("ffmpeg"):
+        pytest.skip("ffmpeg not installed")
+    ttf = movie_tools.FONTS_DIR / "Mx437_CL_EagleIII_8x16.ttf"
+    ass = tmp_path / "t.ass"
+    ass.write_text(movie_tools._srt_to_pixel_ass(SRT), encoding="utf-8")
+
+    def render(fontsdir, name):
+        vf = movie_tools.subtitles_filter(ass.name, fontsdir) + ",format=rgb24"
+        out = tmp_path / name
+        subprocess.run(
+            ["ffmpeg", "-y", "-hide_banner", "-loglevel", "error",
+             "-f", "lavfi",
+             "-i", f"color=c=black:s={movie_tools.WIDTH}x{movie_tools.HEIGHT}:d=1",
+             "-filter:v", vf, "-frames:v", "1", str(out)],
+            cwd=ass.parent, check=True)
+        raw = subprocess.run(
+            ["ffmpeg", "-v", "error", "-i", str(out),
+             "-f", "rawvideo", "-pix_fmt", "gray", "-"],
+            check=True, capture_output=True).stdout
+        return sum(1 for b in raw if b > 128)
+
+    windows_like = tmp_path / "C:" / "Users" / "sam" / "data" / "fonts"
+    windows_like.mkdir(parents=True)
+    shutil.copy(ttf, windows_like)
+
+    lit = render(windows_like, "win.png")
+    assert lit == render(movie_tools.FONTS_DIR, "posix.png"), \
+        "the escaped fonts dir did not reach libass (font substituted)"
+    assert lit != render(tmp_path / "nowhere", "missing.png"), \
+        "test is blind: the render looks the same with no fonts dir at all"
