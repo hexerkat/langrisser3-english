@@ -194,3 +194,31 @@ def test_branch_with_slash_stays_one_filename():
         name = build._resolve_canonical_cue_name('English')
     assert '/' not in name and '\\' not in name, name
     assert name == 'Langrisser III (English v0.7.0+fix-issue7-pillow-optional).cue'
+
+
+# --- the tracked VERSION is part of the release, not an afterthought ---------
+
+def _newest_released_changelog_version() -> str:
+    """Top-most '## [X.Y.Z] - DATE' heading, skipping '## [Unreleased]'."""
+    import re
+    for line in (PROJECT / 'CHANGELOG.md').read_text(encoding='utf-8').splitlines():
+        m = re.match(r'^## \[(\d+(?:\.\d+)*)\]', line)
+        if m:
+            return m.group(1)
+    raise AssertionError('no released version heading in CHANGELOG.md')
+
+
+def test_version_file_matches_the_release_the_repo_claims():
+    """Red state (2026-08-24, v0.7.2): CHANGELOG and README were bumped and the
+    tag was pushed, but the tracked VERSION file still said 0.7.1. VERSION is
+    what a user building from the GitHub source ZIP has instead of git, so the
+    release archive would have named their build folder after the PREVIOUS
+    release. The three places that state the version must agree."""
+    version = (PROJECT / 'VERSION').read_text(encoding='utf-8').strip()
+    assert version == _newest_released_changelog_version(), (
+        'VERSION disagrees with the newest released CHANGELOG heading '
+        '(run: python3 tools/stamp_version.py)')
+    status = [l for l in (PROJECT / 'README.md').read_text(encoding='utf-8')
+              .splitlines() if l.startswith('## Status')]
+    assert status, 'README lost its "## Status" line'
+    assert f'v{version}' in status[0], (status[0], version)
