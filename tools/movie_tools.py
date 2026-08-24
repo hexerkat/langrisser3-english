@@ -75,14 +75,35 @@ AUDIO_SYNC = 0xFFFFFFFF          # info1 marker for an audio sample
 NOT_SYNC_FLAG = 0x80000000       # info1 bit31 set => video delta frame (not keyframe)
 
 
+# ffmpeg parses a filter argument TWICE: the filtergraph parser splits the chain
+# (',' ';' '[' ']'), then each filter's own option parser splits what survives
+# ("key=value" pairs joined by ':'). Both layers strip one level of '\' quoting,
+# so how many backslashes a character needs depends on WHICH layer it is special
+# to. Escaping ':' only once (issue #8) let the outer layer eat the backslash and
+# the inner one cut the Windows drive letter off the path.
+_FF_INNER = ":="        # special to the filter's option parser (needs '\\' + c)
+_FF_OUTER = ",;[]"      # special to the filtergraph parser (needs '\' + c)
+
+
 def ff_filter_path(path) -> str:
     """Quote a filesystem path for use INSIDE an ffmpeg filtergraph.
 
-    A filtergraph parses ':' as an option separator and '\\' as an escape, so a
-    Windows path (C:\\Users\\me\\fonts) has to become C\\:/Users/me/fonts.
-    POSIX paths pass through unchanged.
+    A Windows path (C:\\Users\\me\\fonts) becomes C\\\\:/Users/me/fonts — forward
+    slashes (ffmpeg accepts them on Windows) plus a backslash that survives the
+    outer parser so the inner one still sees ':' escaped. POSIX paths without
+    filtergraph metacharacters pass through unchanged.
     """
-    return str(path).replace("\\", "/").replace(":", r"\:")
+    out = []
+    for ch in str(path).replace("\\", "/"):
+        if ch == "'":            # a quote is special to BOTH layers
+            out.append("\\" * 3 + ch)
+        elif ch in _FF_INNER:
+            out.append("\\" * 2 + ch)
+        elif ch in _FF_OUTER:
+            out.append("\\" + ch)
+        else:
+            out.append(ch)
+    return "".join(out)
 
 
 def subtitles_filter(ass_name: str, fontsdir) -> str:
