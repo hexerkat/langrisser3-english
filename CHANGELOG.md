@@ -6,7 +6,7 @@ The repository ships only source: you build the patched game from your own Japan
 (see the [README](README.md)). No copyrighted game data is included. Format loosely
 follows [Keep a Changelog](https://keepachangelog.com/); dates are `YYYY-MM-DD`.
 
-## [Unreleased]
+## [0.7.2] - 2026-08-24
 
 ### Fixed
 - Building the English opening movie with `--encode-movie` works on Windows. It used to
