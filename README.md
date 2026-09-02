@@ -48,7 +48,7 @@ Other Redump variants of the same Japanese disc are accepted by the build, but o
 
 ### Steps
 
-1. **Download the latest release** from [GitHub Releases](https://github.com/ralfguth/langrisser3-english/releases) (Source code ZIP) and extract it.
+1. **Download the latest release** from [GitHub Releases](https://github.com/hexerkat/langrisser3-english/releases) (Source code ZIP) and extract it.
 
 2. **Run the patcher:**
 
@@ -86,7 +86,8 @@ The encoder lives in [`tools/movie_tools.py`](tools/movie_tools.py) and is devel
 
 ## Credits
 
-* **Ralf Guth**: project maintainer, current patch author, JP-aligned translation revision, font work, engine fixes, build pipeline, releases, and ongoing maintenance.
+* **hexerkat**: project maintainer and current patch author, handling releases and ongoing maintenance.
+* **ralfguth**: original author of this patch, including the modular Python build pipeline, the JP-aligned translation revision, font work, and engine fixes.
 
 ## Acknowledgements
 
@@ -96,7 +97,7 @@ The encoder lives in [`tools/movie_tools.py`](tools/movie_tools.py) and is devel
 
 ## License
 
-The code in this repository is licensed under the **GNU General Public License, version 3 or later** (`GPL-3.0-or-later`). See [`LICENSE`](LICENSE). This covers the build pipeline, the tools (`tools/`), the tests, the schemas and authored glossaries, and the English translation scripts (`scripts/`) : the maintainer's own contributions, to the extent of the rights he holds. It cannot grant rights over the original game or over the prior third-party work this project builds on.
+The code in this repository is licensed under the **GNU General Public License, version 3 or later** (`GPL-3.0-or-later`). See [`LICENSE`](LICENSE). This covers the build pipeline, the tools (`tools/`), the tests, the schemas and authored glossaries, and the English translation scripts (`scripts/`) : the project's own contributions, to the extent of the rights held. It cannot grant rights over the original game or over the prior third-party work this project builds on.
 
 ### Third-party assets
 

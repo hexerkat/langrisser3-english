@@ -325,7 +325,7 @@ def main():
 
     print('=' * 60)
     print('  Langrisser III - English Translation Build')
-    print('  by Ralf Guth - https://github.com/ralfguth/langrisser3-english')
+    print('  by hexerkat & ralfguth - https://github.com/hexerkat/langrisser3-english')
     print('=' * 60)
     print()
 
@@ -674,8 +674,8 @@ def main():
     print('  To play:')
     print(f'    load {output_cue.name}')
     print()
-    print('  Patch by Ralf Guth')
-    print('  https://github.com/ralfguth/langrisser3-english')
+    print('  Patch by hexerkat & ralfguth')
+    print('  https://github.com/hexerkat/langrisser3-english')
 
     return 0
 

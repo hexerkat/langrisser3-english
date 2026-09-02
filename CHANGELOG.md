@@ -14,7 +14,7 @@ follows [Keep a Changelog](https://keepachangelog.com/); dates are `YYYY-MM-DD`.
   folder name to ffmpeg correctly when it contained a drive letter such as `C:`. Folders
   with a comma, an apostrophe, or square brackets in the name work now too. ([#8])
 
-[#8]: https://github.com/ralfguth/langrisser3-english/issues/8
+[#8]: https://github.com/hexerkat/langrisser3-english/issues/8
 
 ## [0.7.1] - 2026-08-05
 
@@ -33,8 +33,8 @@ English-subtitled opening from your own disc. No text or gameplay changes versus
   almost to the end and then stopped with "No module named 'PIL'" unless you had it
   installed; now a plain Python 3 is enough, as the README always said. ([#7])
 
-[#6]: https://github.com/ralfguth/langrisser3-english/issues/6
-[#7]: https://github.com/ralfguth/langrisser3-english/issues/7
+[#6]: https://github.com/hexerkat/langrisser3-english/issues/6
+[#7]: https://github.com/hexerkat/langrisser3-english/issues/7
 
 ## [0.7.0] - 2026-07-06
 
@@ -110,7 +110,7 @@ First broadly playable release: the dialogue is in English with a proper font.
 
 ## [0.5.2] - 2026-04-29
 
-Bugfix release ([#3](https://github.com/ralfguth/langrisser3-english/issues/3)). No text
+Bugfix release ([#3](https://github.com/hexerkat/langrisser3-english/issues/3)). No text
 or audio changes versus v0.5.1.
 
 ### Fixed
