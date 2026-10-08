@@ -35,8 +35,8 @@ def test_control_codes_pass_through():
 def test_ellipsis_and_name_token():
     from hankaku_encoder import encode_hankaku
     import font_tools as ft
-    m = ft.HANKAKU_TILE_MAP
-    assert encode_hankaku("...") == _be16(m["…"])          # '...' folds to one … tile
+    # '…' renders 16px via the zenkaku width class -> the v0.7 ellipsis tile 906
+    assert encode_hankaku("...") == _be16(ft.ELLIPSIS_TILE)
     assert encode_hankaku("[diehardt's name]") == _be16(0xF600, 0x0000)
 
 
@@ -49,7 +49,6 @@ def test_youth_line_is_all_hankaku_plus_ctrl():
     data = encode_hankaku(line)
     codes = [int.from_bytes(data[k:k + 2], "big") for k in range(0, len(data), 2)]
     band = set(ft.HANKAKU_TILE_MAP.values())
-    ctrl = {0xFFFC, 0xFFFE}
-    assert all(c in band or c in ctrl for c in codes), \
-        [c for c in codes if c not in band and c not in ctrl]
+    ok = band | {0xFFFC, 0xFFFE, ft.ELLIPSIS_TILE}   # … = zenkaku 16px tile
+    assert all(c in ok for c in codes), [c for c in codes if c not in ok]
     assert codes.count(0xFFFC) == 2 and codes.count(0xFFFE) == 1

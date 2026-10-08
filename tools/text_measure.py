@@ -181,3 +181,39 @@ def iter_tiles(
             last_was_right_blank = s[j] in RIGHT_BLANK_STANDALONE_CHARS
         # else: unmapped — silently drop, do NOT update last_was_right_blank.
         j += 1
+
+
+def iter_hankaku_units(text: str) -> Iterator[Tuple[str, int]]:
+    """Yield (substring, column_units) for a HANKAKU-ROUTED entry's text.
+
+    v0.8 mixed steps (prog3_balloon_zenkaku_dispatch): the balloon renderer
+    charges 1 column (8px) per hankaku band tile and 2 columns (16px) for any
+    other drawable tile. This mirrors what hankaku_encoder.encode_hankaku
+    actually emits, unit for unit:
+
+      - char in HANKAKU_TILE_MAP        -> 1 unit
+      - '…' / '...' (ellipsis tile 906) -> 2 units (zenkaku class)
+      - char only in CHAR_TILE_MAP      -> 2 units (zenkaku fallback)
+      - unmapped char                   -> dropped (yields nothing; the
+                                            caller flags encoding_risk)
+
+    Line budgets in these units: narration 34, dialogue 26 (the old 17/13
+    tile budgets x2). Parity with the real encoder is locked by
+    tests/test_layout_qa_hankaku_units.py.
+    """
+    from font_tools import HANKAKU_TILE_MAP as _HK
+    s = text.replace('...', '…')
+    for ch in s:
+        if ch == '…':
+            yield (ch, 2)
+        elif ch in _HK:
+            yield (ch, 1)
+        elif ch in CHAR_TILE_MAP:
+            yield (ch, 2)
+        # else: unmapped — silently dropped, same as the encoder.
+
+
+# Coverage set for layout_qa's encoding-risk check on hankaku-routed entries.
+def hankaku_covered(ch: str) -> bool:
+    from font_tools import HANKAKU_TILE_MAP as _HK
+    return ch == '…' or ch in _HK or ch in CHAR_TILE_MAP

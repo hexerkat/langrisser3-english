@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """
-font_tools.py - Tile maps for Langrisser III Saturn English translation (0.2-patch font).
+font_tools.py - Tile maps for Langrisser III Saturn English translation.
 
 Defines CHAR_TILE_MAP and BIGRAM_TILE_MAP that map characters and character pairs
-to tile indices in the 0.2-patch English font (ENFONT2.BIN).
+to tile indices in the legacy EN font layout (ENFONT2.BIN slot map).
 
-Tile layout follows 0.2 patch's v0.2 translation patch tile map, which 0.2 patch
-adopted. 0.2 patch's font has specific differences from 0.2 patch's original documentation:
+Tile layout follows the legacy EN tile map (pre-rebuild slot indices). The glyph
+ART is OURS: Eagle III re-rasterized since v0.6 (the old hand-drawn blobs were
+deleted). Known layout quirks vs the original documentation:
   - LC bigram position 27 is period (.) not apostrophe (')
   - Tiles 43-45 are full-width lowercase a, m, p (not custom slots)
   - Apostrophe bigrams at tiles 1491-1500 (10 pairs: o' n' s' t' u' y' 'r 's 't 'v)
@@ -38,8 +39,8 @@ _LC_STARTS = {
     'z': 875,
 }
 
-# 0.2 patch's right-char sequence for LC bigrams.
-# Position 27 is PERIOD (.), not apostrophe — this matches 0.2 patch's actual font.
+# Legacy right-char sequence for LC bigrams.
+# Position 27 is PERIOD (.), not apostrophe — this matches the shipped layout.
 _LC_RIGHT_FULL = [' '] + list('abcdefghijklmnopqrstuvwxyz') + ['.', ',', '?', '!']
 
 # UI/decoration tiles at specific offsets within bigram groups.
@@ -52,9 +53,9 @@ _LC_UI_OFFSETS = {
 }
 
 # Characters absent from specific LC groups (UI tile occupies their slot
-# and 0.2 patch's font has no replacement tile for that bigram).
+# and the legacy layout has no replacement tile for that bigram).
 _LC_MISSING_CHARS = {
-    'v': {'q'},  # tile 766 is UI; vq bigram does not exist in 0.2-patch font
+    'v': {'q'},  # tile 766 is UI; vq bigram does not exist in the legacy layout
 }
 
 # Uppercase bigram groups: variable size, right chars from analysis.
@@ -94,7 +95,7 @@ _UC_UI_OFFSETS = {
 }
 
 # ---------------------------------------------------------------------------
-# 0.2 patch special tile indices (present in 0.2 patch's ENFONT2.BIN font)
+# Legacy special tile indices (fixed slots of the ENFONT2.BIN layout)
 # ---------------------------------------------------------------------------
 
 ELLIPSIS_TILE = 906          # … two-dot ellipsis (tile 906)
@@ -116,7 +117,7 @@ _APOSTROPHE_BIGRAMS = {
     ('e', "'"): 1626,   # he's (when greedy encoder consumes e alone)
 }
 
-# 0.2 patch space+letter bigrams (tiles 1435-1487)
+# Legacy space+letter bigrams (tiles 1435-1487)
 # Encode " a" through " z" and " A" through " Z" as single tiles.
 _SPACE_LETTER_BIGRAMS = {}
 for _i, _ch in enumerate('abcdefghijklmnopqrstuvwxyz'):
@@ -130,24 +131,24 @@ _SPACE_LETTER_BIGRAMS[(' ', 'L')] = 1473
 for _i, _ch in enumerate('MNOPQRSTUVWXYZ'):
     _SPACE_LETTER_BIGRAMS[(' ', _ch)] = 1474 + _i       # 1474-1487
 
-# 0.2 patch punctuation double-bigrams (tiles 907-910)
+# Legacy punctuation double-bigrams (tiles 907-910)
 _PUNCT_BIGRAMS = {
     ('?', '?'): 907, ('?', '!'): 908, ('!', '!'): 909, ('!', '?'): 910,
 }
 
-# 0.2 patch special bigrams (already in 0.2-patch font at these tile indices)
+# Legacy special bigrams (fixed tile indices of the shipped layout)
 _SPECIAL_BIGRAMS = {
     ("'", 'v'): 1500,
-    # 0.2 patch-area name-input umlaut bigrams. Tiles pre-rendered in the
+    # Name-input umlaut bigrams (grid-spaced area). Tiles pre-rendered in the
     # original font for the name-input grid screen — reused by the
     # encoder for character/place names that carry diaeresis.
 }
 
 # Custom umlaut bigrams in the kanji area (slots 1659-1664). Built by
 # interleaving our letter glyphs with our umlaut half-glyphs. Placed
-# outside the 0.2 patch range (1500-1620) because the engine renders 0.2 patch-area
+# outside the grid-spaced range (1500-1620) because the engine renders that area
 # tiles with name-input-grid spacing (visible gap between adjacent
-# tiles) which is wrong for dialogue text. The 0.2 patch slots themselves
+# tiles) which is wrong for dialogue text. The grid-spaced slots themselves
 # remain available for menu/UI usage (Eagle-modified glyphs).
 _CUSTOM_UMLAUT_BIGRAMS = {
     ('m', 'ü'): 1659,   # "Altemüller"
@@ -163,15 +164,15 @@ _CUSTOM_UMLAUT_BIGRAMS = {
     ('ü', 'l'): 1665,   # "Rigüler" / "Altemüller" tail (orphan ü + l)
 }
 
-# All 0.2 patch pre-existing tile indices — the 1500-1620 range is used by 0.2 patch menu
-# patches (a0lang.bin, syswin.bin, prog files) for stat labels, menu text, etc.
+# Grid-spaced tile indices — the 1500-1620 range is used by the menu/UI
+# overlays (a0lang.bin, syswin.bin, prog files) for stat labels, menu text, etc.
 _GRID_SPACED_RANGE = set(range(1500, 1621))
 
 
 # ---------------------------------------------------------------------------
 # Embedded glyph bitmaps (8px wide, 16 rows, 1 byte/row = 16 bytes each)
-# Reference data extracted from 0.2 patch v0.2 font. Used by tests to verify
-# glyph data integrity, not by the build pipeline.
+# OUR glyph art (Eagle III re-rasterization, shipped since v0.6). Feeds
+# HALF_GLYPHS -> bigram composition + the v0.8 hankaku band.
 # ---------------------------------------------------------------------------
 
 _LETTER_GLYPHS = {
@@ -243,7 +244,7 @@ _DIGIT_TILES = {
     '9': bytes.fromhex('000000000000038006c00c600c600c6006e003e0006000c00780000000000000'),
 }
 
-# 8w half-glyphs of digits — used by 0.2 patch-range bigram overrides for tiles
+# 8w half-glyphs of digits — used by grid-range bigram overrides for tiles
 # like (' ', '2'), ('+', '8'), ('1', '5'), etc. that pair a digit with
 # another half-glyph in a 16x16 cell.
 _DIGIT_HALF_GLYPHS = {
@@ -259,7 +260,7 @@ _DIGIT_HALF_GLYPHS = {
     '9': bytes.fromhex('000000386cc6c6c66e3e060c78000000'),
 }
 
-# Lowercase umlauts (a/o/u-diaeresis) — appear in 0.2 patch-range bigrams.
+# Lowercase umlauts (a/o/u-diaeresis) — appear in grid-range bigrams.
 _UMLAUT_HALF_GLYPHS = {
     'ä': bytes.fromhex('000000cccc00780c7ccccccc76000000'),
     'ö': bytes.fromhex('000000c6c6007cc6c6c6c6c67c000000'),
@@ -286,7 +287,7 @@ _EXTRA_PUNCT_GLYPHS = {
     '/': bytes.fromhex('00000006060c0c181830306060000000'),
     # Half-width asterisk. No longer used as a STANDALONE tile (the '*' char
     # maps to the JP full-width star at tile 489 — see build_char_tile_map),
-    # but still needed as a half-glyph for the 0.2 patch UI bigrams "**"/"n*"/"* "
+    # but still needed as a half-glyph for the grid-area UI bigrams "**"/"n*"/"* "
     # (tiles 1570-1572, e.g. "****Caution****").
     '*': bytes.fromhex('00001092543854921000000000000000'),
     '%': bytes.fromhex('000000e6a6ec0c181830376567000000'),
@@ -356,7 +357,7 @@ _FORMATION_GLYPH_TILES = {
     '／': 0x014E,   # DIAGONAL-RIGHT
 }
 
-# Extra bigram tiles — top frequency pairs missing from 0.2-patch font.
+# Extra bigram tiles — top frequency pairs missing from the legacy layout.
 # Installed in kanji area tiles 1639+. Encoder uses these automatically
 # (via BIGRAM_TILE_MAP), reducing fallback singles on scream/shout SFX
 # and stat-abbreviation contexts.
@@ -384,14 +385,14 @@ _EXTRA_BIGRAM_TILES = {
     (' ', '"'): 1654,   # space+dquote — opening quote in " quoted text"
     ('"', ' '): 1655,   # dquote+space — closing quote before whitespace
     # All-caps bigram drawn in OUR EagleIII style at a free kanji slot (NOT the
-    # 0.2 patch 1276/1656 copies, which are 0.2 patch-style / collide with space-bullet).
+    # legacy 1276/1656 copies, which collide with space-bullet).
     # Fixes "NPC" rendering as 3 full-width centered letters: NPC -> (N,P)+(C, ).
     ('N', 'P'): 1666,
     # Dialogue emphasis "*GRIN*!" (scen107, JP ニヤリ！): GR + IN(311).
     # Slot 1582 is an UNMAPPED dead-kanji slot (CSV empty-source); the old
     # "1500-1620 grid-spacing in dialogue" caveat is OBSOLETE per the user
     # note of 2026-06-09 (20260609_fntsys_systems_and_encoder.md) — it was
-    # a 0.2 patch-binary artifact, and engine+font now build from JP originals.
+    # a legacy-binary artifact, and engine+font now build from JP originals.
     ('G', 'R'): 1582,
     # "HP" in dialogue prose (scen001 tutorial "regain some HP,"; scen038
     # stat-up "X's HP rose by 1!") — stat abbreviations are ASCII
@@ -482,7 +483,7 @@ _NUMBER_BIGRAM_TILES = {p: 1691 + i for i, p in enumerate(_NUMBER_BIGRAM_PAIRS)}
 _NUMBER_TAIL_TILES = {(str(d), ' '): 201 + d for d in range(10)}  # digit+space
 
 # Pre-rendered fragments of OUR font reused by MAPPING ONLY — glyphs
-# already sit in the 1500-1620 grid-spaced range (drawn in the 0.2 patch era;
+# already sit in the 1500-1620 grid-spaced range (drawn in the pre-v0.6 era;
 # Eagle restyle queued for the FONT.BIN rebuild). No tile is written.
 # FNT_SYS-surface-only (grid-spaced range, above).
 _STAT_FRAGMENT_MAPS = {
@@ -539,15 +540,15 @@ _DQUOTE_TILE_DATA = bytes.fromhex(
 )
 
 # ---------------------------------------------------------------------------
-# 0.2-patch non-bigram tiles (menus, UI, gaps)
-# These tiles are referenced by 0.2 patch menu patches (prog_3, syswin, etc.)
+# Legacy non-bigram tiles (menus, UI, gaps)
+# These tiles are referenced by the menu/UI overlays (prog_3, syswin, etc.)
 # and must be present in the font for menus to display correctly.
 # ---------------------------------------------------------------------------
 
 
 
 # Name-entry keyboard buttons (fntsys14 rows reference tiles 1488-1490).
-# OUR art (2026-06-11, replaces the 0.2 patch stacked-letter ADV/BAK/END):
+# OUR art (2026-06-11, replaces the old stacked-letter ADV/BAK/END):
 # ADV = right arrow, BAK = left arrow (EagleIII arrowheads, extended
 # shaft), END = condensed "END" text in a single 16x16 tile.
 _NAME_ENTRY_BUTTON_TILES = {
@@ -560,7 +561,7 @@ _NAME_ENTRY_BUTTON_TILES = {
 }
 
 
-# Gap tiles between bigram groups — blank in 0.2-patch font, kanji in JP font.
+# Gap tiles between bigram groups — blank in the legacy layout, kanji in JP font.
 # Must be blanked to avoid rendering kanji artifacts.
 _BLANK_GAP_TILES = [
     *range(201, 212), *range(307, 330), *range(366, 369), 911, 912,
@@ -574,7 +575,7 @@ _BLANK_GAP_TILES = [
 def build_char_tile_map() -> dict:
     """Build single char -> tile_index mapping.
 
-    Only includes characters that have valid glyphs in 0.2 patch's font.
+    Only includes characters that have valid glyphs in the font.
     """
     m = {}
     m[' '] = 0
@@ -635,7 +636,7 @@ def build_char_tile_map() -> dict:
 def build_bigram_tile_map() -> dict:
     """Build (left_char, right_char) -> tile_index mapping.
 
-    Only includes bigrams that have valid glyphs in 0.2 patch's font.
+    Only includes bigrams that have valid glyphs in the font.
     """
     m = {}
 
@@ -724,6 +725,10 @@ _HANKAKU_CHARS = (
     + [chr(c) for c in range(ord('a'), ord('z') + 1)]
     + [str(d) for d in range(10)]
     + [' ', '.', ',', '!', '?', "'", '-', '…', 'ä', 'ö', 'ü']
+    # prose punctuation with existing 8px art (v0.8 full conversion): keeps
+    # ( ) " etc. hankaku instead of falling back to 16px zenkaku singles.
+    # Band headroom runs to 1419 (the zenkaku-dispatch cave sits at 1420+).
+    + ['(', ')', '"', '%', '&', '+', '/', '*']
 )
 HANKAKU_TILE_MAP = {ch: HANKAKU_BASE + i for i, ch in enumerate(_HANKAKU_CHARS)}
 # 8px ellipsis half-glyph (three 1px dots at cols 1/3/5, on the period baseline).
@@ -855,7 +860,7 @@ def _interleave(left_glyph: bytes, right_glyph: bytes) -> bytes:
 def _render_glyph_centered(glyph: bytes) -> bytes:
     """Render an 8x16 glyph in cols 4-11 of a 16x16 tile (centered).
 
-    Used for the 0.2 patch menu range (1500-1620), where each hand-drawn tile
+    Used for the grid-spaced menu range (1500-1620), where each hand-drawn tile
     held a single char positioned roughly mid-cell. Mirroring that
     position with Eagle III keeps in-game tabular layout intact —
     binaries reference tile_code expecting the char to occupy the
@@ -889,8 +894,8 @@ def _render_tight_bigram(left_glyph: bytes, right_glyph: bytes,
     return bytes(tile)
 
 
-# 0.2 patch tile range overrides — when populated, these tile slots get
-# Eagle III re-rasterized at build time instead of 0.2 patch hand-drawn bytes.
+# Grid-range tile overrides — when populated, these tile slots get
+# Eagle III re-rasterized at build time (our art; the old bytes are gone).
 # Format:
 #   tile_idx → ('center', 'a')           single char centred (cols 4-11)
 #   tile_idx → ('left',   'X')           single char on left half (cols 0-7)
@@ -900,7 +905,7 @@ def _render_tight_bigram(left_glyph: bytes, right_glyph: bytes,
 # LC alphabet (1585-1610): each centres its char in cols 4-9 ('center' mode).
 # This dict is the COMPLETE source for the 1500-1620 menu/stat range — every
 # slot is composed from our half-glyphs (center/left/bigram). The old
-# 0.2-patch hand-drawn byte blobs were deleted; nothing falls back to them.
+# The legacy hand-drawn byte blobs were deleted; nothing falls back to them.
 # Composite slots (1611-1620) are stat-icon composites built as tight bigrams.
 _MENU_GLYPHS: dict[int, tuple] = {}
 for _i, _ch in enumerate('abcdefghijklmnopqrstuvwxyz'):
@@ -930,7 +935,7 @@ _MENU_GLYPHS.update({
     1509: ('bigram', 'T', 'ü'),
     1510: ('bigram', 'T', 'ü'),
     1511: ('bigram', 'T', 'ü'),
-    1512: ('bigram', 'T', 'ü'),   # 1509-1512 byte-identical in 0.2 patch
+    1512: ('bigram', 'T', 'ü'),   # 1509-1512 byte-identical in the legacy font
 
     1513: ('bigram', 'P', '!'),         # "Insufficient M[P!]" — image shows P with !
 
@@ -1015,7 +1020,7 @@ _MENU_GLYPHS.update({
     1614: ('bigram', 'ö', 's'),
     1615: ('bigram', 'R', '.'),
     1616: ('bigram', 'A', '.'),
-    # 1617-1620: user has no audit.png; left as 0.2 patch hand-drawn
+    # 1617-1620: user has no audit.png; left as legacy hand-drawn
 })
 
 
@@ -1024,7 +1029,7 @@ def generate_english_font(jp_font: bytes) -> bytes:
 
     Takes the raw JP FONT.BIN (54112 bytes = 1691 tiles x 32 bytes) and
     overwrites ONLY tiles mapped by the encoder (CHAR_TILE_MAP / BIGRAM_TILE_MAP).
-    UI tiles, 0.2 patch range (1500-1620 except space+digit), and unmapped kanji are
+    UI tiles, grid-spaced range (1500-1620 except space+digit), and unmapped kanji are
     left untouched.
 
     Returns a complete 54112-byte font ready to be patched into the ISO.
@@ -1157,7 +1162,7 @@ def generate_english_font(jp_font: bytes) -> bytes:
         write_tile(idx, _interleave(half_glyphs[left], half_glyphs[right]))
 
     # --- Stat-tail + digit bigrams (audited free slots) ---
-    # _STAT_FRAGMENT_MAPS reuse pre-rendered 0.2 patch tiles and are NOT drawn.
+    # _STAT_FRAGMENT_MAPS reuse pre-rendered grid-range tiles and are NOT drawn.
     for (left, right), idx in {**_STAT_BIGRAM_TILES, **_DIGIT_PAIR_TILES}.items():
         left_g = half_glyphs[left]
         right_g = bigram_right_glyphs[right]
@@ -1165,7 +1170,7 @@ def generate_english_font(jp_font: bytes) -> bytes:
 
     # --- Tiles 1659-1664: custom umlaut bigrams (kanji area) ---
     # Same composition as the regular (X, u/a/o) bigrams + umlaut dots.
-    # Lives outside 0.2 patch range (1500-1620) where the engine renders with
+    # Lives outside the grid-spaced range (1500-1620) where the engine renders with
     # name-input-grid spacing that produces visible gaps in dialogue.
     for (left, right), idx in _CUSTOM_UMLAUT_BIGRAMS.items():
         write_tile(idx, _interleave(half_glyphs[left], half_glyphs[right]))
@@ -1231,8 +1236,8 @@ def generate_english_font(jp_font: bytes) -> bytes:
     write_tile(1276, _interleave(_LETTER_GLYPHS['N'], _LETTER_GLYPHS['P']))
 
     # --- Orphan engine-UI slots: blank (our zeros, NOT JP kanji) ---
-    # 766="Uü" and 1041="Rü" were 0.2-patch umlaut bigrams, superseded by
-    # our own at 1659+; 1630 was a 0.2-patch decoration. None has a text
+    # 766="Uü" and 1041="Rü" were legacy umlaut bigrams, superseded by
+    # our own at 1659+; 1630 was a legacy decoration. None has a text
     # consumer and the bigram generator skips them. The ONLY glyphs we
     # inherit from JP are the formations (_FORMATION_GLYPH_TILES) and the
     # star (*→tile 489); everything else is ours, so blank these three.
@@ -1268,7 +1273,7 @@ def generate_english_font(jp_font: bytes) -> bytes:
             write_tile(idx, _render_tight_bigram(
                 half_glyphs[l], bigram_right_glyphs[r], shift))
         else:
-            raise ValueError(f'unknown 0.2 patch override mode {mode!r}')
+            raise ValueError(f'unknown grid-range override mode {mode!r}')
 
     # --- Appended bigram tiles: GROW the font and compose each from the
     # half-width glyphs so it renders tight (never a centered zenkaku / blank
@@ -1312,7 +1317,7 @@ KEPT_SPECIAL_TILES = (
     | {330, 331, 332, 333, 334}    # formation glyphs
     | {369, 373, 489, 906}         # full-width parens, star, ellipsis
     | set(range(1488, 1491))       # ADV/BAK/END keyboard buttons
-    | set(range(1500, 1691))       # 0.2-patch menu/UI band + dead-kanji tail
+    | set(range(1500, 1691))       # legacy menu/UI band + dead-kanji tail
 )
 _FRESH_LO, _FRESH_HI = 46, 1499
 # Half-width SINGLE tiles the char map references inside the FRESH range: stay at
@@ -1441,6 +1446,13 @@ def _generate_data_driven_font(jp_font: bytes) -> bytes:
         half = _hk_halves.get(ch)
         if half is not None and t < NEW_FONT_TILES:
             out[t * 32:(t + 1) * 32] = _interleave(half, _BLANK_GLYPH)
+    # v0.8 width-class dispatcher cave: SH-2 code riding free font tiles (the
+    # font loads at LWRAM 0x00288000, so the cave is resident whenever text can
+    # render). prog3_balloon_zenkaku_dispatch repoints the dispatcher to it.
+    # Tile SCRATCH_TILE stays zero in the file (runtime scratch glyph).
+    from balloon_zenkaku_cave import CAVE_TILE, cave_blob
+    _blob = cave_blob()
+    out[CAVE_TILE * 32:CAVE_TILE * 32 + len(_blob)] = _blob
     return bytes(out)
 
 

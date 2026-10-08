@@ -157,11 +157,11 @@ def test_polish_threshold_below_85pct_warns():
 def test_polish_threshold_16wide_boundary():
     """On 16-wide profiles, 14/16 = 87.5% passes; 13/16 = 81.25% fails."""
     e_pass = _e('A B C D E F G H I J K L M N', '<$FFFC>', 'tail')  # 14 tiles
-    issues_pass, _ = simulate_entry(e_pass, PROF_NARRATION)
+    issues_pass, _ = simulate_entry(e_pass, PROF_NARRATION, hankaku=False)
     assert 'low_line_usage' not in _codes(issues_pass)
 
     e_fail = _e('A B C D E F G H I J K L M', '<$FFFC>', 'tail')    # 13 tiles
-    issues_fail, _ = simulate_entry(e_fail, PROF_NARRATION)
+    issues_fail, _ = simulate_entry(e_fail, PROF_NARRATION, hankaku=False)
     assert 'low_line_usage' in _codes(issues_fail)
 
 
@@ -334,7 +334,7 @@ def test_fluidity_headroom_exempts_all_terminal_punctuation():
 
 def test_fluidity_headroom_detail_reports_free_space():
     e = _e('A B C D E F G H I J K', '<$FFFC>', 'done.', '<$FFFC>', 'next sentence carries on')
-    issues, _ = simulate_entry(e, PROF_DIALOGUE)
+    issues, _ = simulate_entry(e, PROF_DIALOGUE, hankaku=False)
     fh = next(i for i in issues if i.code == 'fluidity_headroom')
     assert fh.detail.get('budget') == 12
     assert fh.detail.get('freeTiles', 0) > 0
@@ -590,7 +590,7 @@ def test_location_label_under_16_tiles_has_no_low_line_usage():
     """
     spec = DEFAULT_PROFILE_SPECS['LABEL_LOCATION_16X1']
     e = _e('Highway Near Ransch Village', terminator='FFFF')  # ~14 tiles
-    issues, usage = simulate_entry(e, spec)
+    issues, usage = simulate_entry(e, spec, hankaku=False)
     assert 12 < usage.max_line_tiles <= 16  # genuinely in the old warn band
     codes = _codes(issues)
     assert 'low_line_usage' not in codes
@@ -668,7 +668,7 @@ def test_tile_usage_avg_line_tiles_explicit_breaks():
     # Each "abc" is 3 ASCII chars; with bigrams it may collapse, so test
     # the equation rather than absolute counts.
     e = _e('abc', '<$FFFC>', 'abc', '<$FFFC>', 'abc')
-    _, usage = simulate_entry(e, PROF_DIALOGUE)
+    _, usage = simulate_entry(e, PROF_DIALOGUE, hankaku=False)
     assert usage.lines_used == 3
     # Inside-out: max >= avg >= min (always for a non-empty list).
     assert usage.max_line_tiles >= usage.avg_line_tiles >= usage.min_line_tiles
@@ -781,6 +781,6 @@ def test_balloons_record_tile_counts_consistent_with_max_line():
 def test_balloons_record_fill_ratio():
     """fillRatio = tiles / width, rounded."""
     e = _e('hello')
-    _, usage = simulate_entry(e, PROF_DIALOGUE)
+    _, usage = simulate_entry(e, PROF_DIALOGUE, hankaku=False)
     line = usage.balloons[0]['lines'][0]
     assert line['fillRatio'] == round(line['tiles'] / 12, 4)

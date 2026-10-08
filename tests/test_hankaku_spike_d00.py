@@ -39,7 +39,7 @@ def test_built_d00_youth_line_is_hankaku():
     entry = sections[SCEN001_SECTION].entries[YOUTH_ENTRY]
     codes = [struct.unpack_from(">H", entry, k)[0] for k in range(0, len(entry) - 1, 2)]
 
-    band = set(ft.HANKAKU_TILE_MAP.values())
+    band = set(ft.HANKAKU_TILE_MAP.values()) | {ft.ELLIPSIS_TILE}  # … = zenkaku 16px
     offenders = [c for c in codes if c not in band and c not in STRUCTURAL]
     assert not offenders, (
         f"Youth line has non-hankaku, non-structural codes (bigrams?): "

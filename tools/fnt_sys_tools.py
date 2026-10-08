@@ -403,6 +403,15 @@ def encode_fntsys(jp_baseline: bytes, scripts_dir: Path,
         # when the scripts are still the JP-text dump.
         fs.pairs[pair_idx].edited = True
 
+    # v0.8 hankaku name-entry keyboard: swap the fntsys14 grid (pair 13,
+    # records 0-18) to hankaku band tiles; button records 19-20 (positional
+    # actions, our arrow/END art) pass through from the script.
+    from patch_registry import is_enabled
+    if is_enabled('fntsys14_hankaku_keyboard') and len(fs.pairs[13].records) == 21:
+        from fntsys14_hankaku_keyboard import hankaku_keyboard_records
+        fs.pairs[13].records = hankaku_keyboard_records(fs.pairs[13].records[19:21])
+        fs.pairs[13].edited = True
+
     return build_fnt_sys(fs)
 
 

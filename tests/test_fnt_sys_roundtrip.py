@@ -111,10 +111,14 @@ def test_encode_fntsys_preserves_jp_record_counts():
 
 def test_pair_13_keyboard_exposes_full_en_key_set():
     """Pair 13 (name-entry keyboard) must carry 21 records exposing the
-    complete EN key set: UC page (tiles 17-42), LC page (tiles
-    1585-1610), and the BACK/END/FORWARD control icons (1488-1490).
+    complete EN key set and the BACK/END/FORWARD control icons (1488-1490).
 
-    Structural successor of the old byte-compare against the deleted 0.2 patch
+    v0.8: the letter/digit pages are HANKAKU band tiles (the composer appends
+    the cell's own tile, so a typed name renders per-glyph 8px in prose).
+    Key-set COMPLETENESS is the invariant; tile values come from the band map
+    so band moves are followed automatically.
+
+    Structural successor of the old byte-compare against the deleted legacy
     baseline blob; the key-set facts are the part that must not regress."""
     _require(JP_PATH)
     if not (SCRIPTS_DIR / "fntsys14E.txt").exists():
@@ -128,10 +132,14 @@ def test_pair_13_keyboard_exposes_full_en_key_set():
     for rec in pair13.records:
         ids |= _record_tile_ids(rec)
 
-    uc = set(range(17, 43))          # A-Z full-width page
-    lc = set(range(1585, 1611))      # a-z keyboard page
+    import font_tools as ft
+    m = ft.HANKAKU_TILE_MAP
+    uc = {m[c] for c in "ABCDEFGHIJKLMNOPQRSTUVWXYZ"}
+    lc = {m[c] for c in "abcdefghijklmnopqrstuvwxyz"}
+    digits = {m[c] for c in "0123456789"}
     icons = {1488, 1489, 1490}       # BACK / END / FORWARD
-    for name, want in (("UC page", uc), ("LC page", lc), ("control icons", icons)):
+    for name, want in (("UC page", uc), ("LC page", lc),
+                       ("digit keys", digits), ("control icons", icons)):
         missing = sorted(want - ids)
         assert not missing, f"pair 13 keyboard missing {name} tiles: {missing}"
 

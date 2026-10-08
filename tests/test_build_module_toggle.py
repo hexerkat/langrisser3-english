@@ -36,8 +36,11 @@ def test_engine_overlays_default_equals_all():
 
 def test_engine_module_names_match_registry():
     """Every ENGINE_MODULE_DICTS key is a registered engine-patch module; the
-    only registry engine name not here is the encoder 'prog3_text_tables'."""
-    assert set(B.ENGINE_MODULE_DICTS) == set(reg.ENGINE_PATCH_MODULES) - {"prog3_text_tables"}
+    registry engine names not here are the encoder-side transforms
+    ('prog3_text_tables' = prog_text_tools overlays, 'fntsys14_hankaku_keyboard'
+    = the fnt_sys_tools pair-13 grid swap)."""
+    assert set(B.ENGINE_MODULE_DICTS) == set(reg.ENGINE_PATCH_MODULES) - {
+        "prog3_text_tables", "fntsys14_hankaku_keyboard"}
 
 
 def test_no_overlapping_offsets_across_engine_modules():

@@ -63,8 +63,11 @@ def test_unmapped_tiles_are_blank():
     source inspection: the Part 6 packing reclaims those former orphan slots with
     OUR composed glyphs, and the menu range is now JP-preserved, not redrawn."""
     gen = _generated()
+    from balloon_zenkaku_cave import CAVE_TILE, CAVE_TILES
     # HANKAKU_TILES = the v0.8 per-glyph 8px band (mapped via HANKAKU_TILE_MAP).
-    used = ft.PRESERVED_TILES | set(ft.BIGRAM_TILE_MAP.values()) | ft.HANKAKU_TILES
+    # CAVE tiles = the v0.8 width-class dispatcher code riding the font (LWRAM).
+    used = (ft.PRESERVED_TILES | set(ft.BIGRAM_TILE_MAP.values()) | ft.HANKAKU_TILES
+            | set(range(CAVE_TILE, CAVE_TILE + CAVE_TILES)))
     junk = [t for t in range(ft.NEW_FONT_TILES)
             if t not in used and _tile(gen, t) != BLANK]
     assert not junk, (

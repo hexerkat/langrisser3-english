@@ -54,7 +54,9 @@ _TOOLS_DIR = Path(__file__).resolve().parent.parent
 if str(_TOOLS_DIR) not in sys.path:
     sys.path.insert(0, str(_TOOLS_DIR))
 
-from text_measure import iter_tiles, SPECIAL_TOKEN_WIDTHS  # noqa: E402
+from text_measure import (  # noqa: E402
+    iter_tiles, iter_hankaku_units, hankaku_covered, SPECIAL_TOKEN_WIDTHS)
+from d00_tools import is_hankaku_entry as _is_hankaku_entry  # noqa: E402
 
 # Control codes that look 0-width as source text but RENDER as visible glyphs
 # on screen, so they consume tile budget the same as letters. Counting them as
@@ -312,6 +314,7 @@ def simulate_entry(
     entry: Entry,
     profile_spec: Dict[str, Any],
     approved_lines: set | None = None,
+    hankaku: bool | None = None,
 ) -> Tuple[List[Issue], TileUsage]:
     """Run the budget-exhaustion wrap simulator on one entry.
 
@@ -346,6 +349,21 @@ def simulate_entry(
 
     profile_name = profile_spec.get('name', '?')
     is_single_line = profile_name in _SINGLE_LINE_PROFILES
+
+    # v0.8 mixed steps: entries ROUTED through the hankaku encoder are
+    # measured in 8px COLUMN units (hankaku char = 1, zenkaku = 2) against a
+    # 2x budget (34/26 = the old 17/13 tile budgets). The route defaults to
+    # d00_tools' decision — the same predicate the build uses, so QA measures
+    # the real artifact (full conversion: all entries). Pass hankaku=False to
+    # exercise the preserved bigram-tile arithmetic explicitly (tests).
+    if hankaku is None:
+        try:
+            _scen_num = int(''.join(c for c in entry.scen_id if c.isdigit()) or 0)
+        except ValueError:
+            _scen_num = 0
+        hankaku = _is_hankaku_entry(_scen_num, entry.raw)
+    if hankaku:
+        width *= 2
 
     # Structural entries (objective lists, SCENARIO title cards) are not
     # prose — their short header/centering lines must not trip the fill
@@ -482,11 +500,15 @@ def simulate_entry(
     def _check_encoding_risk(text: str):
         """Emit encoding_risk if any char in `text` would be silently
         dropped by the encoder (not in CHAR_TILE_MAP, not consumed by
-        any bigram). Strict check — looks for ANY char not coverable."""
+        any bigram; for hankaku-routed entries: not hankaku-coverable).
+        Strict check — looks for ANY char not coverable."""
         for ch in text:
-            if ch in CHAR_TILE_MAP:
+            if hankaku:
+                if hankaku_covered(ch):
+                    continue
+            elif ch in CHAR_TILE_MAP:
                 continue
-            if any(ch == k[0] for k in BIGRAM_TILE_MAP):
+            elif any(ch == k[0] for k in BIGRAM_TILE_MAP):
                 continue
             issues.append(Issue(
                 code='encoding_risk', severity='warning',
@@ -528,11 +550,14 @@ def simulate_entry(
             elif v in ('<$FFFE>', '<$FFFF>'):
                 # entry terminator — just close the trailing line
                 pass
-            elif v in VISIBLE_CTRL_WIDTHS:
+            elif v in VISIBLE_CTRL_WIDTHS or (hankaku and v == '<$0000>'):
                 # Renders as a visible glyph (highlight bracket / formation
                 # symbol): consumes tile budget like a letter. Atomic — it
                 # cannot be split, so on overflow it wraps to the next line.
-                w = VISIBLE_CTRL_WIDTHS[v]
+                # All of these are ZENKAKU glyphs: in a hankaku-routed entry
+                # they cost 2 column units each — including <$0000>, the
+                # full-width blank (16px via the zenkaku dispatch).
+                w = VISIBLE_CTRL_WIDTHS.get(v, 1) * (2 if hankaku else 1)
                 if line_tiles + w > width:
                     if not saw_explicit_fffc_on_line:
                         issues.append(Issue(
@@ -556,7 +581,9 @@ def simulate_entry(
             continue
 
         if seg.kind == 'token':
-            w = SPECIAL_TOKEN_WIDTHS.get(seg.value, 1)
+            # Token widths are in zenkaku tiles (F600 name = up to 8 zenkaku
+            # chars until the keyboard goes hankaku) -> x2 in column units.
+            w = SPECIAL_TOKEN_WIDTHS.get(seg.value, 1) * (2 if hankaku else 1)
             if line_tiles + w > width:
                 issues.append(Issue(
                     code='special_token_overflow_risk', severity='warning',
@@ -591,7 +618,8 @@ def simulate_entry(
 
         # text segment
         _check_encoding_risk(seg.value)
-        for substr, tile_cost in iter_tiles(seg.value):
+        _iter = iter_hankaku_units if hankaku else iter_tiles
+        for substr, tile_cost in _iter(seg.value):
             if line_tiles + tile_cost > width:
                 # wrap
                 is_word_interior = bool(substr) and substr[0] not in ' \t'

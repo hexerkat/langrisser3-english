@@ -592,18 +592,27 @@ def rebuild_d00(sections: list, new_text_areas: dict = None) -> bytes:
 # High-level insertion
 # ---------------------------------------------------------------------------
 
-# v0.8 SPIKE (branch font-hankaku-per-glyph): specific dialogue entries routed
-# through the per-glyph HANKAKU encoder (1 tile/char, no bigrams) instead of the
-# bigram packer, to prove per-glyph 8px dialogue in Ymir. Matched by (scen_num,
-# content prefix) so leading-blank offsets don't matter (feedback_check_jp_for_each
-# _entry). The full v0.8 rollout routes ALL prose through hankaku; this list is the
-# throwaway proof and is removed then.
-HANKAKU_SPIKE_ENTRIES = ((1, "…Youth aspiring"),)
+# v0.8 FULL CONVERSION (2026-07-07, supersedes the scen001 spike list): EVERY
+# scen entry is routed through the per-glyph HANKAKU encoder (band chars = one
+# 8px tile; anything else in CHAR_TILE_MAP = a zenkaku single drawn 16px over
+# 2 columns by the balloon_zenkaku_cave dispatch; control codes pass through,
+# so structural parity is untouched). Line budgets stay the v0.7 counts
+# (34/26 chars = 17/13 bigram tiles x 2 columns).
 
 
-def _hankaku_spike_match(scen_num: int, text: str) -> bool:
-    return any(scen_num == s and text.startswith(pfx)
-               for s, pfx in HANKAKU_SPIKE_ENTRIES)
+# EXCEPTION: scen124 (the epilogues — the largest section) at 1 tile/char
+# encodes to ~73 KB, past the D00 section format's u16 entry-offset ceiling
+# (65535 B). It stays BIGRAM (39 KB, fits) and renders v0.7-style 16px via
+# the zenkaku width class — a standalone end-game surface, visually coherent.
+# Revisit only with an engine-side answer to the u16 offsets.
+_HANKAKU_EXCLUDED_SCENS = frozenset({124})
+
+
+def is_hankaku_entry(scen_num: int, text: str) -> bool:
+    """Routing predicate: which entries the build encodes hankaku (all but
+    the documented exceptions). layout_qa consults this so QA always
+    measures the real encoder."""
+    return scen_num not in _HANKAKU_EXCLUDED_SCENS
 
 
 def insert_translations(sections: list, scripts_dir: Path,
@@ -641,10 +650,10 @@ def insert_translations(sections: list, scripts_dir: Path,
             stats['skipped'] += 1
             continue
 
-        # Encode entries
+        # Encode entries (v0.8: all prose per-glyph hankaku + zenkaku singles)
         encoded_entries = []
         for text in text_entries:
-            if _hankaku_spike_match(scen_num, text):
+            if is_hankaku_entry(scen_num, text):
                 from hankaku_encoder import encode_hankaku
                 encoded = encode_hankaku(text)
             else:
