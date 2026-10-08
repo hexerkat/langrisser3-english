@@ -58,6 +58,8 @@ ENGINE_PATCH_MODULES = (
     "a0lang_title_menu_geometry",
     "a0lang_loadsave_title",
     "a0lang_item_action_box",
+    "a0lang_field_hankaku_step",
+    "a0lang_label_box_width",
     "prog3_text_tables",
 )
 
