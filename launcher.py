@@ -6,17 +6,30 @@ terminal: pick the Japanese disc folder, choose whether to build the English
 opening movie, press Build, then open the folder with the patched game.
 
 Run:  python3 launcher.py   (Windows: double-click, or `py launcher.py`)
+With arguments it is the command-line build: launcher.py --jp-iso <folder>.
+Packaged as a standalone executable by launcher.spec (PyInstaller).
 """
+import contextlib
 import os
 import queue
 import shutil
 import subprocess
 import sys
 import threading
+import traceback
 from pathlib import Path
 
 PROJECT = Path(__file__).resolve().parent
+sys.path.insert(0, str(PROJECT))
 sys.path.insert(0, str(PROJECT / "tools"))
+
+if len(sys.argv) > 1:
+    # Any argument: behave exactly like build.py on the command line.
+    if sys.stdout is None:   # windowed Windows executable: no console
+        sys.stdout = sys.stderr = open(Path(sys.executable).with_name("build.log"),
+                                       "w", encoding="utf-8")
+    import build
+    raise SystemExit(build.main(sys.argv[1:]))
 
 try:
     import tkinter as tk
@@ -34,6 +47,21 @@ import launcher_core as lc  # noqa: E402
 VERSION = (PROJECT / "VERSION").read_text(encoding="utf-8").strip()
 
 
+class _QueueWriter:
+    """File-like sink that hands each written chunk to the window."""
+
+    def __init__(self, q):
+        self.q = q
+
+    def write(self, text):
+        if text:
+            self.q.put(text)
+        return len(text)
+
+    def flush(self):
+        pass
+
+
 class Launcher(tk.Tk):
 
     def __init__(self):
@@ -41,7 +69,7 @@ class Launcher(tk.Tk):
         self.title(f"Langrisser III English Patch v{VERSION}")
         self.minsize(640, 460)
         self.settings = lc.load_settings()
-        self.proc = None
+        self.running = False
         self.lines = queue.Queue()
         self.log_lines = []
         self.result = None
@@ -114,7 +142,7 @@ class Launcher(tk.Tk):
             ok, msg = lc.check_disc_dir(Path(path))
         self.disc_status.config(text=("✓ " if ok else "✗ ") + msg,
                                 foreground="#1a7f37" if ok else "#b42318")
-        if self.proc is None:
+        if not self.running:
             self.build_btn.state(["!disabled"] if ok else ["disabled"])
         return ok
 
@@ -139,19 +167,24 @@ class Launcher(tk.Tk):
         self.open_btn.state(["disabled"])
         self.progress.start(12)
 
-        cmd = lc.build_command(disc, self.movie_var.get())
-        env = dict(os.environ, PYTHONIOENCODING="utf-8")
-        flags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
-        self.proc = subprocess.Popen(
-            cmd, cwd=PROJECT, env=env, stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT, text=True, encoding="utf-8",
-            errors="replace", creationflags=flags)
-        threading.Thread(target=self._read_output, daemon=True).start()
+        self.running = True
+        args = lc.build_args(disc, self.movie_var.get())
+        threading.Thread(target=self._run_build, args=(args,), daemon=True).start()
         self.after(100, self._poll)
 
-    def _read_output(self):
-        for line in self.proc.stdout:
-            self.lines.put(line)
+    def _run_build(self, args):
+        """Run build.main in this process; its prints stream into the log."""
+        out = _QueueWriter(self.lines)
+        code = 1
+        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(out):
+            try:
+                import build
+                code = build.main(args) or 0
+            except SystemExit as exc:
+                code = exc.code if isinstance(exc.code, int) else 1
+            except Exception:  # noqa: BLE001 - show it in the log, keep the window
+                traceback.print_exc()
+        self.code = code
         self.lines.put(None)
 
     def _poll(self):
@@ -175,11 +208,11 @@ class Launcher(tk.Tk):
             self.after(100, self._poll)
 
     def _finish(self):
-        code = self.proc.wait()
-        self.proc = None
+        code = self.code
+        self.running = False
         self.progress.stop()
         self._check_disc()
-        self.result = lc.output_folder(self.log_lines)
+        self.result = lc.output_folder("".join(self.log_lines).splitlines())
         if code == 0 and self.result is not None:
             self.open_btn.state(["!disabled"])
             messagebox.showinfo("Build complete",
@@ -194,11 +227,11 @@ class Launcher(tk.Tk):
             subprocess.Popen(lc.open_folder_command(self.result))
 
     def _on_close(self):
-        if self.proc is not None:
+        if self.running:
             if not messagebox.askyesno("Build running",
                                        "A build is still running. Stop it and quit?"):
                 return
-            self.proc.terminate()
+            os._exit(1)
         self.destroy()
 
 

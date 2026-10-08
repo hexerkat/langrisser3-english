@@ -58,25 +58,41 @@ class TestCheckDisc:
         assert not ok and "audio" in msg
 
 
-class TestBuildCommand:
+class TestBuildArgs:
 
     def test_plain_build(self, tmp_path):
-        disc = tmp_path / "disc"
-        cmd = lc.build_command(disc, encode_movie=False, python="py")
-        assert cmd == ["py", "-u", str(PROJECT / "build.py"),
-                       "--jp-iso", str(disc)]
+        assert lc.build_args(tmp_path, encode_movie=False) == ["--jp-iso", str(tmp_path)]
 
     def test_movie_flag(self, tmp_path):
-        cmd = lc.build_command(tmp_path, encode_movie=True, python="py")
-        assert cmd[-1] == "--encode-movie"
+        assert lc.build_args(tmp_path, encode_movie=True)[-1] == "--encode-movie"
 
-    def test_command_matches_build_py_parser(self, tmp_path):
+    def test_args_match_build_py_parser(self, tmp_path):
         """Every flag the launcher passes must be one build.py accepts."""
         sys.path.insert(0, str(PROJECT))
         import build
-        cmd = lc.build_command(tmp_path, encode_movie=True, python="py")
-        args = build.build_arg_parser().parse_args(cmd[3:])
+        args = build.build_arg_parser().parse_args(lc.build_args(tmp_path, True))
         assert args.jp_iso == tmp_path and args.encode_movie
+
+
+class TestOutputRoot:
+    """Red state: build.py always writes build/ and cache/ inside its own
+    folder, which in the frozen executable is a temporary unpack dir."""
+
+    def test_source_checkout_writes_in_the_repo(self, tmp_path):
+        sys.path.insert(0, str(PROJECT))
+        import build
+        assert build.output_root(False, "/usr/bin/python3", tmp_path) == tmp_path
+
+    def test_executable_writes_next_to_itself(self, tmp_path):
+        sys.path.insert(0, str(PROJECT))
+        import build
+        exe = tmp_path / "dist" / "Langrisser3-Patcher.exe"
+        assert build.output_root(True, str(exe), PROJECT) == exe.parent
+
+    def test_main_takes_its_arguments(self):
+        sys.path.insert(0, str(PROJECT))
+        import build, inspect
+        assert "argv" in inspect.signature(build.main).parameters
 
 
 class TestOutputFolder:

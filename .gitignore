@@ -69,3 +69,6 @@ assets/movie/*.cpk
 
 # encoder scratch (generated next to the subtitle track)
 assets/movie/*.pixel.ass
+
+# PyInstaller output (launcher.spec)
+dist/

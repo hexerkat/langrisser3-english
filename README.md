@@ -64,9 +64,14 @@ This produces a self-contained folder under `build/` named after the `.cue` (e.g
 
 ### Prefer a window?
 
-Run `python3 launcher.py` (on Windows, `py launcher.py` or double-click it). Pick your Japanese disc folder, choose whether to build the English opening movie, and press **Build patched game**. When it finishes, **Open output folder** takes you to the `.cue`.
+Each release also ships a ready-to-run patcher, with nothing to install (no Python needed):
 
-The window uses Tkinter. It comes with Python on Windows and macOS. On Linux you may need to install it (Debian/Ubuntu: `sudo apt install python3-tk`).
+- **Windows**: `Langrisser3-Patcher-windows.exe`. Double-click it.
+- **Linux**: `Langrisser3-Patcher-linux.tar.gz`. Extract it and run `./Langrisser3-Patcher`.
+
+Pick your Japanese disc folder and press **Build patched game**. The patched game lands in a `build/` folder next to the patcher, and **Open output folder** takes you there. The English opening movie option needs [ffmpeg](https://ffmpeg.org/download.html) installed; without it the game keeps the Japanese opening.
+
+From a source checkout, the same window runs with `python3 launcher.py` (needs Tkinter: on Debian/Ubuntu, `sudo apt install python3-tk`).
 
 ### The opening movie
 

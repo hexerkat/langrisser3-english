@@ -11,8 +11,6 @@ from pathlib import Path
 
 from iso_tools import _find_jp_track
 
-PROJECT = Path(__file__).resolve().parent.parent
-BUILD_PY = PROJECT / "build.py"
 FOLDER_PREFIX = "Folder:"
 
 
@@ -31,13 +29,12 @@ def check_disc_dir(disc_dir: Path) -> tuple[bool, str]:
     return True, "Japanese disc found."
 
 
-def build_command(disc_dir: Path, encode_movie: bool,
-                  python: str = sys.executable) -> list[str]:
-    """The exact build.py invocation (unbuffered, so the log streams live)."""
-    cmd = [python, "-u", str(BUILD_PY), "--jp-iso", str(disc_dir)]
+def build_args(disc_dir: Path, encode_movie: bool) -> list[str]:
+    """The build.py command-line arguments for this choice."""
+    args = ["--jp-iso", str(disc_dir)]
     if encode_movie:
-        cmd.append("--encode-movie")
-    return cmd
+        args.append("--encode-movie")
+    return args
 
 
 def output_folder(log_lines) -> Path | None:
