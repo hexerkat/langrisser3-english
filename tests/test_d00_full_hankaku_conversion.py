@@ -36,16 +36,19 @@ def test_every_entry_routes_hankaku():
     assert is_hankaku_entry(1, "…Youth aspiring to knighthood,")
     assert is_hankaku_entry(44, "Any line of any scen")
     assert is_hankaku_entry(125, "<$FFFF>Castle Gate")
-    # documented exception: scen124 epilogues would blow the u16 section
-    # offset ceiling at 1 tile/char (73 KB > 65535) -> stays bigram (fits,
-    # renders v0.7-style 16px via the zenkaku width class).
-    assert not is_hankaku_entry(124, "epilogue prose")
+    # scen124 included since Piece D (prog3_d00_offset_scale lifted the u16
+    # section ceiling to 128 KB) — no exceptions remain.
+    assert is_hankaku_entry(124, "epilogue prose")
 
 
 def test_band_covers_prose_punctuation():
     import font_tools as ft
-    for ch in "()\"%&+/*":
+    for ch in "()\"%&+/":
         assert ch in ft.HANKAKU_TILE_MAP, f"band missing {ch!r}"
+    # '*' is NOT prose: it is the objectives-header marker and must render
+    # as the original JP full-width asterisk ＊ (tile 489), like '•' does
+    # (Ralf 2026-07-08: "existe um glifo original do JP que é esse asteriscão").
+    assert "*" not in ft.HANKAKU_TILE_MAP
 
 
 def test_encoder_zenkaku_fallback():
@@ -63,6 +66,8 @@ def test_encoder_zenkaku_fallback():
     assert encode_hankaku("Ｓ") == be16(ft.CHAR_TILE_MAP["Ｓ"])
     # band punct is hankaku, not the old zenkaku singles
     assert encode_hankaku("(a)") == be16(m["("], m["a"], m[")"])
+    # objectives-header asterisk -> the JP full-width ＊ (zenkaku 489)
+    assert encode_hankaku("*V") == be16(ft.CHAR_TILE_MAP["*"], m["V"])
 
 
 def test_band_and_cave_are_disjoint_after_growth():

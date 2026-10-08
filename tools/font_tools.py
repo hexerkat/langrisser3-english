@@ -99,7 +99,23 @@ _UC_UI_OFFSETS = {
 # ---------------------------------------------------------------------------
 
 ELLIPSIS_TILE = 906          # … two-dot ellipsis (tile 906)
+# Objectives bullet ・ (JP nakaguro, full-width): the JP glyph lives at tile
+# 217, which the bigram packer reclaimed — so the generator copies the JP
+# glyph to a free slot ABOVE the hankaku class range [1265..1419] (1426 is
+# OFF-LIMITS: preserved legacy 'Yo' bigram, packer-reused; 1428 is clean; it must
+# render zenkaku 16px via the width-class dispatch) and below the _VD_SPACE
+# bigrams (1435+). Scripts write the literal ・ (objectives diagramming =
+# <$0000>・text, Ralf 2026-07-08).
+NAKAGURO_JP_TILE = 217
+NAKAGURO_TILE = 1428
 DQUOTE_TILE = 1470           # " double-quote (tile 1470)
+
+# v0.8 RESERVED tile range [1265..1434]: hankaku band (1265.. plus growth
+# headroom to 1419), zenkaku-dispatch scratch/cave (1420-1425), nakaguro
+# (1428), d00-offset cave (1427). The bigram packer MUST NOT allocate here
+# (regression 2026-07-08: a corpus shift spilled 'Yo'->1426 and '• '->1265,
+# silently overwritten by the band/cave writes). Ends at _VD_SPACE (1435).
+V08_RESERVED_TILES = frozenset(range(1265, 1435))
 
 # Apostrophe bigrams — one group (the font has no standalone ' tile, so every
 # apostrophe is encoded as a 2-char tile we draw via _interleave). Two index
@@ -600,6 +616,7 @@ def build_char_tile_map() -> dict:
         m[ch] = start
 
     m['…'] = ELLIPSIS_TILE
+    m['・'] = NAKAGURO_TILE   # objectives bullet (JP nakaguro, rehomed glyph)
     m['"'] = DQUOTE_TILE
 
     # Extended punctuation (installed in kanji area tiles 1627-1638)
@@ -728,7 +745,9 @@ _HANKAKU_CHARS = (
     # prose punctuation with existing 8px art (v0.8 full conversion): keeps
     # ( ) " etc. hankaku instead of falling back to 16px zenkaku singles.
     # Band headroom runs to 1419 (the zenkaku-dispatch cave sits at 1420+).
-    + ['(', ')', '"', '%', '&', '+', '/', '*']
+    # '*' is deliberately NOT here: it is the objectives-header marker and
+    # renders as the original JP full-width ＊ (zenkaku 489), like '•'.
+    + ['(', ')', '"', '%', '&', '+', '/']
 )
 HANKAKU_TILE_MAP = {ch: HANKAKU_BASE + i for i, ch in enumerate(_HANKAKU_CHARS)}
 # 8px ellipsis half-glyph (three 1px dots at cols 1/3/5, on the period baseline).
@@ -1398,14 +1417,18 @@ def build_bigram_layout() -> dict:
     fresh = []
     for pair in necessary_bigrams():
         t = _preserved_tile_for(pair)
-        if t is not None:
+        # V08_RESERVED_TILES is off-limits even for preserved-tile REUSE: the
+        # legacy oracle is corpus-dependent, so which slot a pair lands on
+        # shifts with script edits — and our band/cave/nakaguro writers own
+        # that range with BAKED addresses ('Za'@1428 regression, 2026-07-08).
+        if t is not None and t not in V08_RESERVED_TILES:
             layout[pair] = t
         else:
             fresh.append(pair)
     used = set(layout.values())
     nxt = _FRESH_LO
     for pair in fresh:
-        while nxt in PRESERVED_TILES or nxt in used:
+        while nxt in PRESERVED_TILES or nxt in V08_RESERVED_TILES or nxt in used:
             nxt += 1
         if nxt > _FRESH_HI:
             raise ValueError("FRESH region overflow — necessary bigrams exceed 46..1499")
@@ -1446,6 +1469,10 @@ def _generate_data_driven_font(jp_font: bytes) -> bytes:
         half = _hk_halves.get(ch)
         if half is not None and t < NEW_FONT_TILES:
             out[t * 32:(t + 1) * 32] = _interleave(half, _BLANK_GLYPH)
+    # Objectives bullet ・: JP nakaguro glyph rehomed above the hankaku class
+    # range (its JP slot 217 is packer-reclaimed). Zenkaku class -> 16px.
+    out[NAKAGURO_TILE * 32:(NAKAGURO_TILE + 1) * 32] = \
+        jp_font[NAKAGURO_JP_TILE * 32:(NAKAGURO_JP_TILE + 1) * 32]
     # v0.8 width-class dispatcher cave: SH-2 code riding free font tiles (the
     # font loads at LWRAM 0x00288000, so the cave is resident whenever text can
     # render). prog3_balloon_zenkaku_dispatch repoints the dispatcher to it.
@@ -1453,6 +1480,10 @@ def _generate_data_driven_font(jp_font: bytes) -> bytes:
     from balloon_zenkaku_cave import CAVE_TILE, cave_blob
     _blob = cave_blob()
     out[CAVE_TILE * 32:CAVE_TILE * 32 + len(_blob)] = _blob
+    # Piece D: the composer's scaled-offset fetch cave (tile 1427).
+    from d00_offset_cave import D00_CAVE_TILE, d00_cave_blob
+    _dblob = d00_cave_blob()
+    out[D00_CAVE_TILE * 32:D00_CAVE_TILE * 32 + len(_dblob)] = _dblob
     return bytes(out)
 
 

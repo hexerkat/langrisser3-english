@@ -73,6 +73,7 @@ from prog3_item_use_glue import PROG3_ITEM_USE_GLUE
 from prog3_dialogue_hankaku_step import PROG3_DIALOGUE_HANKAKU_STEP
 from prog3_balloon_hankaku_grid import PROG3_BALLOON_HANKAKU_GRID
 from prog3_balloon_zenkaku_dispatch import PROG3_BALLOON_ZENKAKU_DISPATCH
+from prog3_d00_offset_scale import PROG3_D00_OFFSET_SCALE
 from prog6_battle_cmd_width import PROG6_BATTLE_CMD_WIDTH
 from prog4_spell_name_table import PROG4_SPELL_NAME_TABLE
 from prog5_menu_geometry import PROG5_MENU_GEOMETRY
@@ -221,6 +222,7 @@ ENGINE_MODULE_DICTS = {
     "prog3_dialogue_hankaku_step": PROG3_DIALOGUE_HANKAKU_STEP,
     "prog3_balloon_hankaku_grid": PROG3_BALLOON_HANKAKU_GRID,
     "prog3_balloon_zenkaku_dispatch": PROG3_BALLOON_ZENKAKU_DISPATCH,
+    "prog3_d00_offset_scale": PROG3_D00_OFFSET_SCALE,
     "prog6_battle_cmd_width": PROG6_BATTLE_CMD_WIDTH,
     "prog4_spell_name_table": PROG4_SPELL_NAME_TABLE,
     "prog5_menu_geometry": PROG5_MENU_GEOMETRY,

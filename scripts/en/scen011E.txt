@@ -21,8 +21,8 @@ Shika Commander<$FFFF>
 Worm Master Rag<$FFFF>
 Kah Shind<$FFFF>
 Monster<$FFFF>
-•Within 19 turns,<$FFFC> defeat Keh Shikairo<$FFFE>
-•Death of <$F600><$0000><$FFFC>Death of Sophia<$FFFE>
+<$0000>・Within 19 turns,<$FFFC><$0000><$0000>defeat Keh Shikairo<$FFFE>
+<$0000>・Death of <$F600><$0000><$FFFC><$0000><$0000>Death of Sophia<$FFFE>
 Shika Tribe Hideout<$FFFF>
 Shika, shika, shiiika!<$FFFC>Lower the sacrifice!<$FFFD>The Shika tribe's glory<$FFFC>is now sealed for good!<$FFFC>Shiiika!<$FFFE>
 Shiika!<$FFFE>
@@ -182,8 +182,8 @@ I see. First, we must<$FFFC>defeat these Velzerian<$FFFC>demons lurking here.<$F
 We must help goddess.<$FFFC>Do battle with all of<$FFFC>strength!<$FFFE>
 Shika!<$FFFE>
 Protect goddess. Keh<$FFFC>Shikairo and Shika Tribe<$FFFC>will fight for you!<$FFFE>
-•Defeat Kah Shind or<$FFFC>Worm Master Rag<$FFFE>
-•Death of<$FFFC><$F600><$0000><$FFFE>
+<$0000>・Defeat Kah Shind or<$FFFC><$0000><$0000>Worm Master Rag<$FFFE>
+<$0000>・Death of<$FFFC><$0000><$0000><$F600><$0000><$FFFE>
 You will not take<$FFFC>sacrifice! Shika, angry!<$FFFE>
 You, wake up! Listen to<$FFFC>order of Keh Shikairo!<$FFFE>
 It's useless, no matter<$FFFC>how many times you try.<$FFFC>They are deaf to your<$FFFC>prattling.<$FFFE>

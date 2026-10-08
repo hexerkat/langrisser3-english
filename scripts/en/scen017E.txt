@@ -19,8 +19,8 @@ Emerick<$FFFF>
 Thief<$FFFF>
 Barral Commander<$FFFF>
 Dark Knight<$FFFF>
-•Destroy all enemies<$FFFE>
-•Death of <$F600><$0000><$FFFE>
+<$0000>・Destroy all enemies<$FFFE>
+<$0000>・Death of <$F600><$0000><$FFFE>
 Fort Rogier, Barral<$FFFF>
 Whoa, look at that! What<$FFFC>a huge fortress!<$FFFE>
 No wonder, built as it<$FFFC>was to be the base for<$FFFC>the Larcuss invasion.<$FFFE>
@@ -56,7 +56,7 @@ So he really came!<$FFFE>
 Ah… to think the Dark<$FFFC>Knight appears before us<$FFFC>this soon…<$FFFE>
 No use complaining, we<$FFFC>just have to defeat him<$FFFC>and after that we will<$FFFC>claim back Laffel!<$FFFE>
 Defeat me… Amusing.<$FFFE>
-•Defeat the Dark Knight<$FFFE>
+<$0000>・Defeat the Dark Knight<$FFFE>
 The Dark Knight… What<$FFFC>a fearful enemy.<$FFFE>
 Even all of us might not<$FFFC>be enough to take down<$FFFC>a guy like him…<$FFFE>
 In all likelihood, with<$FFFC>our current strength, we<$FFFC>have no hope of victory<$FFFC>against him now…<$FFFE>

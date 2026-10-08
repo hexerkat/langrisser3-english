@@ -21,7 +21,7 @@ Advisor<$FFFF>
 <$0000><$FFFC>　　　ＳＣＥＮＡＲＩＯ‐２４<$FFFC><$0000><$0000><$0000>The Field Marshal's<$0000><$0000><$0000><$FFFC><$0000><$0000><$0000><$0000> Determination <$0000><$0000><$0000><$0000><$FFFE>
 Velzeria, the monster land,<$FFFC>has launched its full invasion.<$FFFC>The unit that saved the border<$FFFC>village is recalled to the<$FFFC>besieged royal capital.<$FFFE>
 In this three-way battle<$FFFC>against both the Imperial Army<$FFFC>and Velzeria's forces, who will<$FFFC>seize victory…?<$FFFE>
-*Victory Conditions<$FFFC>  •Defeat all enemies<$FFFC>*Defeat Conditions<$FFFC>  •Death of <$F600><$0000><$FFFC>  •Death of Sieghart<$FFFE>
+*Victory Conditions<$FFFC><$0000>・Defeat all enemies<$FFFC>*Defeat Conditions<$FFFC><$0000>・Death of <$F600><$0000><$FFFC><$0000>・Death of Sieghart<$FFFE>
 Rigüler Castle, Paul's Room<$FFFF>
 So, now that my father's<$FFFC>died, it's my turn to<$FFFC>take the throne.<$FFFE>
 But, Altemüller seems<$FFFC>more popular within the<$FFFC>court here.<$FFFE>

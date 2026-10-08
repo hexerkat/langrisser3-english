@@ -18,8 +18,8 @@ Varna<$FFFF>
 Emerick<$FFFF>
 Thief<$FFFF>
 Thief leader<$FFFF>
-•Defeat all enemies<$FFFE>
-•Death of <$F600><$0000><$FFFC>•Decimation Sword taken<$FFFE>
+<$0000>・Defeat all enemies<$FFFE>
+<$0000>・Death of <$F600><$0000><$FFFC><$0000>・Decimation Sword taken<$FFFE>
 Estool Ruins<$FFFF>
 Is this the place?<$FFFC>Where they say heaps of<$FFFC>treasure lie sleeping?<$FFFE>
 First time I've seen a<$FFFC>place like this! That's<$FFFC>our Boss!<$FFFE>

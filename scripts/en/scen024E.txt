@@ -20,8 +20,8 @@ Monster<$FFFF>
 Villager<$FFFF>
 Necromancer Grove<$FFFF>
 Velzerian Commander<$FFFF>
-•Destroy all enemies<$FFFE>
-•Death of <$F600><$0000><$FFFC>Death of all NPCs<$FFFE>
+<$0000>・Destroy all enemies<$FFFE>
+<$0000>・Death of <$F600><$0000><$FFFC><$0000><$0000>Death of all NPCs<$FFFE>
 Velzeria Border Village<$FFFF>
 GOGAAAHHH!<$FFFE>
 Uwaaah!<$FFFE>

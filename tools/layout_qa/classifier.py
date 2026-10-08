@@ -47,7 +47,7 @@ from center_scenario_titles import SCENARIO_PATTERN  # noqa: E402
 from layout_qa.parser import Entry  # noqa: E402
 
 
-BULLET_PATTERN = re.compile(r'^\s*[•*]')
+BULLET_PATTERN = re.compile(r'^\s*[•・*]')   # ・ = the v0.8 objectives nakaguro
 
 
 class ClassifierState(Enum):
@@ -128,6 +128,11 @@ DEFAULT_RULES: Dict[str, Dict[str, float | str]] = {
     'OBJECTIVE_REPEAT': {
         'confidence': 0.9,
         'reason': 'bullet prefix inside OBJECTIVES_16X5 state',
+    },
+    'SCENE_OBJECTIVE_UPDATE': {
+        'confidence': 0.9,
+        'reason': 'bullet prefix mid-scene — objectives never render in the '
+                  'dialogue balloon (condition update, wide window)',
     },
     'OBJECTIVE_TO_SCENE_LOCATION': {
         'confidence': 0.95,
@@ -266,6 +271,13 @@ def _classify_one(
         if term == 'FFFE' and _has_scenario_marker(entry):
             return _cls(NARRATION_16X5, 'SCENE_SCENARIO',
                         ClassifierState.SCENARIO_INTRO_16X5)
+        if term == 'FFFE' and _is_bullet(entry):
+            # Objectives NEVER render in the dialogue balloon (Ralf
+            # 2026-07-08: "não existe objetivos em janelas de diálogo") —
+            # mid-battle condition updates carry the bullet and draw in the
+            # wide window. Bullet prefix wins over the SCENE state.
+            return _cls(OBJECTIVE_16X5, 'SCENE_OBJECTIVE_UPDATE',
+                        ClassifierState.SCENE_12X4)
         if term == 'FFFE':
             return _cls(DIALOGUE_12X4, 'SCENE_DIALOGUE',
                         ClassifierState.SCENE_12X4)

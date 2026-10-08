@@ -47,6 +47,7 @@ ENGINE_PATCH_MODULES = (
     "prog3_balloon_hankaku_grid",
     "prog3_balloon_zenkaku_dispatch",
     "fntsys14_hankaku_keyboard",
+    "prog3_d00_offset_scale",
     "prog4_field_box_geometry",
     "prog4_equip_title",
     "prog4_spell_name_table",

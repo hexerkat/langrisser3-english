@@ -27,8 +27,8 @@ Wilder<$FFFF>
 Thief<$FFFF>
 Barral Soldier<$FFFF>
 Barral Supreme Commander<$FFFF>
-• Destroy all enemies.<$FFFC>• Layla and Tiaris must reach <$FFFC><$0000><$0000>the south edge with <$FFFC><$0000><$0000><$F600><$0000>.<$FFFE>
-• Death of <$F600><$0000>.<$FFFC>• Death of Layla.<$FFFE>
+<$0000>・Destroy all enemies.<$FFFC><$0000>・Layla and Tiaris must reach <$FFFC><$0000><$0000>the south edge with <$FFFC><$0000><$0000><$F600><$0000>.<$FFFE>
+<$0000>・Death of <$F600><$0000>.<$FFFC><$0000>・Death of Layla.<$FFFE>
 Vice Capital Laffel<$FFFF>
 Listen! Don't be rough<$FFFC>with the ones who yield!<$FFFE>
 Just capture them. Use<$FFFC>force only if you must!<$FFFE>

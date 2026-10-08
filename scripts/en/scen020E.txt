@@ -20,8 +20,8 @@ General Bortz<$FFFF>
 Rigüler Commander<$FFFF>
 Airship pilot<$FFFF>
 Thief<$FFFF>
-•Defeat Bortz<$FFFE>
-•Death of <$F600><$0000><$FFFC>•Bortz arrives at the airship<$FFFE>
+<$0000>・Defeat Bortz<$FFFE>
+<$0000>・Death of <$F600><$0000><$FFFC><$0000>・Bortz arrives at the airship<$FFFE>
 Larcussia Defense Base Pad<$FFFF>
 Bortz! I won't let you<$FFFC>get away now!<$FFFE>
 You're late. Thanks to<$FFFC>that, most of my men got<$FFFC>clean away.<$FFFE>

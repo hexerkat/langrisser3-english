@@ -21,7 +21,7 @@ Close Associate<$FFFF>
 <$0000><$FFFC>　　　ＳＣＥＮＡＲＩＯ‐１５<$FFFC><$0000><$0000><$0000><$0000>The Sword of Decimation<$0000><$0000><$0000><$0000><$FFFE>
 Dios, hunted by Barral, joined<$FFFC>them, and the party hurried to<$FFFC>the Estool ruins, where the<$FFFC>Decimation Sword, brought<$FFFC>from afar long ago, now sleeps.<$FFFE>
 As each pursued their<$FFFC>own designs, history had surely<$FFFC>begun to move…<$FFFE>
-*Victory Conditions<$FFFC>•Defeat all enemies<$FFFC>*Defeat Conditions<$FFFC>•Death of <$F600><$0000><$FFFC>•Decimation Sword lost<$FFFE>
+*Victory Conditions<$FFFC><$0000>・Defeat all enemies<$FFFC>*Defeat Conditions<$FFFC><$0000>・Death of <$F600><$0000><$FFFC><$0000>・Decimation Sword lost<$FFFE>
 Rigüler Castle, Paul's Room<$FFFF>
 Hohoho! So even the<$FFFC>undefeated Altemüller<$FFFC>struggles now! What a<$FFFC>satisfying sight!<$FFFE>
 Prince Paul. You seem<$FFFC>most pleased.<$FFFE>

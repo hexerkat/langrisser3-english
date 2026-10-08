@@ -25,7 +25,7 @@ Field Marshal Altemüller's army<$FFFC>had seized the Floating Castle<$FFFC>and 
 But the young knight had fled<$FFFC>with Tiaris and Layla to the<$FFFC>lands of Viscount Raymond.<$FFFC>There they raised troops, made<$FFFC>plans, and bided their time.<$FFFE>
 Now, six long months had passed<$FFFC>since the Floating Castle fell.<$FFFC>The gathered troops stood ready<$FFFC>and the day had finally come<$FFFC>to put their plan in motion.<$FFFE>
 Entrusted with his own force<$FFFC>the young knight set out to<$FFFC>seek strategist Torrand's aid.<$FFFC>On the way he passed a famed<$FFFC>master swordsman's village.<$FFFE>
-*Victory Conditions<$FFFC> •Defeat of Grove<$FFFC>*Defeat Conditions<$FFFC> •Death of <$F600><$0000><$FFFC> •Death of all the villagers<$FFFE>
+*Victory Conditions<$FFFC><$0000>・Defeat of Grove<$FFFC>*Defeat Conditions<$FFFC><$0000>・Death of <$F600><$0000><$FFFC><$0000>・Death of all the villagers<$FFFE>
 Viscount Raymond's Manor<$FFFF>
 Hmm. We've managed to<$FFFC>raise an army.<$FFFE>
 But it took half a year<$FFFC>just to get this far…<$FFFC>Much longer than I had<$FFFC>first hoped.<$FFFE>

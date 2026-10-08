@@ -24,7 +24,7 @@ General Emerick<$FFFF>
 A year after taking up arms<$FFFC>under Viscount Raymond,<$FFFC><$F600><$0000> retook the<$FFFC>capital. Raymond became King<$FFFC>Sieghart. The land, Elthlead.<$FFFE>
 Field Marshal Altemüller had<$FFFC>once withdrawn his troops due to<$FFFC>shortages, but preparations to<$FFFC>retake Larcuss were steadily<$FFFC>advancing.<$FFFE>
 The Elthlead army, in turn, set<$FFFC>its mobile detachment marching<$FFFC>to seize the Imperial base along<$FFFC>the border.<$FFFE>
-*Victory Conditions<$FFFC>  •Defeat all enemies<$FFFC>*Defeat Conditions<$FFFC>  •Death of <$F600><$0000><$FFFE>
+*Victory Conditions<$FFFC><$0000>・Defeat all enemies<$FFFC>*Defeat Conditions<$FFFC><$0000>・Death of <$F600><$0000><$FFFE>
 Imperial Base, Rigüler Border<$FFFF>
 Your Excellency<$FFFC>Altemüller. The attack<$FFFC>preparations have been<$FFFC>completed.<$FFFE>
 Good work. Mustering new<$FFFC>troops took longer than<$FFFC>I had expected.<$FFFD>Now, the army of<$FFFC>Larcuss…no, Elthlead,<$FFFC>is probably rebuilding<$FFFC>its forces too.<$FFFE>

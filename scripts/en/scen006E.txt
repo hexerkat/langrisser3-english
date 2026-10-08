@@ -24,8 +24,8 @@ Civilian<$FFFF>
 Rigüler Commander<$FFFF>
 Imperial Soldier<$FFFF>
 Rigüler Commander<$FFFF>
-•Defeat Emerick<$FFFC>•Destroy the intercept force<$FFFC>•Reach the mansion<$FFFE>
-•Death of <$F600><$0000><$FFFC>•Death of Torrand<$FFFE>
+<$0000>・Defeat Emerick<$FFFC><$0000>・Destroy the intercept force<$FFFC><$0000>・Reach the mansion<$FFFE>
+<$0000>・Death of <$F600><$0000><$FFFC><$0000>・Death of Torrand<$FFFE>
 Baron Torrand's Mansion<$FFFF>
 Ah, so this is how the<$FFFC>continent's famed genius<$FFFC>strategist fights?<$FFFE>
 There's far too little<$FFFC>resistance…<$FFFC>Or is this a trap?<$FFFE>

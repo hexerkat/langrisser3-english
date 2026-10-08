@@ -20,8 +20,8 @@ Girl<$FFFF>
 Monster<$FFFF>
 Feraquea<$FFFF>
 Velzerian Commander<$FFFF>
-•Rescue the NPC<$FFFE>
-•Death of <$F600><$0000><$FFFC>•Death of the NPC<$FFFE>
+<$0000>・Rescue the NPC<$FFFE>
+<$0000>・Death of <$F600><$0000><$FFFC><$0000>・Death of the NPC<$FFFE>
 Central-East Gate Path<$FFFF>
 Hey, are we there yet!?<$FFFC>I'm so tired!<$FFFE>
 Once we are over this<$FFFC>mountain, we should be<$FFFC>there before long.<$FFFE>
@@ -72,8 +72,8 @@ Yes!<$FFFE>
 You couldn't see through<$FFFC>their plan? For one of<$FFFC>your skill to slip up…<$FFFC>…that troubles me.<$FFFE>
 I am truly sorry…<$FFFE>
 …<$FFFE>
-•Defeat Feraquea<$FFFE>
-•Death of<$FFFC><$F600><$0000><$FFFE>
+<$0000>・Defeat Feraquea<$FFFE>
+<$0000>・Death of<$FFFC><$0000><$0000><$F600><$0000><$FFFE>
 A giant ancient statue<$FFFC>lies here in ruins.<$FFFC>Looking closer you find<$FFFC>ancient words carved in.<$FFFD>Offer me a sacrifice.<$FFFC>Your wish comes true!<$FFFE>
 Will you offer<$FFFC>something?<$FFFE>
 Tiaris<$FFFE>
@@ -107,8 +107,8 @@ Damn it. We weren't fast<$FFFC>enough…<$FFFE>
 Useless lot, aren't you?<$FFFC>I thought you'd come to<$FFFC>save her, but you can't<$FFFC>be relied on at all.<$FFFE>
 !? She's transforming!?<$FFFE>
 Clever of you to notice<$FFFC>my transformation.<$FFFC>But if you think it ends<$FFFC>here, you're dead wrong!<$FFFD>Now then, everyone, come<$FFFC>on out!<$FFFE>
-•Defeat Feraquea<$FFFE>
-•Death of<$FFFC><$F600><$0000><$FFFE>
+<$0000>・Defeat Feraquea<$FFFE>
+<$0000>・Death of<$FFFC><$0000><$0000><$F600><$0000><$FFFE>
 Kyaaa! Someone, help me!<$FFFE>
 Please, someone…<$FFFE>
 Hold out! Help is on the<$FFFC>way!<$FFFE>

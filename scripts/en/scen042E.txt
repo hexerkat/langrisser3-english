@@ -28,7 +28,7 @@ Larcuss Commander<$FFFF>
 For ages, Larcuss had prospered,<$FFFC>set between the Rigüler Empire<$FFFC>to the north and allied Barral<$FFFC>to the south. Above Larcussia,<$FFFC>the Floating Castle kept peace.<$FFFE>
 Today, in this Floating Castle,<$FFFC>the investiture was at hand.<$FFFC>Diehärte Klaus had endured harsh<$FFFC>training, dreaming of this day.<$FFFC>Now it was about to bear fruit.<$FFFE>
 Yet, as if to shatter his joy,<$FFFC>flocks of ominous black wings<$FFFC>crept near the Floating Castle.<$FFFE>
-*Victory Conditions<$FFFC>•Total destruction of the enemy<$FFFC>*Defeat Conditions<$FFFC>•Death of the Hero<$FFFE>
+*Victory Conditions<$FFFC><$0000>・Total destruction of<$FFFC><$0000><$0000>the enemy<$FFFC>*Defeat Conditions<$FFFC><$0000>・Death of the Hero<$FFFE>
 Underground Altar<$FFFF>
 Diehärte.<$FFFC>Hey, Diehärte!<$FFFE>
 It is dawn already.<$FFFC>The investiture awaits.<$FFFE>

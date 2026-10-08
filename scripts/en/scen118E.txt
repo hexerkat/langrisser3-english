@@ -20,4 +20,4 @@ Emerick<$FFFF>
 Though set on Castle Velzeria,<$FFFC>where the odd clay figure from<$FFFC>the fight with Feraquea had gone<$FFFC>still nagged at their minds.<$FFFE>
 The moment the doll flies off,<$FFFC><$F600><$0000> orders the<$FFFC>reluctant division to follow it.<$FFFE>
 After a lengthy chase they find<$FFFC>themselves in front of a quirky<$FFFC>looking temple…<$FFFE>
-*Victory Conditions<$FFFC>•That's a secret!<$FFFC>*Defeat Conditions<$FFFC>•Death of <$F600><$0000><$FFFC>•Death of any Female PC<$FFFE>
+*Victory Conditions<$FFFC><$0000>・That's a secret!<$FFFC>*Defeat Conditions<$FFFC><$0000>・Death of <$F600><$0000><$FFFC><$0000>・Death of any Female PC<$FFFE>

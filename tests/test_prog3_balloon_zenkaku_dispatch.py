@@ -58,6 +58,21 @@ def test_cave_geometry_is_consistent():
     assert not tiles & set(ft.HANKAKU_TILE_MAP.values())
     assert not tiles & set(ft.BIGRAM_TILE_MAP.values())
     assert not tiles & ft.PRESERVED_TILES
+    # v0.8 reserved range vs the packer: FRESH allocations are forbidden here
+    # (regression: a corpus shift spilled 'Yo'->1426 and '• '->1265, silently
+    # overwritten by our band/cave writes). PRESERVED-tile reuse (1426 'Yo')
+    # is legitimate — the legacy glyph pre-exists — but then NONE of OUR
+    # written tiles may sit on a reused slot.
+    bigram_tiles = set(ft.BIGRAM_TILE_MAP.values())
+    spill = ft.V08_RESERVED_TILES & bigram_tiles - ft.PRESERVED_TILES
+    assert not spill, f"packer FRESH-allocated inside the v0.8 range: {spill}"
+    ours = (set(ft.HANKAKU_TILE_MAP.values()) | tiles
+            | {ft.NAKAGURO_TILE, cave.SCRATCH_TILE})
+    from d00_offset_cave import D00_CAVE_TILE, D00_CAVE_TILES
+    ours |= set(range(D00_CAVE_TILE, D00_CAVE_TILE + D00_CAVE_TILES))
+    assert not ours & bigram_tiles, f"our tiles collide with bigrams: {ours & bigram_tiles}"
+    assert set(ft.HANKAKU_TILE_MAP.values()) <= ft.V08_RESERVED_TILES
+    assert ft.NAKAGURO_TILE in ft.V08_RESERVED_TILES
     # the class bounds baked into the cave must match the actual band
     band = ft.HANKAKU_TILES
     assert cave.HANKAKU_LO == min(band) == ft.HANKAKU_BASE

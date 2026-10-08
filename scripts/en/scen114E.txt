@@ -19,4 +19,4 @@ Emerick<$FFFF>
 <$0000><$FFFC>　　　ＳＣＥＮＡＲＩＯ‐？１<$FFFC><$0000> Forest Gyudon Restaurant, <$0000><$FFFC><$0000><$0000><$0000><$0000><$0000>A true story<$0000><$0000><$0000><$0000><$0000><$FFFE>
 Hiding his terrible sense of<$FFFC>direction, and stubborn besides,<$FFFC><$F600><$0000> guides the<$FFFC>party toward Baron Torrand's<$FFFC>mansion.<$FFFE>
 But before they knew it, they'd<$FFFC>wandered deep into the heart<$FFFC>of an unfamiliar forest…<$FFFE>
-*Victory Conditions<$FFFC>•Secret<$FFFC>*Defeat Conditions<$FFFC>•No PC may die<$FFFC>•No order within 20 turns<$FFFE>
+*Victory Conditions<$FFFC><$0000>・Secret<$FFFC>*Defeat Conditions<$FFFC><$0000>・No PC may die<$FFFC><$0000>・No order within 20 turns<$FFFE>

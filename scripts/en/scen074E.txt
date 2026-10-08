@@ -27,7 +27,7 @@ General Geier<$FFFF>
 <$0000><$FFFC>　　　ＳＣＥＮＡＲＩＯ‐１７<$FFFC> Operation Recapture Laffel<$0000><$FFFE>
 Having stormed Fort Rogier and<$FFFC>lured the Dark Knight far away<$FFFC>from Laffel, the young knight's<$FFFC>detachment turned, as planned,<$FFFC>and pressed on toward Laffel.<$FFFE>
 But while the detachment pressed<$FFFC>on toward Laffel, the tide of<$FFFC>battle for Raymond's main force<$FFFC>was about to shift dramatically.<$FFFE>
-*Victory Conditions<$FFFC>•Defeat of Freya<$FFFC>*Defeat Conditions<$FFFC>•Death of <$F600><$0000><$FFFE>
+*Victory Conditions<$FFFC><$0000>・Defeat of Freya<$FFFC>*Defeat Conditions<$FFFC><$0000>・Death of <$F600><$0000><$FFFE>
 Barral Territory, Fort Rogier<$FFFF>
 What is the meaning of<$FFFC>this? They took the fort<$FFFC>but refuse to hold it?<$FFFC>What on earth…<$FFFE>
 …We turn back at once.<$FFFE>

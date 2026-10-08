@@ -136,6 +136,13 @@ def parse_d00(data: bytes) -> list:
             entry_offsets.append(
                 struct.unpack_from('>H', data, text_area_abs + 6 + j * 2)[0])
 
+        # Auto-detect the SCALED format (prog3_d00_offset_scale): stored
+        # offsets are real>>1, so the first one always lands INSIDE the
+        # offset-table region (< 6 + 2*(count+1)) — impossible in raw format
+        # where it points past table+gap.
+        if entry_offsets and entry_offsets[0] < 6 + 2 * (sec.entry_count + 1):
+            entry_offsets = [o << 1 for o in entry_offsets]
+
         # Extract entries using offset boundaries
         sec.entries = []
         for j in range(sec.entry_count):
@@ -418,18 +425,26 @@ def parse_script_file(path: Path) -> list:
 # D00.DAT text area building
 # ---------------------------------------------------------------------------
 
-def build_text_area(entry_bytes_list: list) -> bytes | None:
+def build_text_area(entry_bytes_list: list, scaled_offsets: bool = False) -> bytes | None:
     """Build a complete text area from list of encoded entry byte strings.
 
-    Returns None if total size exceeds uint16 offset range (65535 bytes).
+    Returns None if an entry offset is not representable: raw format caps at
+    65535 bytes (u16 offsets); scaled format caps at 0x1FFFE (offsets stored
+    /2 — entries are u16 word streams, so offsets are naturally even and NO
+    padding is inserted; inter-entry filler would show up as phantom empty
+    items to the choice-list walker, the Piece-D-v1 playtest bug).
 
     Layout:
-        +0x00: uint32 BE - total text area size
+        +0x00: uint32 BE - total text area size (ALWAYS real bytes)
         +0x04: uint16 BE - offset table size (4 + 2*(entry_count+1))
-        +0x06: uint16 BE[] - entry offsets (relative to byte 0)
+        +0x06: uint16 BE[] - entry offsets (relative to byte 0; /2 if scaled)
         +0x06+2*N: uint16 sentinel (0x00A4)
         ...: 10-byte constant gap (always 008000ac00c800a5ffff)
-        ...: entry data
+        ...: entry data (byte-identical to the raw layout)
+
+    scaled_offsets pairs with the prog3_d00_offset_scale engine patch
+    (readers zero-extend AND double the stored value); the two must ship
+    together — both hang off the same registry name.
     """
     # Constant gap that appears between offset table and entry data in all sections
     TEXT_AREA_GAP = bytes.fromhex('008000ac00c800a5ffff')
@@ -448,15 +463,18 @@ def build_text_area(entry_bytes_list: list) -> bytes | None:
 
     total_size = current
 
-    # Check uint16 overflow
-    if total_size > 65535 or any(off > 65535 for off in entry_offsets):
+    if scaled_offsets:
+        # stored u16 uses all 16 bits (readers extu.w + shll)
+        if any((off >> 1) > 0xFFFF for off in entry_offsets):
+            return None
+    elif total_size > 65535 or any(off > 65535 for off in entry_offsets):
         return None
 
     result = bytearray()
     result += struct.pack('>I', total_size)
     result += struct.pack('>H', offset_table_size)
     for off in entry_offsets:
-        result += struct.pack('>H', off)
+        result += struct.pack('>H', off >> 1 if scaled_offsets else off)
     result += struct.pack('>H', OFFSET_TABLE_SENTINEL)
     result += TEXT_AREA_GAP
     for entry in entry_bytes_list:
@@ -548,7 +566,11 @@ def rebuild_d00(sections: list, new_text_areas: dict = None) -> bytes:
         if i in new_text_areas:
             text_area = new_text_areas[i]
         else:
-            text_area = build_text_area(sec.entries)
+            # Sections without a fresh translation are REBUILT from their
+            # parsed entries too, so the offset-table format (raw vs scaled)
+            # is coherent across the whole file with the engine patch.
+            text_area = build_text_area(sec.entries,
+                                        scaled_offsets=_offset_scale_enabled())
 
         # Update pointer[16] in text block to point to the text area
         # pointer[16] is at text_block_off + 0x40 relative to section start
@@ -600,19 +622,20 @@ def rebuild_d00(sections: list, new_text_areas: dict = None) -> bytes:
 # (34/26 chars = 17/13 bigram tiles x 2 columns).
 
 
-# EXCEPTION: scen124 (the epilogues — the largest section) at 1 tile/char
-# encodes to ~73 KB, past the D00 section format's u16 entry-offset ceiling
-# (65535 B). It stays BIGRAM (39 KB, fits) and renders v0.7-style 16px via
-# the zenkaku width class — a standalone end-game surface, visually coherent.
-# Revisit only with an engine-side answer to the u16 offsets.
-_HANKAKU_EXCLUDED_SCENS = frozenset({124})
+def _offset_scale_enabled() -> bool:
+    """Whether the Piece-D scaled offset-table format is on. Reads the SAME
+    registry name as the prog3_d00_offset_scale engine patch so data format
+    and reader code always ship together (LANG3_DISABLE keeps them paired)."""
+    from patch_registry import is_enabled
+    return is_enabled('prog3_d00_offset_scale')
 
 
 def is_hankaku_entry(scen_num: int, text: str) -> bool:
-    """Routing predicate: which entries the build encodes hankaku (all but
-    the documented exceptions). layout_qa consults this so QA always
-    measures the real encoder."""
-    return scen_num not in _HANKAKU_EXCLUDED_SCENS
+    """Routing predicate: which entries the build encodes hankaku (ALL of
+    them — the former scen124 exception fell with Piece D: the scaled
+    offset table lifts the section ceiling to 128 KB). layout_qa consults
+    this so QA always measures the real encoder."""
+    return True
 
 
 def insert_translations(sections: list, scripts_dir: Path,
@@ -682,10 +705,12 @@ def insert_translations(sections: list, scripts_dir: Path,
             })
             encoded_entries = encoded_entries[:jp_count]
 
-        text_area = build_text_area(encoded_entries)
+        text_area = build_text_area(encoded_entries,
+                                    scaled_offsets=_offset_scale_enabled())
         if text_area is None:
+            limit = '131068 (scaled)' if _offset_scale_enabled() else '65535'
             stats['errors'].append(
-                f'scen{scen_num:03d}: text area overflow (>65535 bytes), keeping JP')
+                f'scen{scen_num:03d}: text area overflow (>{limit} bytes), keeping JP')
             stats['skipped'] += 1
             continue
 

@@ -22,8 +22,8 @@ Narm<$FFFF>
 Chris<$FFFF>
 Cherie<$FFFF>
 Liana<$FFFF>
-•Defeat Ledin and Elwin<$FFFE>
-•Death of <$F600><$0000><$FFFE>
+<$0000>・Defeat Ledin and Elwin<$FFFE>
+<$0000>・Death of <$F600><$0000><$FFFE>
 Space Time Loophole<$FFFF>
 <$F600><$0000>!<$FFFC>Where are we!?<$FFFE>
 Huh, me?<$FFFE>

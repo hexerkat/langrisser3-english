@@ -23,8 +23,8 @@ Sir Gerold<$FFFF>
 <$0000><$FFFC>　　　ＳＣＥＮＡＲＩＯ‐０２<$FFFC><$0000><$0000><$0000><$0000>Madness in Laffel<$0000><$0000><$0000><$0000><$FFFE>
 Altemüller's scheme brought the<$FFFC>Floating Castle crashing down.<$FFFC>The young knight and his party<$FFFC>barely escaped, and made their<$FFFC>way to the city of Laffel.<$FFFE>
 If they could win the aid of<$FFFC>their ally, Barral Kingdom,<$FFFC>they might still stand against<$FFFC>the Empire. But the war had<$FFFC>already reached Laffel too.<$FFFE>
-*Victory Conditions<$FFFC>•Destroy all enemies.<$FFFC>•Layla and Tiaris must reach <$FFFC><$0000>the south edge with <$FFFC> <$F600><$0000>.<$FFFE>
-*Defeat Conditions<$FFFC>•Death of <$F600><$0000>.<$FFFC>•Death of Layla.<$FFFE>
+*Victory Conditions<$FFFC><$0000>・Destroy all enemies.<$FFFC><$0000>・Layla and Tiaris must reach <$FFFC><$0000><$0000>the south edge with <$FFFC><$0000><$0000><$F600><$0000>.<$FFFE>
+*Defeat Conditions<$FFFC><$0000>・Death of <$F600><$0000>.<$FFFC><$0000>・Death of Layla.<$FFFE>
 Church of Laffel<$FFFF>
 Whew…<$FFFC>That should settle it.<$FFFE>
 Your Reverence.<$FFFC>Thank you very much.<$FFFE>

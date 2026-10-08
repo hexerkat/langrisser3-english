@@ -19,8 +19,8 @@ Emerick<$FFFF>
 Ruud<$FFFF>
 Dark Knight<$FFFF>
 Barral Commander<$FFFF>
-•Defeat all enemies<$FFFE>
-•Death of <$F600><$0000><$FFFC>•Destruction of the floodgate<$FFFE>
+<$0000>・Defeat all enemies<$FFFE>
+<$0000>・Death of <$F600><$0000><$FFFC><$0000>・Destruction of the floodgate<$FFFE>
 Riverside Town Nelfas<$FFFF>
 My lord Dark Knight, do<$FFFC>you truly mean to seize<$FFFC>this town?<$FFFE>
 Indeed.<$FFFE>

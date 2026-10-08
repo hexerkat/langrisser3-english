@@ -22,8 +22,8 @@ Imperial Commander<$FFFF>
 Gilbert<$FFFF>
 Rigüler Commander<$FFFF>
 Larcuss Commander<$FFFF>
-•Defeat all foes but Geier<$FFFE>
-•Death of <$F600><$0000><$FFFC>•Death of all NPC<$FFFE>
+<$0000>・Defeat all foes but Geier<$FFFE>
+<$0000>・Death of <$F600><$0000><$FFFC><$0000>・Death of all NPC<$FFFE>
 Mountain Road to Torrand's Manor<$FFFF>
 Everyone, don't stop!<$FFFE>
 I'll hold them off here!<$FFFC>The rest of you, run on!<$FFFE>

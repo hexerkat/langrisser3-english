@@ -26,7 +26,7 @@ Monster<$FFFF>
 <$0000><$FFFC>　　　ＳＣＥＮＡＲＩＯ‐１１<$FFFC><$0000><$0000><$0000><$0000>The Enchantress<$0000><$0000><$0000><$0000><$FFFE>
 Having saved Sophia from the<$FFFC>Shika Tribe's altar, the party<$FFFC>took her in and set out for the<$FFFC>eastern gate.<$FFFE>
 But in the forest they crossed,<$FFFC>many misshapen shadows crept,<$FFFC>shunning all human eyes.<$FFFE>
-*Victory Conditions<$FFFC>•Rescue of NPC<$FFFC>*Defeat Conditions<$FFFC>•Death of <$F600><$0000><$FFFC>•Death of NPC<$FFFE>
+*Victory Conditions<$FFFC><$0000>・Rescue of NPC<$FFFC>*Defeat Conditions<$FFFC><$0000>・Death of <$F600><$0000><$FFFC><$0000>・Death of NPC<$FFFE>
 Geier Fleet vs Dark Knight<$FFFF>
 Hmph. Even with<$FFFC>him here, our edge holds<$FFFC>firm…<$FFFD>This Dark Knight's not<$FFFC>what the rumors said…<$FFFE>
 Reporting, sir!<$FFFD>Several Barral aerial<$FFFC>units are diving down on<$FFFC>us!<$FFFE>

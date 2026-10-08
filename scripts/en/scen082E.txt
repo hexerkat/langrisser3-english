@@ -25,7 +25,7 @@ Rigüler Commander<$FFFF>
 <$0000><$FFFC>　　　ＳＣＥＮＡＲＩＯ‐２１<$FFFC><$0000> The Magnificent capital, <$0000><$FFFC><$0000><$0000><$0000><$0000><$0000> Larcussia <$0000><$0000><$0000><$0000><$0000><$FFFE>
 After rescuing Lord Raymond from<$FFFC>the Imperial airship, the<$FFFC>detached force marched on the<$FFFC>royal capital, Larcussia, in<$FFFC>place of the fallen main army.<$FFFE>
 Unless they retook this place,<$FFFC>they couldn't truly say Larcuss<$FFFC>belonged to them once more. But<$FFFC>Emerick, the Empire's brilliant<$FFFC>tactician, stood in their way.<$FFFE>
-*Victory Conditions<$FFFC>•Destroy all enemies<$FFFC>*Defeat Conditions<$FFFC>•Death of <$F600><$0000><$FFFE>
+*Victory Conditions<$FFFC><$0000>・Destroy all enemies<$FFFC>*Defeat Conditions<$FFFC><$0000>・Death of <$F600><$0000><$FFFE>
 Old Larcussia Castle<$FFFF>
 Your Excellency! They've<$FFFC>seized Lord Raymond<$FFFC>from his escort!<$FFFE>
 What did you say?<$FFFE>

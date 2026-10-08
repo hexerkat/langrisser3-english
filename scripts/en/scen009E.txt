@@ -17,8 +17,8 @@ Altemüller<$FFFF>
 Varna<$FFFF>
 Emerick<$FFFF>
 Shika Tribe Commander<$FFFF>
-•Defeat Do Kahni <$FFFE>
-•Death of <$F600><$0000><$FFFE>
+<$0000>・Defeat Do Kahni <$FFFE>
+<$0000>・Death of <$F600><$0000><$FFFE>
 Southern Lushiris Gate<$FFFF>
 Shika! Shika!<$FFFE>
 Brave Do Kahni! Someone<$FFFC>is coming!<$FFFE>

@@ -78,13 +78,26 @@ class TestD00Parsing(unittest.TestCase):
 
 
 class TestD00RoundTrip(unittest.TestCase):
-    """Test that parse -> rebuild produces identical data."""
+    """Test that parse -> rebuild produces identical data.
+
+    Pinned to the RAW offset-table format: this is the historic byte-fidelity
+    guarantee of the parse/rebuild machinery. The production build ships the
+    Piece-D SCALED format (prog3_d00_offset_scale); its roundtrip is covered
+    by tests/test_prog3_d00_offset_scale.py."""
 
     @classmethod
     def setUpClass(cls):
+        import d00_tools
+        cls._scale_orig = d00_tools._offset_scale_enabled
+        d00_tools._offset_scale_enabled = lambda: False
         cls.d00 = JP_D00.read_bytes()
         cls.sections = parse_d00(cls.d00)
         cls.rebuilt = rebuild_d00(cls.sections)
+
+    @classmethod
+    def tearDownClass(cls):
+        import d00_tools
+        d00_tools._offset_scale_enabled = cls._scale_orig
 
     def test_rebuilt_size_matches(self):
         self.assertEqual(len(self.rebuilt), len(self.d00))

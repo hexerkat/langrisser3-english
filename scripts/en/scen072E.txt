@@ -22,7 +22,7 @@ Princess Freya<$FFFF>
 With many allies won, and the<$FFFC>Decimation Sword now theirs,<$FFFC><$F600><$0000> and his force<$FFFC>had grown strong enough at last<$FFFC>to retake Laffel's capital.<$FFFE>
 But unless the Dark Knight in<$FFFC>Laffel could be drawn away, if<$FFFC>only briefly, their odds were<$FFFC>slim, so they would stage a<$FFFC>diversion to draw him out.<$FFFE>
 To that end, an informer left<$FFFC>in Laffel was essential.<$FFFC><$F600><$0000> went in alone,<$FFFC>trusting a likely contact.<$FFFC>The day of action drew near.<$FFFE>
-*Victory Conditions<$FFFC>•Annihilate all enemies<$FFFC>*Defeat Conditions<$FFFC>•Death of <$F600><$0000><$FFFE>
+*Victory Conditions<$FFFC><$0000>・Annihilate all enemies<$FFFC>*Defeat Conditions<$FFFC><$0000>・Death of <$F600><$0000><$FFFE>
 Laffel, now Barral<$FFFF>
 …He's late.<$FFFD>Could it be…? No. I'll<$FFFC>wait a bit longer.<$FFFE>
 Even though Barral now<$FFFC>holds this town, plenty<$FFFC>of goods are on sale.<$FFFD>…Larcuss is a rich land<$FFFC>after all.<$FFFE>

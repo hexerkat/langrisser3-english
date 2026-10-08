@@ -23,8 +23,8 @@ Marquis William<$FFFF>
 Rigüler Commander<$FFFF>
 General Varna<$FFFF>
 Field Marshal Altemüller<$FFFF>
-•Defeat all enemies <$FFFE>
-•Death of <$F600><$0000>.<$FFFE>
+<$0000>・Defeat all enemies <$FFFE>
+<$0000>・Death of <$F600><$0000>.<$FFFE>
 The Floating Castle<$FFFF>
 Ugh, seriously! Why<$FFFC>does this have to happen<$FFFC>now, of all times?<$FFFE>
 They used the storm.<$FFFC>They hid above the rain<$FFFC>clouds to sneak up on<$FFFC>the castle.<$FFFE>

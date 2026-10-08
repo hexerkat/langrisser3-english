@@ -287,9 +287,14 @@ def test_corpus_profile_distribution(corpus_classifications):
     # defeat condition [27] had lost their `•` bullets (rendering as plain
     # dialogue); restoring the bullets (matching JP `・` + the scen004 pattern)
     # reclassifies both as OBJECTIVE_16X5 (66->68). Corpus total unchanged.
-    assert counts[DIALOGUE_12X4] == 9885, counts
+    # 2026-07-08: -15 (9885->9870) — bullet entries NEVER classify as
+    # dialogue (Ralf: "não existe objetivos em janelas de diálogo"); the 15
+    # mid-battle condition updates moved to OBJECTIVE_16X5 (68->83), and the
+    # label split rebalanced (character 2722->2751, location 225->196; the
+    # 2947 total is asserted above).
+    assert counts[DIALOGUE_12X4] == 9870, counts
     assert counts[NARRATION_16X5] == 210, counts
-    assert counts[OBJECTIVE_16X5] == 68, counts
+    assert counts[OBJECTIVE_16X5] == 83, counts
     # Each scen has at most one location label per cutscene transition,
     # so location count must be a small fraction of character count.
     assert label_locs > 0, 'expected some LOCATION labels'

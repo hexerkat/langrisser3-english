@@ -26,7 +26,7 @@ Necromancer Grove<$FFFF>
 Feraquea<$FFFF>
 Worm Master Rag<$FFFF>
 That's a secret!<$FFFE>
-•No PC may die<$FFFE>
+<$0000>・No PC may die<$FFFE>
 Castle of Ordeal<$FFFF>
 This must be the place<$FFFC>we were told to gather.<$FFFE>
 I've been waiting for<$FFFC>you, <$F600><$0000>!<$FFFC>Welcome to the Castle of<$FFFC>Ordeal.<$FFFD>Here you will be given<$FFFC>the chance to show how<$FFFC>powerful you truly are.<$FFFE>

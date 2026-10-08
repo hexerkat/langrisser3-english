@@ -27,8 +27,8 @@ Wilder<$FFFF>
 Dark Knight<$FFFF>
 Gerold<$FFFF>
 Elthlead Forces<$FFFF>
-•Defeat Wilder<$FFFE>
-•Death of <$F600><$0000><$FFFE>
+<$0000>・Defeat Wilder<$FFFE>
+<$0000>・Death of <$F600><$0000><$FFFE>
 Barral Royal Castle<$FFFF>
 Your majesty! Elthlead<$FFFC>troops have crossed into<$FFFC>our lands!<$FFFE>
 What happened to Freya?<$FFFE>

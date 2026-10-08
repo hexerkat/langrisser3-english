@@ -22,7 +22,7 @@ General Geier<$FFFF>
 <$0000><$FFFC>　　　ＳＣＥＮＡＲＩＯ‐２６<$FFFC><$0000><$0000><$0000><$0000><$0000> Suspicion <$0000><$0000><$0000><$0000><$0000><$FFFE>
 A survivor of Larcuss's<$FFFC>royal line claims the throne?<$FFFC>Weren't the royals executed by<$FFFC>the Imperial Army? What is going<$FFFC>on…?<$FFFE>
 Amid mounting suspicion, the<$FFFC>mobile division rushed straight<$FFFC>to the capital. Yet a foreboding<$FFFC>of unrest weighed on every<$FFFC>heart.<$FFFE>
-*Victory Conditions<$FFFC>•Defeat the royal<$FFFC>claimant Richard<$FFFC>*Defeat Conditions<$FFFC>•Death of <$F600><$0000><$FFFE>
+*Victory Conditions<$FFFC><$0000>・Defeat the royal<$FFFC><$0000><$0000>claimant Richard<$FFFC>*Defeat Conditions<$FFFC><$0000>・Death of <$F600><$0000><$FFFE>
 Imperial HQ, Early Morning<$FFFF>
 Y-your excellency,<$FFFC>Altemüller…<$FFFE>
 Who in the world did<$FFFC>this to His Excellency!<$FFFE>

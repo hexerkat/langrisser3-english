@@ -19,4 +19,4 @@ Emerick<$FFFF>
 <$0000><$FFFC>　　　ＳＣＥＮＡＲＩＯ‐０９<$FFFC><$0000><$0000><$0000><$0000> Shaman Attack <$0000><$0000><$0000><$0000><$FFFE>
 Sophia, keeper of the southern<$FFFC>gate, had been abducted by the<$FFFC>Shika tribe. Worse, they meant<$FFFC>to use her as a sacrifice in a<$FFFC>ritual.<$FFFE>
 At this rate they could not<$FFFC>restore the gate, and her life<$FFFC>was at risk. The party pressed<$FFFC>into the lonely mountains toward<$FFFC>the Shika base.<$FFFE>
-*Victory Conditions<$FFFC>•Defeat all enemies<$FFFC>*Defeat Conditions<$FFFC>•Death of <$F600><$0000><$FFFE><$FFFF>
+*Victory Conditions<$FFFC><$0000>・Defeat all enemies<$FFFC>*Defeat Conditions<$FFFC><$0000>・Death of <$F600><$0000><$FFFE><$FFFF>

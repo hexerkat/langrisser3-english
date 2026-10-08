@@ -20,8 +20,8 @@ Barral Soldier<$FFFF>
 Ruud<$FFFF>
 Barral Commander<$FFFF>
 Great Sage Fauvel<$FFFF>
-•Defeat all enemies<$FFFE>
-•Death of <$F600><$0000><$FFFC>•Death of Jugler<$FFFE>
+<$0000>・Defeat all enemies<$FFFE>
+<$0000>・Death of <$F600><$0000><$FFFC><$0000>・Death of Jugler<$FFFE>
 Lushiris Western Gate<$FFFF>
 No sign of him outside!<$FFFE>
 So he must be inside.<$FFFC>Once we enter, split up<$FFFC>and find the Holy Beast!<$FFFE>

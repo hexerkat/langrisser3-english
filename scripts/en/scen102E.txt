@@ -22,7 +22,7 @@ Velzerian Commander<$FFFF>
 The Dark Knight's true face was<$FFFC>none other than Gerold. This<$FFFC>truth throws <$F600><$0000>'s<$FFFC>heart into turmoil.<$FFFE>
 What's more, a magical force<$FFFC>could be felt from his body.<$FFFC>Could it be Velzeria? If so, is<$FFFC>that the cause of King Wilder's<$FFFC>madness…?<$FFFE>
 To uncover the truth,<$FFFC>the division makes its way<$FFFC>to the Kingdom of Barral.<$FFFE>
-*Victory Conditions<$FFFC>•Defeat or persuade Freya<$FFFC>*Defeat Conditions<$FFFC>•Death of <$F600><$0000><$FFFE>
+*Victory Conditions<$FFFC><$0000>・Defeat or persuade Freya<$FFFC>*Defeat Conditions<$FFFC><$0000>・Death of <$F600><$0000><$FFFE>
 Sky Fortress over Rigüler<$FFFF>
 We have nowhere<$FFFC>to retreat… Stop them<$FFFC>here!<$FFFE>
 GYAAA…!<$FFFE>

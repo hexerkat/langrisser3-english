@@ -22,7 +22,7 @@ Rag<$FFFF>
 Moved by <$F600><$0000>'s<$FFFC>heartfelt words, Princess Freya<$FFFC>came to trust him, and so she<$FFFC>joined the quest to break King<$FFFC>Wilder's madness.<$FFFE>
 Yet <$F600><$0000>'s pleas<$FFFC>were in vain. Torn between her<$FFFC>father and her friends, Princess<$FFFC>Freya took her own life.<$FFFE>
 At last <$F600><$0000> and<$FFFC>his companions reached Barral<$FFFC>Castle. What could truly lie<$FFFC>behind King Wilder's descent<$FFFC>into madness…?<$FFFE>
-*Victory Conditions<$FFFC>•Defeat Wilder<$FFFC>*Defeat Conditions<$FFFC>•Death of <$F600><$0000><$FFFE>
+*Victory Conditions<$FFFC><$0000>・Defeat Wilder<$FFFC>*Defeat Conditions<$FFFC><$0000>・Death of <$F600><$0000><$FFFE>
 Varna's Grave<$FFFF>
 …Varna. Your death is<$FFFC>avenged. My father's,<$FFFC>too.<$FFFD>The Rigüler Empire and<$FFFC>Velzeria are mine now.<$FFFC>And yet…<$FFFE>
 Every fight makes this<$FFFC>blade stronger still…<$FFFE>

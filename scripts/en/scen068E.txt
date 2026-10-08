@@ -87,4 +87,4 @@ Very well. Lead the way<$FFFC>for us, then!<$FFFE>
 <$F600><$0000> and the others<$FFFC>restored the four gates to<$FFFC>their proper power. Then,<$FFFC>in a blaze of dazzling light,<$FFFC>Lushiris Gate woke once more.<$FFFE>
 Many monsters could no longer<$FFFC>interfere, but the high demons<$FFFC>could not be stopped. So the<$FFFC>detachment was sent to seek<$FFFC>the Decimation Sword.<$FFFE>
 With their orders, the party<$FFFC>hurried on and spotted General<$FFFC>Dios fleeing the Barral army.<$FFFE>
-*Victory Conditions<$FFFC> •Defeat Freya<$FFFC>*Defeat Conditions<$FFFC> •Death of <$F600><$0000><$FFFC> •Death of Dios<$FFFE><$FFFF>
+*Victory Conditions<$FFFC><$0000>・Defeat Freya<$FFFC>*Defeat Conditions<$FFFC><$0000>・Death of <$F600><$0000><$FFFC><$0000>・Death of Dios<$FFFE><$FFFF>

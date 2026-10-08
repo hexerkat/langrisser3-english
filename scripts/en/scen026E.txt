@@ -21,8 +21,8 @@ Worm Master Rag<$FFFF>
 Monster<$FFFF>
 Rag<$FFFF>
 Velzerian Commander<$FFFF>
-•Destroy all enemies<$FFFE>
-•Death of <$F600><$0000><$FFFC>•Death of Olver<$FFFE>
+<$0000>・Destroy all enemies<$FFFE>
+<$0000>・Death of <$F600><$0000><$FFFC><$0000>・Death of Olver<$FFFE>
 Olver's Residence<$FFFF>
 Wh-who are you?!<$FFFE>
 Heh heh heh! By order<$FFFC>of Lord Böser, ruler of<$FFFC>all Velzeria, we have<$FFFC>come to claim your life.<$FFFE>

@@ -20,8 +20,8 @@ Kah Shind<$FFFF>
 General Emerick<$FFFF>
 Shika Tribe<$FFFF>
 Rigüler Commander<$FFFF>
-•Defeat all enemies<$FFFE>
-•Death of <$F600><$0000><$FFFE>
+<$0000>・Defeat all enemies<$FFFE>
+<$0000>・Death of <$F600><$0000><$FFFE>
 Forest of the Shika Tribe<$FFFF>
 Do be careful. This is<$FFFC>Shika territory.<$FFFE>
 Hm? Something just moved<$FFFC>over there!<$FFFE>

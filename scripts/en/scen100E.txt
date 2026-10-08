@@ -22,7 +22,7 @@ Field Marshal Geier<$FFFF>
 Böser was defeated and the demon<$FFFC>sword sealed for a time. But<$FFFC>Altemüller, enraged by Varna's<$FFFC>death, made off with Alhazard.<$FFFE>
 The party moved to pursue at<$FFFC>once, but word came that the<$FFFC>Barral army had resumed its<$FFFC>advance and was raiding a border<$FFFC>town.<$FFFE>
 <$F600><$0000> and the others<$FFFC>put the citizens' lives first<$FFFC>and headed for Nelfas, a<$FFFC>riverside town, to drive off the<$FFFC>Barral army.<$FFFE>
-*Victory Conditions<$FFFC>•Defeat all enemies<$FFFC>*Defeat Conditions<$FFFC>•Death of <$F600><$0000><$FFFC>•Destruction of the Floodgate<$FFFE>
+*Victory Conditions<$FFFC><$0000>・Defeat all enemies<$FFFC>*Defeat Conditions<$FFFC><$0000>・Death of <$F600><$0000><$FFFC><$0000>・Destruction of the Floodgate<$FFFE>
 Rigüler Castle, Audience Hall<$FFFF>
 What!? Is this really<$FFFC>true!?<$FFFE>
 It's true. I thought it<$FFFC>odd and searched with a<$FFFC>small detachment…<$FFFD>But at the last moment,<$FFFC>I failed to finish him.<$FFFE>

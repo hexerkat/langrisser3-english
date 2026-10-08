@@ -22,7 +22,7 @@ Feraquea<$FFFF>
 Feraquea's scheme to pose as<$FFFC>royalty and throw Elthlead into<$FFFC>chaos was seen through with ease<$FFFC>by Langrisser.<$FFFE>
 <$F600><$0000> and his allies<$FFFC>seized this chance to strike<$FFFC>down Böser, lord of demons,<$FFFC>and set out for Velzeria.<$FFFE>
 But in the marshland along<$FFFC>the road ahead, the shifting<$FFFC>Feraquea lay in wait to<$FFFC>redeem her tarnished name.<$FFFE>
-*Victory Conditions<$FFFC>•Defeat of Feraquea<$FFFC>*Defeat Conditions<$FFFC>•Death of <$F600><$0000><$FFFE>
+*Victory Conditions<$FFFC><$0000>・Defeat of Feraquea<$FFFC>*Defeat Conditions<$FFFC><$0000>・Death of <$F600><$0000><$FFFE>
 Fort Hakusan, 15 Years Ago<$FFFF>
 Grr!<$FFFE>
 Opposition is futile!<$FFFE>

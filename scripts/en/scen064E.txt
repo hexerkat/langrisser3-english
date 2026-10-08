@@ -29,8 +29,8 @@ Barral Commander<$FFFF>
 <$0000><$FFFC>　　　ＳＣＥＮＡＲＩＯ‐１２<$FFFC><$0000><$0000><$0000><$0000><$0000>Sage Fauvel<$0000><$0000><$0000><$0000><$0000><$FFFE>
 Having defeated Velzeria's<$FFFC>Demon General Feraquea, the<$FFFC>party pressed on toward the<$FFFC>eastern gate, ruled by Sage<$FFFC>Fauvel.<$FFFE>
 And what the party found at the<$FFFC>eastern gate was an Imperial<$FFFC>force, poised to launch its<$FFFC>attack.<$FFFE>
-*Victory Conditions<$FFFC>•Destroy all enemies<$FFFC>in 14 turns<$FFFE>
-*Defeat Conditions<$FFFC>•Death of <$F600><$0000><$FFFC>•Death of Fauvel<$FFFC>•Time up<$FFFE>
+*Victory Conditions<$FFFC><$0000>・Destroy all enemies<$FFFC><$0000><$0000>in 14 turns<$FFFE>
+*Defeat Conditions<$FFFC><$0000>・Death of <$F600><$0000><$FFFC><$0000>・Death of Fauvel<$FFFC><$0000>・Time up<$FFFE>
 Plains Near the North Gate<$FFFF>
 Out of my way! Only<$FFFC>those ready to die, come<$FFFC>at me!<$FFFE>
 That's General Bortz?!<$FFFC>Don't let him escape!<$FFFC>Their main force is<$FFFC>coming!<$FFFE>

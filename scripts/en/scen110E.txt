@@ -110,4 +110,4 @@ All right! Let's march<$FFFC>on Velzeria Castle!<$FFFE>
 <$0000><$FFFC>　　　ＳＣＥＮＡＲＩＯ‐３５<$FFFC><$0000><$0000><$0000><$0000> The True Enemy <$0000><$0000><$0000><$0000><$FFFE>
 Paul, now Böser by the chaos<$FFFC>god Chaos, had Demon General<$FFFC>Geier abduct the beloved of<$FFFC><$F600><$0000> as a sacrifice<$FFFC>for Chaos's revival rite.<$FFFE>
 Now, with Altemüller and Varna's<$FFFC>aid, the party sets out for<$FFFC>Velzeria and a new battle, to<$FFFC>rescue her and to thwart the<$FFFC>revival of Chaos, the dark god…<$FFFE>
-*Victory Conditions<$FFFC>•Defeat of Demon General Geier<$FFFC>*Defeat Conditions<$FFFC>•Death of <$F600><$0000><$FFFE><$FFFF>
+*Victory Conditions<$FFFC><$0000>・Defeat of Demon<$FFFC><$0000><$0000>General Geier<$FFFC>*Defeat Conditions<$FFFC><$0000>・Death of <$F600><$0000><$FFFE><$FFFF>

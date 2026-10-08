@@ -21,4 +21,4 @@ Long ago, the Lushiris Gate was<$FFFC>built to hold back the monsters.<$FFFC>On 
 But now that war has begun,<$FFFC>the Gate has fallen silent…<$FFFC>the barrier that held back the<$FFFC>monsters has vanished, or so<$FFFC>they say.<$FFFE>
 Against monsters that might<$FFFC>strike at any time, the Lushiris<$FFFC>Gate had to be revived fast. The<$FFFC>party set out to meet Sophia,<$FFFC>the gatekeeper.<$FFFE>
 But there, an unexpected enemy<$FFFC>lay in wait for them.<$FFFE>
-*Victory Conditions<$FFFC>•Defeat of Do Kahni<$FFFC>*Defeat Conditions<$FFFC>•Death of <$F600><$0000><$FFFE><$FFFF>
+*Victory Conditions<$FFFC><$0000>・Defeat of Do Kahni<$FFFC>*Defeat Conditions<$FFFC><$0000>・Death of <$F600><$0000><$FFFE><$FFFF>

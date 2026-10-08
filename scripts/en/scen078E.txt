@@ -22,7 +22,7 @@ Imperial Soldier<$FFFF>
 <$0000><$FFFC>　　　ＳＣＥＮＡＲＩＯ‐１９<$FFFC><$0000><$0000><$0000> A man called Bortz <$0000><$0000><$0000><$FFFE>
 After losing Galshook, General<$FFFC>Bortz rallied his survivors and<$FFFC>fell back to spare them from<$FFFC>annihilation. A decisive call,<$FFFC>very Bortz-like.<$FFFE>
 But for <$F600><$0000> and<$FFFC>the separate force, this was a<$FFFC>chance they could not let slip.<$FFFC>At once they reformed and set<$FFFC>off after Bortz.<$FFFE>
-*Victory Conditions<$FFFC>  •Defeat Bortz<$FFFC>*Defeat Conditions<$FFFC>  •Death of <$F600><$0000><$FFFC>  •Bortz reaches the airship<$FFFE>
+*Victory Conditions<$FFFC><$0000>・Defeat Bortz<$FFFC>*Defeat Conditions<$FFFC><$0000>・Death of <$F600><$0000><$FFFC><$0000>・Bortz reaches the airship<$FFFE>
 Airship Dock<$FFFF>
 …<$FE28>…<$FE0F>…. It'll still take<$FFFC>a while before everyone<$FFFC>gets clear of here.<$FFFE>
 That bunch will be after<$FFFC>us before long. We've<$FFFC>got to buy time somehow.<$FFFE>

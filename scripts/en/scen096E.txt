@@ -21,7 +21,7 @@ Rig uler Commander<$FFFF>
 <$0000><$FFFC>　　　ＳＣＥＮＡＲＩＯ‐２８<$FFFC><$0000><$0000><$0000><$0000>The Demon Cordon<$0000><$0000><$0000><$0000><$FFFE>
 After defeating Feraquea, the<$FFFC>shape-shifting one and one of<$FFFC>the Three Demon Generals,<$FFFC><$F600><$0000> and the others<$FFFC>finally reached Castle Velzeria.<$FFFE>
 But at the castle gate,<$FFFC>Necromancer Grove had spread a<$FFFC>thick defensive web, waiting for<$FFFC>them.<$FFFE>
-*Victory Conditions<$FFFC>•Defeat of Grove<$FFFC>*Defeat Conditions<$FFFC>•Death of <$F600><$0000><$FFFE>
+*Victory Conditions<$FFFC><$0000>・Defeat of Grove<$FFFC>*Defeat Conditions<$FFFC><$0000>・Death of <$F600><$0000><$FFFE>
 Kaiser Paul's Coronation<$FFFF>
 My father, Heinrich<$FFFC>Kleist IV, has passed<$FFFC>after a long illness.<$FFFC>It grieves me deeply.<$FFFE>
 As Kaiser, in my<$FFFC>father's stead, I vow to<$FFFC>protect the Empire and<$FFFC>its people!<$FFFE>

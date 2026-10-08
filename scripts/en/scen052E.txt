@@ -19,8 +19,8 @@ Emerick<$FFFF>
 <$0000><$FFFC>　　　ＳＣＥＮＡＲＩＯ‐０６<$FFFC><$0000><$0000><$0000>Enemies on all Sides<$0000><$0000><$0000><$FFFE>
 With Luna, the baron's daughter,<$FFFC>beside him, <$F600><$0000><$FFFC>made for the Rigüler-Barral<$FFFC>border to carry out Torrand's<$FFFC>clever plan.<$FFFE>
 Here they meant to make the two<$FFFC>nations fight each other, draw<$FFFC>attention away from themselves<$FFFC>if only a little, and buy as<$FFFC>much time as they could.<$FFFE>
-*Victory Conditions<$FFFC>•Defeat all enemies<$FFFC>•Lure the Empire and Barral<$FFFC><$0000>into combat, then retreat<$FFFC><$0000>all allies to the far shore<$FFFE>
-*Defeat Conditions<$FFFC>•Death of <$F600><$0000><$FFFE>
+*Victory Conditions<$FFFC><$0000>・Defeat all enemies<$FFFC><$0000>・Lure the Empire and Barral<$FFFC><$0000><$0000>into combat, then retreat<$FFFC><$0000><$0000>all allies to the far shore<$FFFE>
+*Defeat Conditions<$FFFC><$0000>・Death of <$F600><$0000><$FFFE>
 Rigüler-Barral Border<$FFFF>
 <$F600><$0000>, sir.<$FFFB><$FFFC>The enemy front-line<$FFFC>base is just ahead.<$FFFE>
 Understood.<$FFFD>Let's execute the first<$FFFC>part of the Baron's<$FFFC>plan.<$FFFD>That will buy us enough<$FFFC>time to sneak past and<$FFFC>visit Archmage Jessica<$FFFC>at the Lushiris Gate.<$FFFE>

@@ -23,8 +23,8 @@ Waitress<$FFFF>
 General Geier<$FFFF>
 Field Marshal Altemüller<$FFFF>
 Monster<$FFFF>
-•It's a secret<$FFFE>
-•Death of any PC<$FFFC>•No order within 20 turns<$FFFE>
+<$0000>・It's a secret<$FFFE>
+<$0000>・Death of any PC<$FFFC><$0000>・No order within 20 turns<$FFFE>
 Gyudon Restaurant<$FFFF>
 Welcome!<$FFFE>
 Phew… I'm pretty worn<$FFFC>out.<$FFFE>

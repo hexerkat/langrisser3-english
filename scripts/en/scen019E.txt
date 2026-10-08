@@ -19,8 +19,8 @@ Emerick<$FFFF>
 General Bortz<$FFFF>
 Rigüler Commander<$FFFF>
 Arcane Giant Galshook<$FFFF>
-•Defeat General Bortz and<$FFFC>  Arcane Giant Galshook<$FFFE>
-•Death of <$F600><$0000><$FFFE>
+<$0000>・Defeat General Bortz and<$FFFC><$0000><$0000>Arcane Giant Galshook<$FFFE>
+<$0000>・Death of <$F600><$0000><$FFFE>
 Larcussia Imperial Base<$FFFF>
 The enemy's in sight,<$FFFC>Sir <$F600><$0000>.<$FFFE>
 Wow, that thing is huge!<$FFFE>

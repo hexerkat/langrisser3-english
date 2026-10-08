@@ -25,8 +25,8 @@ Rigüler Commander<$FFFF>
 Barral General<$FFFF>
 Gilbert<$FFFF>
 Barral Commander<$FFFF>
-•Wipe out all enemy forces<$FFFC>•Drive the Empire and Barral<$FFFC>  to war, then retreat all<$FFFC>  allies to the far shore<$FFFE>
-•Death of <$F600><$0000><$FFFE>
+<$0000>・Wipe out all enemy forces<$FFFC><$0000>・Drive the Empire and Barral<$FFFC><$0000><$0000>to war, then retreat all<$FFFC><$0000><$0000>allies to the far shore<$FFFE>
+<$0000>・Death of <$F600><$0000><$FFFE>
 Barral-Rigüler Border<$FFFF>
 We strike the Empire and<$FFFC>Barral at the same time.<$FFFE>
 Our aim is to lure both<$FFFC>armies out and make them<$FFFC>cross swords.<$FFFE>

@@ -19,8 +19,8 @@ Emerick<$FFFF>
 Demon<$FFFF>
 Velzerian Commander<$FFFF>
 Do Kahni<$FFFF>
-•Defeat Altemüller<$FFFE>
-•Death of <$F600><$0000><$FFFE>
+<$0000>・Defeat Altemüller<$FFFE>
+<$0000>・Death of <$F600><$0000><$FFFE>
 Rigüler Castle<$FFFF>
 It's too quiet…<$FFFE>
 Don't be deceived now.<$FFFC>The demons' aura<$FFFC>surrounds us.<$FFFE>

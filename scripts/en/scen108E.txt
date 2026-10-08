@@ -21,7 +21,7 @@ Do Kahni<$FFFF>
 <$0000><$FFFC>　　　ＳＣＥＮＡＲＩＯ‐３４<$FFFC><$0000><$0000><$0000>The Shape of a Heart<$0000><$0000><$0000><$FFFE>
 Once chosen by the Demon Sword<$FFFC>Alhazard, Altemüller became<$FFFC>lord of the demons. From<$FFFC>the Rigüler throne he awaited<$FFFC>the young knight and his band.<$FFFE>
 At last, to defeat Altemüller,<$FFFC>who had become Böser, the party<$FFFC>set out for the Rigüler Imperial<$FFFC>Castle, bearing the Holy Sword<$FFFC>Langrisser.<$FFFE>
-*Victory Conditions<$FFFC>•Defeat Altemüller<$FFFC>*Defeat Conditions<$FFFC>•Death of <$F600><$0000><$FFFE>
+*Victory Conditions<$FFFC><$0000>・Defeat Altemüller<$FFFC>*Defeat Conditions<$FFFC><$0000>・Death of <$F600><$0000><$FFFE>
 Rigüler Royal Castle<$FFFF>
 …Hmm?<$FFFE>
 What is it, Lord Böser?<$FFFE>

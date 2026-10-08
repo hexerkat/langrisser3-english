@@ -20,8 +20,8 @@ Barral Soldier<$FFFF>
 Princess Freya<$FFFF>
 Barral Commander<$FFFF>
 Jugler<$FFFF>
-•Defeat Freya<$FFFE>
-•Death of <$F600><$0000><$FFFC>Death of Dios<$FFFE>
+<$0000>・Defeat Freya<$FFFE>
+<$0000>・Death of <$F600><$0000><$FFFC><$0000><$0000>Death of Dios<$FFFE>
 The Road leading to Estool Ruins<$FFFF>
 General Dios! Please,<$FFFC>wait!<$FFFE>
 Dang! They've caught up<$FFFC>with me already?<$FFFE>

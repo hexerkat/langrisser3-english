@@ -22,7 +22,7 @@ Layla<$FFFF>
 The plan to spark war between<$FFFC>the Rigüler and Barral armies<$FFFC>had succeeded. This would buy<$FFFC>the party a little time.<$FFFE>
 Pressing on toward the Lushiris<$FFFC>Gate, their first destination,<$FFFC><$F600><$0000> and his troops<$FFFC>passed through the Railym hills.<$FFFE>
 There, a reunion both nostalgic<$FFFC>and sorrowful awaited him.<$FFFE>
-*Victory Conditions<$FFFC>•Defeat of Freya<$FFFC>*Defeat Conditions<$FFFC>•Death of <$F600><$0000><$FFFE>
+*Victory Conditions<$FFFC><$0000>・Defeat of Freya<$FFFC>*Defeat Conditions<$FFFC><$0000>・Death of <$F600><$0000><$FFFE>
 Central Gate Rd.<$FFFF>
 Lord Raymond's messenger<$FFFC>has arrived.<$FFFE>
 I see, send him in.<$FFFE>

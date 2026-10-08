@@ -27,7 +27,7 @@ Healer<$FFFF>
 <$0000><$FFFC>　　　ＳＣＥＮＡＲＩＯ‐２３<$FFFC><$0000><$0000>The Necromancer, Again <$0000><$0000><$FFFE>
 Velzeria has made its move at<$FFFC>last, swift and elusive. Now a<$FFFC>village on Elthlead's border<$FFFC>lies under attack by monsters<$FFFC>led by Grove.<$FFFE>
 The young knight and his party<$FFFC>pushed through their fatigue and<$FFFC>set out for the border village<$FFFC>to save the villagers.<$FFFE>
-*Victory Conditions<$FFFC>•Defeat all enemies<$FFFC>*Defeat Conditions<$FFFC>•Death of <$F600><$0000><$FFFC>•Death of all NPCs<$FFFE>
+*Victory Conditions<$FFFC><$0000>・Defeat all enemies<$FFFC>*Defeat Conditions<$FFFC><$0000>・Death of <$F600><$0000><$FFFC><$0000>・Death of all NPCs<$FFFE>
 Elthlead Border Village<$FFFF>
 Monsters cropping up<$FFFC>from nowhere… What's<$FFFC>this world coming to?<$FFFE>
 Lately, they come often.<$FFFD>Our village got off<$FFFC>light, but they say the<$FFFC>next one over was wiped<$FFFC>out.<$FFFE>

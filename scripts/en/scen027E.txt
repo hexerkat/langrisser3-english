@@ -20,8 +20,8 @@ Prince Richard<$FFFF>
 Feraquea<$FFFF>
 Monster<$FFFF>
 Velzerian Commander<$FFFF>
-*Victory Conditions<$FFFC>•Defeat Richard<$FFFE>
-*Defeat Conditions<$FFFC>•Death of <$F600><$0000><$FFFE>
+*Victory Conditions<$FFFC><$0000>・Defeat Richard<$FFFE>
+*Defeat Conditions<$FFFC><$0000>・Death of <$F600><$0000><$FFFE>
 Richard's Residence<$FFFF>
 I am Lewin, prince of<$FFFC>the Kingdom of Elthlead.<$FFFC>I come as the envoy of<$FFFC>King Sieghart.<$FFFE>
 So you have returned,<$FFFC>you usurpers. You dared<$FFFC>to do as you pleased<$FFFC>while I was cast aside.<$FFFE>

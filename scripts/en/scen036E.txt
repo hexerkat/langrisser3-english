@@ -21,8 +21,8 @@ Gilbert<$FFFF>
 Demon<$FFFF>
 Commander Geier<$FFFF>
 Geier<$FFFF>
-•Defeat Demon General Geier<$FFFE>
-•Death of <$F600><$0000><$FFFE>
+<$0000>・Defeat Demon General Geier<$FFFE>
+<$0000>・Death of <$F600><$0000><$FFFE>
 Velzerian Castle<$FFFF>
 Hurry! It's deeper in<$FFFC>than this!<$FFFE>
 Velzeria, demon land…<$FFFE>

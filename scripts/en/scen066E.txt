@@ -23,7 +23,7 @@ Priest<$FFFF>
 <$0000><$FFFC>　　　ＳＣＥＮＡＲＩＯ‐１３<$FFFC><$0000><$0000><$0000>To Hunt a Holy Beast<$0000><$0000><$0000><$FFFE>
 Sage Fauvel, Sophia's father<$FFFC>and east gatekeeper, joined<$FFFC>them. <$F600><$0000>'s force<$FFFC>made for the west gate as<$FFFC>Raymond strove for the north.<$FFFE>
 The warden of this gate is no<$FFFC>human. But by the time the party<$FFFC>reached it, Ruud and the Barral<$FFFC>army had already laid siege on<$FFFC>the Dark Knight's orders.<$FFFE>
-*Victory Conditions<$FFFC>  •Defeat all enemies<$FFFC>*Defeat Conditions<$FFFC>  •Death of <$F600><$0000><$FFFC>  •Death of Jugler<$FFFE>
+*Victory Conditions<$FFFC><$0000>・Defeat all enemies<$FFFC>*Defeat Conditions<$FFFC><$0000>・Death of <$F600><$0000><$FFFC><$0000>・Death of Jugler<$FFFE>
 Laffel, Barral Territory<$FFFF>
 Lord Geier! After Ship<$FFFC>4, ships 6 and 7 are<$FFFC>down too! If this keeps<$FFFC>up…<$FFFE>
 Grrrghhh…<$FFFC>…re<$FE0F>…treat<$FE0F>…<$FFFE>

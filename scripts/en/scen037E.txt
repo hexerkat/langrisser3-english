@@ -20,8 +20,8 @@ True Böser<$FFFF>
 Chaos<$FFFF>
 Monster<$FFFF>
 Velzerian Commander<$FFFF>
-•Defeat Paul<$FFFC>　within 17 turns<$FFFE>
-•Death of <$F600><$0000><$FFFC>•Death of the hostage<$FFFE>
+<$0000>・Defeat Paul<$FFFC><$0000><$0000>within 17 turns<$FFFE>
+<$0000>・Death of <$F600><$0000><$FFFC><$0000>・Death of the hostage<$FFFE>
 Velzerian Castle, Underground<$FFFF>
 Where are you hiding,<$FFFC>Paul? I've come to take<$FFFC>her back from you!<$FFFE>
 Hmph! You came quickly.<$FFFC>Geier proved useless,<$FFFC>that good-for-nothing.<$FFFE>
@@ -57,8 +57,8 @@ I, I…<$FFFE>
 I let Chaos come back,<$FFFC>after all…<$FFFE>
 Böser… Chaos… If it<$FFFC>weren't for you two, she<$FFFC>would still live…!<$FFFE>
 I'll never forgive any<$FFFC>of you for this! Never!<$FFFE>
-•Defeat Paul and Chaos<$FFFE>
-•Death of<$FFFC><$F600><$0000><$FFFE>
+<$0000>・Defeat Paul and Chaos<$FFFE>
+<$0000>・Death of<$FFFC><$0000><$0000><$F600><$0000><$FFFE>
 Stall them and buy more<$FFFC>time for Lord Chaos to<$FFFC>rise. Do not fail me!<$FFFE>
 KISYAAA!<$FFFE>
 Lord Chaos's revival is<$FFFC>still a good while off…<$FFFD>It seems I have little<$FFFC>choice but to hasten it.<$FFFE>

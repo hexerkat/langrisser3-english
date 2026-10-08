@@ -18,8 +18,8 @@ Varna<$FFFF>
 Emerick<$FFFF>
 Barral Commander<$FFFF>
 Princess Freya<$FFFF>
-•Defeat Freya<$FFFE>
-•Death of <$F600><$0000><$FFFE>
+<$0000>・Defeat Freya<$FFFE>
+<$0000>・Death of <$F600><$0000><$FFFE>
 Railym Pass, now Barral<$FFFF>
 Once we are through, the<$FFFC>southern Lushiris Gate<$FFFC>is just ahead now.<$FFFE>
 Please wait! There are<$FFFC>troops stationed in this<$FFFC>town!<$FFFE>

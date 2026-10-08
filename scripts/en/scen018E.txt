@@ -19,8 +19,8 @@ Emerick<$FFFF>
 Princess Freya<$FFFF>
 Barral Soldier<$FFFF>
 Barral Commander<$FFFF>
-•Defeat Freya<$FFFE>
-•Death of <$F600><$0000><$FFFE>
+<$0000>・Defeat Freya<$FFFE>
+<$0000>・Death of <$F600><$0000><$FFFE>
 Laffel, now Barral<$FFFF>
 Phew… It's much calmer<$FFFC>without the Dark Knight<$FFFC>around.<$FFFE>
 What fools they were,<$FFFC>charging at Fort Rogier<$FFFC>like that.<$FFFE>

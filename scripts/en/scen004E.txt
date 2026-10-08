@@ -21,8 +21,8 @@ Gilbert<$FFFF>
 Necromancer Grove<$FFFF>
 Coty<$FFFF>
 Monster<$FFFF>
-•Defeat the Necromancer Grove<$FFFE>
-•Death of <$F600><$0000><$FFFC>•Death of all Villagers<$FFFE>
+<$0000>・Defeat the Necromancer Grove<$FFFE>
+<$0000>・Death of <$F600><$0000><$FFFC><$0000>・Death of all Villagers<$FFFE>
 Ransch Village<$FFFF>
 I'm so sorry… I made<$FFFC>you come all this way,<$FFFC>and all for nothing…<$FFFE>
 That's just how it<$FFFC>goes, friend. Don't<$FFFC>worry about it.<$FFFE>

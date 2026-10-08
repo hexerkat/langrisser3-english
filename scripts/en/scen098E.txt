@@ -20,7 +20,7 @@ King Sieghart<$FFFF>
 <$0000><$FFFC>　　　ＳＣＥＮＡＲＩＯ‐２９<$FFFC>Böser, Master of the Demon Blade<$FFFE>
 Deep within Velzeria Castle,<$FFFC>in its deepest hall, Böser lay<$FFFC>in wait for his prey to come.<$FFFC>'The human Lushiris chose… how<$FFFC>strong is he? I await this…'<$FFFE>
 Now, the battle for humankind<$FFFC>was about to begin…<$FFFE>
-*Victory Conditions<$FFFC>•Defeat of Böser<$FFFC>*Defeat Conditions<$FFFC>•Death of <$F600><$0000><$FFFC>•Death of Varna's sister, Anna<$FFFE>
+*Victory Conditions<$FFFC><$0000>・Defeat of Böser<$FFFC>*Defeat Conditions<$FFFC><$0000>・Death of <$F600><$0000><$FFFC><$0000>・Death of Varna's sister Anna<$FFFE>
 Velzeria Castle Gate<$FFFF>
 So Böser is ahead…<$FFFE>
 At last, the time has<$FFFC>come to face the master<$FFFC>of evil.<$FFFE>

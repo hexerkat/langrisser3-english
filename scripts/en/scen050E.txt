@@ -19,5 +19,5 @@ Emerick<$FFFF>
 <$0000><$FFFC>　　　ＳＣＥＮＡＲＩＯ‐０５<$FFFC><$0000><$0000>Brilliant General Emerick<$0000><$FFFE>
 Field Marshal Altemüller,<$FFFC>informed by Geier, sent Emerick<$FFFC>to Torrand's manor to strike<$FFFC>before <$F600><$0000>'s party<$FFFC>arrived.<$FFFE>
 But led by the baron's daughter<$FFFC>Luna, <$F600><$0000>'s party<$FFFC>reached the manor sooner than<$FFFC>expected, in time to see the<$FFFC>baron fighting Emerick.<$FFFE>
-*Victory Conditions<$FFFC>•Defeat Emerick<$FFFC>•Destroy all intercept troops<$FFFC>•PC reaches the mansion<$FFFE>
-*Defeat Conditions<$FFFC>•Death of <$F600><$0000><$FFFC>•Death of Torrand<$FFFE><$FFFF>
+*Victory Conditions<$FFFC><$0000>・Defeat Emerick<$FFFC><$0000>・Destroy all intercept troops<$FFFC><$0000>・PC reaches the mansion<$FFFE>
+*Defeat Conditions<$FFFC><$0000>・Death of <$F600><$0000><$FFFC><$0000>・Death of Torrand<$FFFE><$FFFF>
