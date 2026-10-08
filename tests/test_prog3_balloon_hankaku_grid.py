@@ -22,14 +22,37 @@ Three coordinated changes, all in-place over the JP LANG/PROG_3.BIN:
     VDP1 VRAM footprint is unchanged (0x65500+ is occupied; growth would clash).
 
 The 4 per-cell grid buffers (slot/X/Y/flag, 1 B/cell) grow from 0xB0 to 0x200
-(2 windows x 0x100) and are relocated to free LWRAM 0x002A6000..0x002A6800
-(free block 0x002A57C8+0x2483B confirmed zero in a dialogue-state Ymir dump).
-The 11 pool literals referencing them are repointed; the row cursor, scalars
-and the 0x20-byte VDP1 command template do not scale and stay in place.
+(2 windows x 0x100) and are relocated to the PROG_3 BSS tail in HWRAM,
+0x06088800..0x06089000 (right below PROG_4; zero in the jp/0.7/ours BUSY
+scen005 dumps; no code literal in any game binary points into it). The 11
+pool literals referencing them are repointed; the row cursor, scalars and the
+0x20-byte VDP1 command template do not scale and stay in place.
 
-Red state: before tools/prog3_balloon_hankaku_grid.py is wired, the build
-carries the JP grid (17 cols, 16px textures, HWRAM buffers) and hankaku prose
-past column 17 never renders.
+    2026-07-08 CORRECTION (Citizen-portrait bug): the first LWRAM home
+    (0x002A6000, "free block 0x002A57C8+0x2483B") was chosen from a QUIET
+    dialogue-state dump. The busy scen005 dumps show the JP engine fills
+    0x2A57C8-0x2AFA43 with battle data — the buffers sat inside a live
+    engine arena and mutually corrupted it. Same-family lesson: a region is
+    free only if it is free in a BUSY state.
+
+STAGING DISCIPLINE (the Citizen-portrait fix). The rasterizer stages each
+glyph at *0x0604F8A0 (= 0x0600A000, the HWRAM ring below A0LANG) + slot*0x40,
+where slot is the monotonic counter 0x060885F8, and the on-chip DMAC copy
+consumes the slot into VDP1 immediately (the copy entry polls CHCR until the
+previous transfer is done). The ring is SHARED: the engine parks portrait
+blink/animation frame sources at ring+0xA68/+0x2100/+0x2520 (PROG_3
+FUN_06079198 reads the same pointer), so our full-hankaku conversion — many
+more cf80 calls per burst than bigram — pushed glyph residue over the frames
+(scen005 barcode + dead blink). Fix: mask the staging offset to 4 rotating
+transient slots, (slot<<6)&0xFF, footprint 0x0600A000..0x0600A100 — inside
+the slice JP's own staging uses (JP reach: slot<<7, observed < +0xA68) and
+far below every frame. 2 in-place words in cf80; safe for ANY scene size by
+construction. VDP1 cell addresses are computed from the grid cell index, not
+from this counter, so texture allocation is untouched.
+
+Red state (2026-07-08): the module still relocates the buffers to LWRAM
+0x002A6000 (inside the battle arena) and leaves the staging offset unmasked
+(nop at 0x0607CFE0, reach 0xAA*0x40 = 0x2A80 — covers the portrait frames).
 """
 import sys
 from pathlib import Path
@@ -84,7 +107,11 @@ CODE_SITES = [
     (0x0607D3A2 - LOAD_BASE, b"\x0C\x17", b"\x67\xC3"),  # flush-draw mul.l r1,r12 -> mov r12,r7
     (0x0607D3A4 - LOAD_BASE, b"\x07\x1A", b"\x47\x18"),  # flush-draw sts macl,r7 -> shll8 r7
     # --- 8px-wide textures: cell step x0x80 -> x0x40 (drop one doubling) ---
-    (0x0607CFE0 - LOAD_BASE, b"\x31\x1C", b"\x00\x09"),  # cf80 staging slot<<7 -> <<6
+    # staging offset = (slot<<6)&0xFF: shll2/shll2/shll2/extu.b over the JP
+    # shll2/shll2/add/shll2 — 4 rotating 0x40 B slots at ring+0..0x100, so the
+    # staging can never reach the portrait frames at ring+0xA68 and beyond.
+    (0x0607CFE0 - LOAD_BASE, b"\x31\x1C", b"\x41\x08"),  # cf80 staging: add r1,r1 -> shll2 r1 (slot<<6)
+    (0x0607CFE2 - LOAD_BASE, b"\x41\x08", b"\x61\x1C"),  # cf80 staging: shll2 r1 -> extu.b r1,r1 (&0xFF)
     (0x0607D000 - LOAD_BASE, b"\x32\x2C", b"\x00\x09"),  # cf80 blit dest cell<<7 -> <<6
     (0x0607D012 - LOAD_BASE, b"\x42\x01", b"\x00\x09"),  # cf80 slot-byte recover >>7 -> >>6
     (0x0607D084 - LOAD_BASE, b"\x00\x80", b"\x00\x40"),  # cf80 glyph copy length (u16 pool)
@@ -94,20 +121,20 @@ CODE_SITES = [
 ]
 
 # (file_offset, jp_u32, new_u32) — the 11 pool literals of the 4 per-cell buffers.
-LWRAM_SLOT, LWRAM_X, LWRAM_Y, LWRAM_FLAG = (
-    0x002A6000, 0x002A6200, 0x002A6400, 0x002A6600)
+HWRAM_SLOT, HWRAM_X, HWRAM_Y, HWRAM_FLAG = (
+    0x06088800, 0x06088A00, 0x06088C00, 0x06088E00)
 POOL_LITERALS = [
-    (0x0607D09C - LOAD_BASE, 0x06088308, LWRAM_SLOT),   # slot @cf80
-    (0x0607D4CC - LOAD_BASE, 0x06088308, LWRAM_SLOT),   # slot @flush
-    (0x0607D0A0 - LOAD_BASE, 0x060883B8, LWRAM_X),      # X @cf80
-    (0x0607D4D0 - LOAD_BASE, 0x060883B8, LWRAM_X),      # X @flush
-    (0x0607CF7C - LOAD_BASE, 0x06088468, LWRAM_Y),      # Y @cf3c (scroll)
-    (0x0607D0A8 - LOAD_BASE, 0x06088468, LWRAM_Y),      # Y @cf80
-    (0x0607D4D8 - LOAD_BASE, 0x06088468, LWRAM_Y),      # Y @flush
-    (0x0607CD40 - LOAD_BASE, 0x06088528, LWRAM_FLAG),   # flag @ccac
-    (0x0607CF38 - LOAD_BASE, 0x06088528, LWRAM_FLAG),   # flag @fnA
-    (0x0607D088 - LOAD_BASE, 0x06088528, LWRAM_FLAG),   # flag @cf80
-    (0x0607D4A4 - LOAD_BASE, 0x06088528, LWRAM_FLAG),   # flag @flush
+    (0x0607D09C - LOAD_BASE, 0x06088308, HWRAM_SLOT),   # slot @cf80
+    (0x0607D4CC - LOAD_BASE, 0x06088308, HWRAM_SLOT),   # slot @flush
+    (0x0607D0A0 - LOAD_BASE, 0x060883B8, HWRAM_X),      # X @cf80
+    (0x0607D4D0 - LOAD_BASE, 0x060883B8, HWRAM_X),      # X @flush
+    (0x0607CF7C - LOAD_BASE, 0x06088468, HWRAM_Y),      # Y @cf3c (scroll)
+    (0x0607D0A8 - LOAD_BASE, 0x06088468, HWRAM_Y),      # Y @cf80
+    (0x0607D4D8 - LOAD_BASE, 0x06088468, HWRAM_Y),      # Y @flush
+    (0x0607CD40 - LOAD_BASE, 0x06088528, HWRAM_FLAG),   # flag @ccac
+    (0x0607CF38 - LOAD_BASE, 0x06088528, HWRAM_FLAG),   # flag @fnA
+    (0x0607D088 - LOAD_BASE, 0x06088528, HWRAM_FLAG),   # flag @cf80
+    (0x0607D4A4 - LOAD_BASE, 0x06088528, HWRAM_FLAG),   # flag @flush
 ]
 
 
@@ -138,16 +165,57 @@ def test_module_declares_every_site():
         assert JP_BASELINE[off] == jpb, f"missing/wrong baseline at 0x{off:05X}"
 
 
-def test_lwram_buffers_are_inside_the_free_block_and_disjoint():
+def test_grid_buffers_live_in_the_prog3_bss_tail_and_are_disjoint():
     """The 4 relocated buffers (0x200 each = 2 windows x 0x100 stride) must sit
-    inside the dump-verified free LWRAM block and not overlap each other."""
-    free_lo, free_hi = 0x002A57C8, 0x002A57C8 + 0x2483B
-    bases = [LWRAM_SLOT, LWRAM_X, LWRAM_Y, LWRAM_FLAG]
+    in the PROG_3 BSS tail [0x06088800, 0x06089000): after the PROG_3 file
+    image (ends 0x0608827C) and the JP-retained grid structures (cmd template
+    0x060882E8 .. scalars 0x060885F8+4), before the PROG_4 load base.
+
+    Red state (2026-07-08): buffers at LWRAM 0x002A6000 — inside the battle
+    arena the JP engine fills in busy scenes (seen live-corrupted in the
+    scen005 dumps)."""
+    bss_lo, bss_hi = 0x06088800, 0x06089000   # free run below PROG_4
+    bases = [HWRAM_SLOT, HWRAM_X, HWRAM_Y, HWRAM_FLAG]
     for b in bases:
-        assert free_lo <= b and b + 0x200 <= free_hi
+        assert bss_lo <= b and b + 0x200 <= bss_hi, (
+            f"buffer 0x{b:08X} outside the PROG_3 BSS tail")
     spans = sorted((b, b + 0x200) for b in bases)
     for (lo1, hi1), (lo2, hi2) in zip(spans, spans[1:]):
         assert hi1 <= lo2, "relocated buffers overlap"
+
+
+def test_no_buffer_lives_in_the_lwram_battle_arena():
+    """No relocated buffer may sit in LWRAM [0x295360, 0x2CA000): the region
+    between the end of FONT.BIN's tiles and the next fixed load destination
+    behaves as a growing engine arena in battle (busy scen005 dumps: JP fills
+    0x2A57C8-0x2AFA43 over the old 0x2A6000 homes).
+
+    Red state (2026-07-08): all 4 buffers at 0x2A6000-0x2A6800."""
+    arena_lo, arena_hi = 0x00295360, 0x002CA000
+    for b in (HWRAM_SLOT, HWRAM_X, HWRAM_Y, HWRAM_FLAG):
+        assert not (arena_lo <= b < arena_hi), (
+            f"buffer 0x{b:08X} sits in the LWRAM battle arena")
+
+
+def test_staging_footprint_cannot_reach_the_portrait_frames():
+    """Model the patched cf80 staging-offset math (the effective behavior the
+    player sees, per the の→0xD4 lesson): offset = (slot<<6) & 0xFF for every
+    possible counter value. The reach must stay below ring+0xA68, the lowest
+    portrait blink-frame source (jp/0.7 dumps; frames also at +0x2100/+0x2520).
+
+    Red state (2026-07-08): unmasked slot<<6 — 0xAA cells per balloon reach
+    ring+0x2A80 and overwrite the frames (scen005 Citizen barcode/dead blink)."""
+    frame_lo = 0xA68
+    reach = max(((slot << 6) & 0xFF) + 0x40 for slot in range(0x10000))
+    assert reach == 0x100
+    assert reach <= frame_lo
+    # and the module must actually carry the two masking words
+    from prog3_balloon_hankaku_grid import PROG3_BALLOON_HANKAKU_GRID
+    patches = dict(PROG3_BALLOON_HANKAKU_GRID["LANG/PROG_3.BIN"])
+    assert patches.get(0x0607CFE0 - LOAD_BASE) == b"\x41\x08", (
+        "staging mask word 1 (shll2 r1) missing")
+    assert patches.get(0x0607CFE2 - LOAD_BASE) == b"\x61\x1C", (
+        "staging mask word 2 (extu.b r1,r1) missing")
 
 
 def test_geometry_is_consistent():

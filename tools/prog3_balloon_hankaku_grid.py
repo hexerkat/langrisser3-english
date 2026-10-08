@@ -55,17 +55,52 @@ BUFFER RELOCATION (the pre-0.4 "full balloon" wall)
 The 4 per-cell grid buffers (1 B/cell: slot 0x06088308, X 0x060883B8,
 Y 0x06088468, occupied-flag 0x06088528) are packed at 0xB0 = 2 windows x
 0x55 + 6 in HWRAM; any widening overflows the next buffer. With the 0x100
-window stride each needs 0x200 (2 windows), so they move to free LWRAM:
+window stride each needs 0x200 (2 windows), so they move to the PROG_3 BSS
+tail right below the PROG_4 load base (file image ends 0x0608827C, JP grid
+structures end 0x060885FC, PROG_4 loads at 0x06089000):
 
-    slot 0x002A6000  X 0x002A6200  Y 0x002A6400  flag 0x002A6600
+    slot 0x06088800  X 0x06088A00  Y 0x06088C00  flag 0x06088E00
 
-(inside the free block 0x002A57C8 + 0x2483B, zero in a dialogue-state Ymir
-dump; CPU-only metadata, no DMA — same approach as the CN patch's LWRAM
-font buffer). All 11 pool literals referencing the 4 buffers are repointed
-(value-exact sweep over every game binary found no other reference). The
-row cursor 0x06088518 (5 B/window), the per-window scalars 0x060885D8..F8
-and the 0x20-byte VDP1 command template 0x060882E8 do not scale with
-columns and STAY at their JP addresses.
+Zero in the jp/0.7/ours BUSY scen005 dumps; no code literal in any game
+binary points into [0x06088700, 0x06089000); same data region and lifetime
+as the JP buffers they extend. All 11 pool literals referencing the 4
+buffers are repointed (value-exact sweep over every game binary found no
+other reference). The row cursor 0x06088518 (5 B/window), the per-window
+scalars 0x060885D8..F8 and the 0x20-byte VDP1 command template 0x060882E8
+do not scale with columns and STAY at their JP addresses.
+
+    2026-07-08 CORRECTION: the first home was LWRAM 0x002A6000, inside the
+    "free block 0x002A57C8+0x2483B" — which was verified zero only in a
+    QUIET dialogue-state dump. The busy scen005 dumps show the JP engine
+    fills 0x2A57C8-0x2AFA43 with battle data (everything between the end of
+    FONT.BIN's tiles and the 0x2CA000 load destination behaves as a growing
+    arena), so the buffers sat inside live engine memory and mutually
+    corrupted it. A region is only free if it is free in a BUSY state.
+
+STAGING DISCIPLINE (2026-07-08, the Citizen-portrait fix)
+=========================================================
+cf80 stages each rasterized glyph at *0x0604F8A0 (= 0x0600A000, the HWRAM
+ring below A0LANG) + slot*0x40, slot = the monotonic counter 0x060885F8,
+then the on-chip DMAC copy (jsr 0x0602E14C; polls CHCR idle before starting)
+consumes the slot into VDP1 immediately. The ring is SHARED, not free
+scratch: the engine parks portrait blink/anim frame sources at ring+0xA68/
++0x2100/+0x2520 (PROG_3 FUN_06079198 — the portrait anim driver — and
+A0LANG FUN_06017b90 read the same pointer; A0LANG FUN_060177a0 sets it).
+Full-hankaku bursts (1 cf80 call per char + 2 per zenkaku) pushed staging
+residue past ring+0x2100 and destroyed the frames (scen005: barcode over
+the Citizen's dress, dead blink; jp/0.7 clean).
+
+Fix: mask the staging offset to 4 rotating transient slots —
+shll2/shll2/shll2/extu.b over the JP shll2/shll2/add/shll2 gives
+(slot<<6)&0xFF — footprint ring+0..0x100, inside the slice JP's own staging
+uses (JP reach slot<<7, observed < +0xA68) and far below every frame, for
+ANY scene size. Race-safe: consecutive glyphs rotate slots and each DMAC
+call first polls the previous transfer done, so a slot is reused only 4
+glyphs later. VDP1 texture cells are addressed by GRID CELL index (the
+slot-byte stored per cell), not by this counter — texture allocation is
+untouched. The relocation alternative (new ring elsewhere) died with the
+LWRAM lesson above: no provably-free block exists, while ring+0..0x100 is
+engine-sanctioned by JP's own usage.
 
 COMPANIONS / CAVEATS
 ====================
@@ -79,11 +114,12 @@ COMPANIONS / CAVEATS
 
 _B = 0x06052800  # PROG_3 load base (RAM - _B = file offset)
 
-# LWRAM homes of the 4 per-cell grid buffers (0x200 each = 2 windows x 0x100).
-LWRAM_SLOT = 0x002A6000
-LWRAM_X    = 0x002A6200
-LWRAM_Y    = 0x002A6400
-LWRAM_FLAG = 0x002A6600
+# PROG_3-BSS-tail homes of the 4 per-cell grid buffers (0x200 each = 2 windows
+# x 0x100), right below the PROG_4 load base 0x06089000.
+HWRAM_SLOT = 0x06088800
+HWRAM_X    = 0x06088A00
+HWRAM_Y    = 0x06088C00
+HWRAM_FLAG = 0x06088E00
 
 # (file_offset, jp_bytes, new_bytes, comment) — SH-2 big-endian words / u16 / u32.
 _SITES = [
@@ -128,25 +164,28 @@ _SITES = [
     (0x0607D3A2 - _B, b"\x0C\x17", b"\x67\xC3", "flush draw: mul.l r1,r12 -> mov r12,r7"),
     (0x0607D3A4 - _B, b"\x07\x1A", b"\x47\x18", "flush draw: sts macl,r7 -> shll8 r7"),
     # -- 8px-wide textures: cell step x0x80 -> x0x40
-    (0x0607CFE0 - _B, b"\x31\x1C", b"\x00\x09", "cf80 staging slot<<7 -> <<6 (drop add r1,r1)"),
+    # staging offset masked to (slot<<6)&0xFF = 4 rotating transient slots at
+    # ring+0..0x100 — can never reach the portrait frames at ring+0xA68+.
+    (0x0607CFE0 - _B, b"\x31\x1C", b"\x41\x08", "cf80 staging: add r1,r1 -> shll2 r1 (slot<<6)"),
+    (0x0607CFE2 - _B, b"\x41\x08", b"\x61\x1C", "cf80 staging: shll2 r1 -> extu.b r1,r1 (&0xFF)"),
     (0x0607D000 - _B, b"\x32\x2C", b"\x00\x09", "cf80 blit dest cell<<7 -> <<6 (drop add r2,r2)"),
     (0x0607D012 - _B, b"\x42\x01", b"\x00\x09", "cf80 slot-byte recover >>7 -> >>6 (drop shlr)"),
     (0x0607D084 - _B, b"\x00\x80", b"\x00\x40", "cf80 glyph copy length u16"),
     (0x0607D128 - _B, b"\x76\x02", b"\x76\x04", "rasterizer: 4 bytes/row = left 8px"),
     (0x0607D3F8 - _B, b"\x31\x1C", b"\x00\x09", "flush CMDSRCA slot<<7 -> <<6 (drop add r1,r1)"),
     (0x0607D492 - _B, b"\x02\x10", b"\x01\x10", "CMDSIZE u16: 16x16 -> 8x16 sprites"),
-    # -- relocate the 4 per-cell buffers to LWRAM (11 pool literals)
-    (0x0607D09C - _B, (0x06088308).to_bytes(4, "big"), LWRAM_SLOT.to_bytes(4, "big"), "slot buf @cf80"),
-    (0x0607D4CC - _B, (0x06088308).to_bytes(4, "big"), LWRAM_SLOT.to_bytes(4, "big"), "slot buf @flush"),
-    (0x0607D0A0 - _B, (0x060883B8).to_bytes(4, "big"), LWRAM_X.to_bytes(4, "big"),    "X buf @cf80"),
-    (0x0607D4D0 - _B, (0x060883B8).to_bytes(4, "big"), LWRAM_X.to_bytes(4, "big"),    "X buf @flush"),
-    (0x0607CF7C - _B, (0x06088468).to_bytes(4, "big"), LWRAM_Y.to_bytes(4, "big"),    "Y buf @cf3c"),
-    (0x0607D0A8 - _B, (0x06088468).to_bytes(4, "big"), LWRAM_Y.to_bytes(4, "big"),    "Y buf @cf80"),
-    (0x0607D4D8 - _B, (0x06088468).to_bytes(4, "big"), LWRAM_Y.to_bytes(4, "big"),    "Y buf @flush"),
-    (0x0607CD40 - _B, (0x06088528).to_bytes(4, "big"), LWRAM_FLAG.to_bytes(4, "big"), "flag buf @ccac"),
-    (0x0607CF38 - _B, (0x06088528).to_bytes(4, "big"), LWRAM_FLAG.to_bytes(4, "big"), "flag buf @fnA"),
-    (0x0607D088 - _B, (0x06088528).to_bytes(4, "big"), LWRAM_FLAG.to_bytes(4, "big"), "flag buf @cf80"),
-    (0x0607D4A4 - _B, (0x06088528).to_bytes(4, "big"), LWRAM_FLAG.to_bytes(4, "big"), "flag buf @flush"),
+    # -- relocate the 4 per-cell buffers to the PROG_3 BSS tail (11 pool literals)
+    (0x0607D09C - _B, (0x06088308).to_bytes(4, "big"), HWRAM_SLOT.to_bytes(4, "big"), "slot buf @cf80"),
+    (0x0607D4CC - _B, (0x06088308).to_bytes(4, "big"), HWRAM_SLOT.to_bytes(4, "big"), "slot buf @flush"),
+    (0x0607D0A0 - _B, (0x060883B8).to_bytes(4, "big"), HWRAM_X.to_bytes(4, "big"),    "X buf @cf80"),
+    (0x0607D4D0 - _B, (0x060883B8).to_bytes(4, "big"), HWRAM_X.to_bytes(4, "big"),    "X buf @flush"),
+    (0x0607CF7C - _B, (0x06088468).to_bytes(4, "big"), HWRAM_Y.to_bytes(4, "big"),    "Y buf @cf3c"),
+    (0x0607D0A8 - _B, (0x06088468).to_bytes(4, "big"), HWRAM_Y.to_bytes(4, "big"),    "Y buf @cf80"),
+    (0x0607D4D8 - _B, (0x06088468).to_bytes(4, "big"), HWRAM_Y.to_bytes(4, "big"),    "Y buf @flush"),
+    (0x0607CD40 - _B, (0x06088528).to_bytes(4, "big"), HWRAM_FLAG.to_bytes(4, "big"), "flag buf @ccac"),
+    (0x0607CF38 - _B, (0x06088528).to_bytes(4, "big"), HWRAM_FLAG.to_bytes(4, "big"), "flag buf @fnA"),
+    (0x0607D088 - _B, (0x06088528).to_bytes(4, "big"), HWRAM_FLAG.to_bytes(4, "big"), "flag buf @cf80"),
+    (0x0607D4A4 - _B, (0x06088528).to_bytes(4, "big"), HWRAM_FLAG.to_bytes(4, "big"), "flag buf @flush"),
 ]
 
 PROG3_BALLOON_HANKAKU_GRID = {
