@@ -1,7 +1,7 @@
 """test_fntsys14_hankaku_keyboard.py — hankaku name-entry keyboard (TDD guard).
 
 v0.8 gate #2 (branch font-hankaku-per-glyph). The name-entry keyboard grid is
-fntsys14 (FNT_SYS pair 13): 21 records x 5 BE16 tile cells. The composer
+fntsys14 (FNT_SYS pair 13). The composer
 appends the CELL'S OWN tile code to the name buffer (character cells are
 content-driven; only button actions/cursor snapping are positional — the
 2026-06-11 canary tested a button). So swapping the grid cells to the hankaku
@@ -20,6 +20,13 @@ band moves are followed automatically. Registry-toggleable
 
 Red state: the module doesn't exist and the built FNT_SYS pair 13 carries the
 zenkaku grid (UC 17-42, lc 1585-1610, digits 7-16).
+
+SLOT-LOCKED ROWS (2026-07-15 postmortem): both spacing attempts were
+withdrawn — the name-entry staging slot layout is an implicit ABI
+(21 rows x exactly 5 drawn glyphs = slots 7..111; the per-keystroke
+name redraw re-stages against it). Rows stay 5 cells; '_' empties are
+the hankaku space. See tests/test_prog4_name_entry_hankaku.py for the
+slot-ABI guard; this file checks the encode path end-to-end.
 """
 import struct
 import sys
@@ -34,29 +41,18 @@ JP_FNTSYS = PROJECT / "cache" / "fnt_sys_jp.bin"
 
 
 def _cells(rec: bytes):
-    """Record -> list of BE16 cell values (terminator excluded)."""
-    assert rec.endswith(b"\xff\xff")
-    return [struct.unpack_from(">H", rec, k)[0] for k in range(0, len(rec) - 2, 2)]
+    """Record -> list of BE16 words (v3 rows: FFFF sits mid-record)."""
+    return [struct.unpack_from(">H", rec, k)[0] for k in range(0, len(rec), 2)]
 
 
 def _expected_grid():
+    """Slot-locked 5-cell rows + terminator; '_' = hankaku space."""
+    from fntsys14_hankaku_keyboard import KEYBOARD_ROWS
     import font_tools as ft
     m = ft.HANKAKU_TILE_MAP
-    E = 0
-    rows = [
-        [m[c] for c in "ABCDE"], [m[c] for c in "FGHIJ"],
-        [m[c] for c in "KLMNO"], [m[c] for c in "PQRST"],
-        [m[c] for c in "UVWXY"], [m["Z"], E, E, E, E],
-        [E] * 5,
-        [m[c] for c in "abcde"], [m[c] for c in "fghij"],
-        [m[c] for c in "klmno"], [m[c] for c in "pqrst"],
-        [m[c] for c in "uvwxy"], [m["z"], E, E, E, E],
-        [E] * 5,
-        [E, m["!"], m["?"], E, E],          # same key positions as the JP ! ?
-        [E] * 5, [E] * 5,
-        [m[c] for c in "12345"], [m[c] for c in "67890"],
-    ]
-    return rows
+    E = m[' ']
+    return [[E if ch == '_' else m[ch] for ch in row] + [0xFFFF]
+            for row in KEYBOARD_ROWS]
 
 
 def test_module_generates_the_hankaku_grid():
@@ -65,7 +61,8 @@ def test_module_generates_the_hankaku_grid():
                b"\x05\xd2\x00\x00\x00\x00\x00\x00\x00\x00\xff\xff"]
     recs = hankaku_keyboard_records(buttons)
     assert len(recs) == 21
-    assert all(len(r) == 12 for r in recs), "records must stay 5 cells + FFFF"
+    assert all(len(r) == 12 for r in recs[:19]), \
+        "generated rows must stay 5 cells + FFFF (slot ABI)"
     for i, want in enumerate(_expected_grid()):
         assert _cells(recs[i]) == want, f"record {i} mismatch"
     assert recs[19] == buttons[0] and recs[20] == buttons[1]
@@ -75,19 +72,36 @@ def test_grid_tiles_are_all_in_the_hankaku_band():
     import font_tools as ft
     from fntsys14_hankaku_keyboard import hankaku_keyboard_records
     recs = hankaku_keyboard_records([b"\xff\xff", b"\xff\xff"])[:19]
-    tiles = {c for r in recs for c in _cells(r) if c}
+    tiles = {c for r in recs for c in _cells(r) if c and c != 0xFFFF}
     assert tiles <= ft.HANKAKU_TILES
-    # full coverage: 26 UC + 26 lc + 10 digits + ! ?
-    assert len(tiles) == 64
+    # full coverage: 26 UC + 26 lc + 10 digits + ! ? + the column space
+    assert len(tiles) == 65
 
+
+
+
+def _pair13_engine_records(fnt_bytes: bytes, n=21):
+    """Slice pair-13 records the way the ENGINE does: by the offset
+    table (record ptr = data base + offtable[row]*2), not by FFFF scan —
+    v3 rows carry an early FFFF draw-stop plus fetch padding."""
+    from fnt_sys_tools import parse_fnt_sys, PAIR_INDICES
+    fs = parse_fnt_sys(fnt_bytes)
+    off_idx, data_idx = PAIR_INDICES[13]
+    offt = fs.raw_sections[off_idx]
+    data = fs.raw_sections[data_idx]
+    offs = [struct.unpack_from(">H", offt, k)[0] for k in range(0, len(offt), 2)]
+    assert len(offs) == n
+    out = []
+    for i, o in enumerate(offs):
+        end = offs[i + 1] * 2 if i + 1 < n else len(data)
+        out.append(data[o * 2:end])
+    return out
 
 @pytest.mark.skipif(not JP_FNTSYS.exists(), reason="JP FNT_SYS baseline absent")
 def test_encode_fntsys_swaps_pair13():
-    from fnt_sys_tools import encode_fntsys, parse_fnt_sys
-    out = parse_fnt_sys(encode_fntsys(JP_FNTSYS.read_bytes(),
-                                      PROJECT / "scripts" / "en"))
-    recs = out.pairs[13].records
-    assert len(recs) == 21
+    from fnt_sys_tools import encode_fntsys
+    recs = _pair13_engine_records(
+        encode_fntsys(JP_FNTSYS.read_bytes(), PROJECT / "scripts" / "en"))
     for i, want in enumerate(_expected_grid()):
         assert _cells(recs[i]) == want, f"built pair13 record {i} mismatch"
     # buttons preserved from the script (our arrow/END art tiles)
@@ -97,7 +111,6 @@ def test_encode_fntsys_swaps_pair13():
 
 def test_built_track01_carries_the_hankaku_keyboard():
     from iso_tools import build_file_index, extract_file_data
-    from fnt_sys_tools import parse_fnt_sys
     builds = list((PROJECT / "build").glob("*/track01.bin"))
     if not builds:
         pytest.skip("no build/*/track01.bin (run build.py first)")
@@ -106,6 +119,6 @@ def test_built_track01_carries_the_hankaku_keyboard():
     fnt = next((extract_file_data(img, e.extent, e.size)
                 for p, e in idx.items() if p.upper().endswith("FNT_SYS.BIN")), None)
     assert fnt is not None
-    recs = parse_fnt_sys(fnt).pairs[13].records
+    recs = _pair13_engine_records(bytes(fnt))
     for i, want in enumerate(_expected_grid()):
         assert _cells(recs[i]) == want, f"shipped pair13 record {i} mismatch"

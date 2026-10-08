@@ -35,12 +35,27 @@ map); needs a one-cell reachability canary before shipping.
 Declarative: rows resolve through font_tools.HANKAKU_TILE_MAP at encode
 time, so hankaku band moves are followed automatically. Toggleable via
 patch_registry ('fntsys14_hankaku_keyboard'); disabled -> scripts/en/
-fntsys14E.txt ships as-is (the zenkaku keyboard). Record shape (5 cells +
-FFFF = 12 bytes) is unchanged, so FNT_SYS.BIN keeps its size.
+fntsys14E.txt ships as-is (the zenkaku keyboard).
+
+SPACING HISTORY (2026-07-14/15, archive/docs/20260714_name_entry_freeze_bug.md):
+v1 (drawn space after every key) FROZE the screen — the field-UI staging
+ring caps a screen at 192 glyphs and 21x10 drawn cells overflowed it.
+v3 (early-FFFF + fetch padding, 9 drawn cells/row) fit the ring but
+CORRUPTED the screen anyway: the name-entry STAGING SLOT LAYOUT is an
+implicit ABI — the prompt/name redraw expects the keyboard content to
+occupy exactly 21 rows x 5 uniform glyphs (slots 7..111); more drawn
+cells per row shift the slots and the per-keystroke name redraw
+re-rasterizes over the key art (dump 2026-07-15 00:03: prompt slots 0-6,
+name AND keyboard row 0 both at slot 7+). CONCLUSION: no record-shaped
+change can deliver the 16px columns. Rows are LOCKED at 5 drawn cells;
+the 16px-column aesthetic needs a RENDERER-side grid mode (Phase-2 flag,
+candidate (c) of the postmortem). '_' empties are the hankaku space
+(selecting one appends an 8px space; tile 0 would append a 16px blank).
+Guard: tests/test_prog4_name_entry_hankaku.py (row shape + slot count).
 """
 import struct
 
-# '_' = empty cell (tile 0). Rows for records 0-18; 19-20 are passthrough.
+# '_' = empty cell (hankaku space). Rows for records 0-18; 19-20 passthrough.
 KEYBOARD_ROWS = [
     "ABCDE", "FGHIJ", "KLMNO", "PQRST", "UVWXY", "Z____",
     "_____",
@@ -51,15 +66,16 @@ KEYBOARD_ROWS = [
     "12345", "67890",
 ]
 
-
 def hankaku_keyboard_records(button_records: list) -> list:
-    """The 21 fntsys14 records: 19 generated rows + the 2 button records
-    (passed through verbatim — our arrow/END art, positional actions)."""
+    """The 21 fntsys14 records: 19 generated 5-cell rows (SLOT-LOCKED,
+    see SPACING HISTORY) + the 2 button records (passed through verbatim
+    — our arrow/END art, positional actions)."""
     from font_tools import HANKAKU_TILE_MAP
     assert len(button_records) == 2, "expected the 2 button records (recs 19-20)"
+    space = HANKAKU_TILE_MAP[' ']
     recs = []
     for row in KEYBOARD_ROWS:
-        cells = [0 if ch == "_" else HANKAKU_TILE_MAP[ch] for ch in row]
+        cells = [space if ch == "_" else HANKAKU_TILE_MAP[ch] for ch in row]
         recs.append(b"".join(struct.pack(">H", c) for c in cells) + b"\xff\xff")
     recs.extend(button_records)
     return recs

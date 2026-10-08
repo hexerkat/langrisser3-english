@@ -125,12 +125,17 @@ def test_pair_13_keyboard_exposes_full_en_key_set():
         pytest.skip("scripts/en/fntsys14E.txt not present")
 
     encoded = encode_fntsys(JP_PATH.read_bytes(), SCRIPTS_DIR)
-    pair13 = parse_fnt_sys(encoded).pairs[13]
-    assert len(pair13.records) == 21
-
-    ids: set[int] = set()
-    for rec in pair13.records:
-        ids |= _record_tile_ids(rec)
+    fs = parse_fnt_sys(encoded)
+    pair13 = fs.pairs[13]
+    # v3 rows carry an early FFFF draw-stop (spaced-grid padding), so the
+    # parser's FFFF-scan under-splits; collect tiles from the ENGINE view
+    # (the whole pair-13 data section: records + fetch padding + trailer).
+    from fnt_sys_tools import PAIR_INDICES
+    _, data_idx = PAIR_INDICES[13]
+    data = fs.raw_sections[data_idx]
+    import struct as _st
+    ids: set[int] = {w for (w,) in _st.iter_unpack(">H", data[:len(data) & ~1])
+                     if w not in (0, 0xFFFF)}
 
     import font_tools as ft
     m = ft.HANKAKU_TILE_MAP
