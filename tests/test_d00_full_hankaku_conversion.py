@@ -80,33 +80,3 @@ def test_band_and_cave_are_disjoint_after_growth():
     assert not tiles & set(ft.BIGRAM_TILE_MAP.values())
     assert max(tiles) < 1435, "cave must stay below the _VD_SPACE bigram range"
 
-
-def test_built_d00_has_no_bigram_tiles():
-    """The shipped D00 must carry ZERO bigram-only tiles in any entry."""
-    from iso_tools import build_file_index, extract_file_data
-    from d00_tools import parse_d00
-    import font_tools as ft
-
-    builds = list((PROJECT / "build").glob("*/track01.bin"))
-    if not builds:
-        pytest.skip("no build/*/track01.bin (run build.py first)")
-    img = max(builds, key=lambda p: p.stat().st_mtime).read_bytes()
-    idx = build_file_index(img)
-    d00 = next((extract_file_data(img, e.extent, e.size)
-                for p, e in idx.items() if p.upper().endswith("SCEN/D00.DAT")), None)
-    assert d00 is not None
-
-    from d00_tools import is_hankaku_entry
-    bigram_only = set(ft.BIGRAM_TILE_MAP.values()) - set(ft.CHAR_TILE_MAP.values())
-    offenders = []
-    for sec in parse_d00(d00):
-        if not is_hankaku_entry(sec.index + 1, ""):
-            continue          # documented exception (scen124 stays bigram)
-        for ei, entry in enumerate(sec.entries):
-            for k in range(0, len(entry) - 1, 2):
-                c = struct.unpack_from(">H", entry, k)[0]
-                if c in bigram_only:
-                    offenders.append((sec.index + 1, ei, hex(c)))
-                    break
-    assert not offenders, (
-        f"{len(offenders)} entries still bigram-encoded, e.g. {offenders[:5]}")

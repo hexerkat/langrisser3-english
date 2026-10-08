@@ -137,11 +137,8 @@ def test_built_track01_carries_piece_d():
     blob = d00_cave_blob()
     assert font[D00_CAVE_TILE * 32:D00_CAVE_TILE * 32 + len(blob)] == blob
 
+    # The hybrid encoding (2026-10-08) brought scen124 back under the old u16
+    # ceiling; Piece D stays as headroom, so the scaled table must still parse.
     d00 = grab("SCEN/D00.DAT")
     sec124 = parse_d00(d00)[123]
-    assert sec124.text_size > 65535, "scen124 must exceed the old ceiling"
-    bigram_only = set(ft.BIGRAM_TILE_MAP.values()) - set(ft.CHAR_TILE_MAP.values())
-    for entry in sec124.entries:
-        codes = {struct.unpack_from(">H", entry, k)[0]
-                 for k in range(0, len(entry) - 1, 2)}
-        assert not (codes & bigram_only), "scen124 must be hankaku"
+    assert sec124.entries and all(e for e in sec124.entries)

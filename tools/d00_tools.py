@@ -673,12 +673,13 @@ def insert_translations(sections: list, scripts_dir: Path,
             stats['skipped'] += 1
             continue
 
-        # Encode entries (v0.8: all prose per-glyph hankaku + zenkaku singles)
+        # Encode entries (v0.8 hybrid: bigrams + 8px band tails and spaces)
         encoded_entries = []
         for text in text_entries:
             if is_hankaku_entry(scen_num, text):
-                from hankaku_encoder import encode_hankaku
-                encoded = encode_hankaku(text)
+                from hybrid_encoder import encode_hybrid
+                from font_tools import BIGRAM_TILE_MAP
+                encoded = encode_hybrid(text, bigram_tile_map or BIGRAM_TILE_MAP)
             else:
                 encoded = encode_text_to_entry(text, char_tile_map, bigram_tile_map)
             # Ensure entry ends with a control code terminator
