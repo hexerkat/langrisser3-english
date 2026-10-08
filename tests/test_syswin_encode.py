@@ -26,7 +26,7 @@ PROJECT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT / "tools"))
 
 from syswin_tools import parse_syswin, encode_syswin
-from font_tools import FNTSYS_CHAR_TILE_MAP, FNTSYS_BIGRAM_TILE_MAP
+from font_tools import FNTSYS_CHAR_TILE_MAP, FNTSYS_BIGRAM_TILE_MAP, HANKAKU_TILE_MAP
 
 JP_PATH = PROJECT / "cache" / "syswin_jp.bin"
 EN_SRC = PROJECT / "scripts" / "en" / "syswinE.txt"
@@ -46,6 +46,8 @@ def _reverse_map():
         rev.setdefault(t, ch if isinstance(ch, str) else "".join(ch))
     for bg, t in FNTSYS_BIGRAM_TILE_MAP.items():
         rev.setdefault(t, bg if isinstance(bg, str) else "".join(bg))
+    for ch, t in HANKAKU_TILE_MAP.items():   # v0.8 hybrid: 8px odd tails
+        rev.setdefault(t, ch)
     return rev
 
 

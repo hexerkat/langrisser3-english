@@ -376,6 +376,7 @@ def encode_fntsys(jp_baseline: bytes, scripts_dir: Path,
     sys.path.insert(0, str(Path(__file__).resolve().parent))
     from d00_tools import encode_text_to_entry
     from font_tools import FNTSYS_BIGRAM_TILE_MAP
+    from hybrid_encoder import encode_hybrid
 
     # bigram_override lets the new-font build pass the RELOCATED fntsys bigram map
     # (same glyphs, new positions); default keeps the production map.
@@ -394,7 +395,11 @@ def encode_fntsys(jp_baseline: bytes, scripts_dir: Path,
         lines = _parse_script_records(script_path)
         records: list[bytes] = []
         for line in lines:
-            rec = encode_text_to_entry(line, char_map, bigram_tile_map=bigram_map)
+            if bigram_map is not None:
+                # v0.8 hybrid: bigrams, 8px band only where v0.7 had a phantom blank
+                rec = encode_hybrid(line, bigram_map)
+            else:
+                rec = encode_text_to_entry(line, char_map, bigram_tile_map=None)
             if not rec.endswith(b"\xff\xff"):
                 rec = rec + b"\xff\xff"
             records.append(rec)

@@ -161,8 +161,8 @@ def encode_syswin(jp_baseline: bytes, script_path: Path,
     """
     import sys
     sys.path.insert(0, str(Path(__file__).resolve().parent))
-    from d00_tools import encode_text_to_entry
-    from font_tools import FNTSYS_CHAR_TILE_MAP, FNTSYS_BIGRAM_TILE_MAP
+    from font_tools import FNTSYS_BIGRAM_TILE_MAP
+    from hybrid_encoder import encode_hybrid
     # bigram_override = the RELOCATED fntsys bigram map for the new-font build.
     _sw_bigram = bigram_override if bigram_override is not None else FNTSYS_BIGRAM_TILE_MAP
 
@@ -179,8 +179,7 @@ def encode_syswin(jp_baseline: bytes, script_path: Path,
         if not line.strip():
             records.append([])   # empty record (FFFF only) — reclaims padding
             continue
-        raw = encode_text_to_entry(line, dict(FNTSYS_CHAR_TILE_MAP),
-                                   bigram_tile_map=_sw_bigram)
+        raw = encode_hybrid(line, _sw_bigram)
         if raw.endswith(b'\xff\xff'):
             raw = raw[:-2]
         records.append([
