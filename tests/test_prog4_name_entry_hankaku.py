@@ -64,10 +64,12 @@ from pathlib import Path
 PROJECT_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_DIR / 'tools'))
 
-from font_tools import HANKAKU_TILE_MAP, HANKAKU_TILES  # noqa: E402
+from font_tools import TWIN_TILE_MAP  # noqa: E402
 
 # ── Engine constants (from the disassembly + dump) ──────────────────────────
-HANKAKU_SPACE = HANKAKU_TILE_MAP[' ']
+# v4 (2026-07-15): cells carry DISPLAY TWINS (wide class, 16px columns);
+# the append cave converts them back to hankaku (test_name_entry_twin_glyphs).
+TWIN_SPACE = TWIN_TILE_MAP[' ']
 BLOCK_X_CELLS = (3, 14, 25)        # row records +8 (8px cells) per block
 FIELD_BASE_PX = 0xB0               # typed-name field base X (FUN_06092070)
 NAME_CAP = 8                       # entries; buffer+save = 9 words (LOCKED)
@@ -170,7 +172,7 @@ class TestSlotLockedKeyboardRows(unittest.TestCase):
         for i, row in enumerate(KEYBOARD_ROWS):
             words = _words(self.recs[i])
             for col, ch in enumerate(row):
-                want = HANKAKU_SPACE if ch == '_' else HANKAKU_TILE_MAP[ch]
+                want = TWIN_SPACE if ch == '_' else TWIN_TILE_MAP[ch]
                 self.assertEqual(words[col], want,
                                  f'rec {i} col {col}: key cell wrong')
 

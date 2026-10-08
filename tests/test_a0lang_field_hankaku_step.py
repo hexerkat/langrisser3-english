@@ -16,7 +16,7 @@ bigram was rejected by Ralf (v0.8 must KILL bigram) and `git restore`d, so the
 current working tree is the honest Red: labels render hankaku-with-holes.
 
 The fix makes Phase 2 of `FUN_06016d94` WIDTH-CLASS aware: a hankaku-band tile
-(1265..1419, the same class PROG_3 Piece C uses) draws ONE cell and steps ONE
+(1265..1349, the same class PROG_3 Piece C uses) draws ONE cell and steps ONE
 cell; every other tile (kanji / zenkaku digit / UI icon) keeps the 2-cell 16px
 step so menus/stats do not break.
 
@@ -76,9 +76,11 @@ ATTR_BASE = 0x5000       # r5: pattern-name attribute base
 SUBTILE_PER_GLYPH = 4    # r3 step: 4 pattern-names per 16x16 staging char
 
 # Hankaku width class = the v0.8 narrow band, identical to PROG_3 Piece C's
-# class boundary (font_tools.py:104 "hankaku class range [1265..1419]").
+# class boundary. Shrunk 1419 -> 1349 for the v4 twin band (2026-07-15):
+# the name-entry twins (1350..1416) must classify WIDE so the keyboard
+# draws 16px columns; the hankaku content itself ends at 1344.
 NARROW_LO = HANKAKU_BASE   # 1265
-NARROW_HI = 1419           # cave/nakaguro start at 1420 -> those stay 16px
+NARROW_HI = 1349           # twins (1350+) and cave/nakaguro (1420+) = 16px
 
 
 # ── Reference render model (the REQUIREMENT) ────────────────────────────────
@@ -156,7 +158,7 @@ class TestModuleExists(unittest.TestCase):
 
 
 class TestWidthClassPredicate(unittest.TestCase):
-    """The narrow class is exactly the v0.8 hankaku glyph band [1265..1419]."""
+    """The narrow class is exactly the v0.8 hankaku glyph band [1265..1349]."""
 
     def test_reference_band_matches_source_of_truth(self):
         # Every composed hankaku glyph is inside the narrow range...
@@ -360,10 +362,10 @@ class TestPatchDeclaration(unittest.TestCase):
 
     def test_band_constants_track_font_tools(self):
         """The renderer's narrow class must equal the composed hankaku band —
-        the pool word (1265) and the in-stream 77*2 (=154) encode it."""
+        the pool word (1265) and the in-stream 42*2 (=84) encode it."""
         self.assertEqual(MOD.NARROW_LO, HANKAKU_BASE)          # 1265 = 0x4F1
-        self.assertEqual(MOD.NARROW_HI - MOD.NARROW_LO, 154)   # mov #77; add
-        self.assertEqual(MOD.NARROW_HI, NARROW_HI)             # 1419, this test
+        self.assertEqual(MOD.NARROW_HI - MOD.NARROW_LO, 84)    # mov #42; add
+        self.assertEqual(MOD.NARROW_HI, NARROW_HI)             # 1349, this test
         for t in HANKAKU_TILES:
             self.assertTrue(MOD.is_narrow_tile(t))
         self.assertFalse(MOD.is_narrow_tile(1420))             # cave = zenkaku

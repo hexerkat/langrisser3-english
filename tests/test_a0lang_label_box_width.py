@@ -27,7 +27,7 @@ a0lang_field_hankaku_step) but this measurer still counts 2 cells/word:
 X=2 — the reported "caixa 2x a largura do texto".
 
 THE FIX: make the measurer width-class aware — a hankaku-band tile
-(1265..1419, the SAME class a0lang_field_hankaku_step patched into the
+(1265..1349, the SAME class a0lang_field_hankaku_step patched into the
 renderer at file 0x8E58) counts 1 cell; every other word keeps 2 cells.
 Renderer and measurer then agree cell-for-cell, so the box hugs the text
 exactly like JP. The 35-cell cap keeps its JP meaning (fits the screen);
@@ -69,7 +69,7 @@ from font_tools import (                                            # noqa: E402
 
 # ── Engine constants (from the disassembly + Ymir captures) ─────────────────
 NARROW_LO = HANKAKU_BASE   # 1265 — same band as a0lang_field_hankaku_step
-NARROW_HI = 1419
+NARROW_HI = 1349           # shrunk for the v4 twin band (2026-07-15)
 CAP_CELLS = 35             # JP reject threshold (mov #35 @0x6012ABA, kept)
 BOX_PAD = 4                # descriptor W = cells + 4 (FUN_06012AF4 @0x6012B42)
 CENTER = 18                # descriptor X = 18 - cells/2 (@0x6012B80)
@@ -77,7 +77,7 @@ CENTER = 18                # descriptor X = 18 - cells/2 (@0x6012B80)
 MEASURE_OFF = 0x4A9E       # file offset of the rewritten measure loop
 MEASURE_LEN = 0x1C         # 14 words: 0x4A9E..0x4AB9, cap @0x4ABA untouched
 POOL_NARROW_OFF = 0x4ADA   # pad word            -> 0x04F1 (1265)
-POOL_BAND_OFF = 0x4ADC     # freed FFFF-long hi  -> 0x009A (154 = HI-LO)
+POOL_BAND_OFF = 0x4ADC     # freed FFFF-long hi  -> 0x0054 (84 = HI-LO)
 CAP_OFF = 0x4ABA           # first untouched word (mov #35,r1)
 
 
@@ -289,7 +289,7 @@ class TestPatchDeclaration(unittest.TestCase):
         # the stream must NOT touch the cap test at 0x4ABA
         self.assertEqual(MEASURE_OFF + len(edits[MEASURE_OFF]), CAP_OFF)
         self.assertEqual(edits[POOL_NARROW_OFF], b'\x04\xF1')    # 1265
-        self.assertEqual(edits[POOL_BAND_OFF], b'\x00\x9A')     # 154
+        self.assertEqual(edits[POOL_BAND_OFF], b'\x00\x54')     # 84
 
     def test_baseline_covers_same_offsets_same_lengths(self):
         edits = dict(MOD.A0LANG_LABEL_BOX_WIDTH['A0LANG.BIN'])
@@ -307,7 +307,7 @@ class TestPatchDeclaration(unittest.TestCase):
 
     def test_band_constants_track_font_tools(self):
         self.assertEqual(MOD.NARROW_LO, HANKAKU_BASE)           # 1265
-        self.assertEqual(MOD.NARROW_HI - MOD.NARROW_LO, 154)
+        self.assertEqual(MOD.NARROW_HI - MOD.NARROW_LO, 84)
         for t in HANKAKU_TILES:
             self.assertTrue(MOD.is_narrow_tile(t))
         self.assertFalse(MOD.is_narrow_tile(1420))

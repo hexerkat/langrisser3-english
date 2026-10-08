@@ -46,10 +46,12 @@ def _cells(rec: bytes):
 
 
 def _expected_grid():
-    """Slot-locked 5-cell rows + terminator; '_' = hankaku space."""
+    """Slot-locked 5-cell rows + terminator; cells are v4 DISPLAY TWINS
+    (wide class -> 16px key columns; the PROG_4 append cave subtracts
+    TWIN_K so the name registers hankaku 8px); '_' = twin space."""
     from fntsys14_hankaku_keyboard import KEYBOARD_ROWS
     import font_tools as ft
-    m = ft.HANKAKU_TILE_MAP
+    m = ft.TWIN_TILE_MAP
     E = m[' ']
     return [[E if ch == '_' else m[ch] for ch in row] + [0xFFFF]
             for row in KEYBOARD_ROWS]
@@ -68,12 +70,12 @@ def test_module_generates_the_hankaku_grid():
     assert recs[19] == buttons[0] and recs[20] == buttons[1]
 
 
-def test_grid_tiles_are_all_in_the_hankaku_band():
+def test_grid_tiles_are_all_in_the_twin_band():
     import font_tools as ft
     from fntsys14_hankaku_keyboard import hankaku_keyboard_records
     recs = hankaku_keyboard_records([b"\xff\xff", b"\xff\xff"])[:19]
     tiles = {c for r in recs for c in _cells(r) if c and c != 0xFFFF}
-    assert tiles <= ft.HANKAKU_TILES
+    assert tiles <= set(ft.TWIN_TILE_MAP.values())
     # full coverage: 26 UC + 26 lc + 10 digits + ! ? + the column space
     assert len(tiles) == 65
 

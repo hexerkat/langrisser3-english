@@ -13,7 +13,7 @@ The per-char dispatcher FUN_0607d168 calls the layout fn FUN_0607cf80 through
 a POOL POINTER (0x0607D220, the only 0x0607CF80 reference in any game binary).
 tools/prog3_balloon_zenkaku_dispatch.py repoints it to this cave. The cave:
 
-  1. tile in the hankaku band [1265..1339] -> tail-jump to the real cf80
+  1. tile in the hankaku band [HANKAKU_LO..HANKAKU_HI] -> tail-jump to the real cf80
      (8px cell, exactly as before).
   2. any other tile -> draw it as TWO adjacent 8px cells:
        a. build a SCRATCH GLYPH = the glyph's rows shifted left 8px
@@ -30,9 +30,9 @@ tools/prog3_balloon_zenkaku_dispatch.py repoints it to this cave. The cave:
           budget, a bigram line gets 17 tiles = the v0.7 budget.
 
 WHY a cave in FONT.BIN: PROG_3 has no reachable free code bytes (bra ±4KB,
-pc-rel pools full), but FONT.BIN loads at LWRAM 0x00288000 and tiles
-1340..1434 are unused (hankaku band ends at 1339, the _VD_SPACE bigrams start
-at 1435, NEW_FONT_TILES=1691). The cave rides the font: resident whenever any
+pc-rel pools full), but FONT.BIN loads at LWRAM 0x00288000 and the
+tiles at 1420+ are unused (the hankaku band, its headroom and the v4 twin
+band end at 1416; the _VD_SPACE bigrams start at 1435, NEW_FONT_TILES=1691). The cave rides the font: resident whenever any
 text can render, fixed address, delivered by the normal build. Tile 1340 is
 the runtime scratch glyph (stays zero in the file); code occupies 1341-1345.
 
@@ -53,11 +53,12 @@ SCRATCH_GLYPH_ADDR = FONT_LWRAM_BASE + SCRATCH_TILE * 32
 CF80_ADDR = 0x0607CF80           # the real layout fn (JP pool value we replace)
 ROWCUR_ADDR = 0x06088518         # per-row column cursor, 5 B/window (unmoved)
 # Width-class bounds: [HANKAKU_LO..HANKAKU_HI] steps 8px, everything else is
-# zenkaku (2 cells). HI = 1419 leaves band GROWTH headroom without a cave
-# rebuild; the cave itself sits at 1420+ (outside the class range, below the
-# _VD_SPACE bigrams at 1435).
+# zenkaku (2 cells). HI = 1349 leaves band GROWTH headroom (content ends at
+# 1344) without a cave rebuild; the v4 name-entry TWIN band (1350..1416) and
+# the cave itself (1420+) sit above the class range, below the _VD_SPACE
+# bigrams at 1435. Shrunk from 1419 on 2026-07-15 so the twins render 16px.
 HANKAKU_LO = 1265                # hankaku band bounds (font_tools HANKAKU_BASE)
-HANKAKU_HI = 1419
+HANKAKU_HI = 1349
 
 
 def _assemble(resolve, labels):
@@ -112,8 +113,8 @@ def _assemble(resolve, labels):
     movw_pc(1, 'BAND_LO')        # mov.w #1265,r1
     w(0x3013)                    # cmp/ge r1,r0        ; T = tile >= 1265
     bf('zk')
-    movw_pc(1, 'BAND_HI')        # mov.w #1339,r1
-    w(0x3017)                    # cmp/gt r1,r0        ; T = tile > 1339
+    movw_pc(1, 'BAND_HI')        # mov.w #HANKAKU_HI,r1
+    w(0x3017)                    # cmp/gt r1,r0        ; T = tile > HI
     bt('zk')
     movl_pc(1, 'CF80')           # hankaku: tail-jump the real cf80
     w(0x412B)                    # jmp @r1

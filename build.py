@@ -77,6 +77,7 @@ from prog3_d00_offset_scale import PROG3_D00_OFFSET_SCALE
 from a0lang_field_hankaku_step import A0LANG_FIELD_HANKAKU_STEP
 from a0lang_label_box_width import A0LANG_LABEL_BOX_WIDTH
 from prog4_name_entry_hankaku import PROG4_NAME_ENTRY_HANKAKU
+from prog4_name_twin_convert import PROG4_NAME_TWIN_CONVERT
 from prog6_battle_cmd_width import PROG6_BATTLE_CMD_WIDTH
 from prog4_spell_name_table import PROG4_SPELL_NAME_TABLE
 from prog5_menu_geometry import PROG5_MENU_GEOMETRY
@@ -229,6 +230,7 @@ ENGINE_MODULE_DICTS = {
     "a0lang_field_hankaku_step": A0LANG_FIELD_HANKAKU_STEP,
     "a0lang_label_box_width": A0LANG_LABEL_BOX_WIDTH,
     "prog4_name_entry_hankaku": PROG4_NAME_ENTRY_HANKAKU,
+    "prog4_name_twin_convert": PROG4_NAME_TWIN_CONVERT,
     "prog6_battle_cmd_width": PROG6_BATTLE_CMD_WIDTH,
     "prog4_spell_name_table": PROG4_SPELL_NAME_TABLE,
     "prog5_menu_geometry": PROG5_MENU_GEOMETRY,

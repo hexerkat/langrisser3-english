@@ -47,15 +47,25 @@ occupy exactly 21 rows x 5 uniform glyphs (slots 7..111); more drawn
 cells per row shift the slots and the per-keystroke name redraw
 re-rasterizes over the key art (dump 2026-07-15 00:03: prompt slots 0-6,
 name AND keyboard row 0 both at slot 7+). CONCLUSION: no record-shaped
-change can deliver the 16px columns. Rows are LOCKED at 5 drawn cells;
-the 16px-column aesthetic needs a RENDERER-side grid mode (Phase-2 flag,
-candidate (c) of the postmortem). '_' empties are the hankaku space
-(selecting one appends an 8px space; tile 0 would append a 16px blank).
+change can deliver the 16px columns. Rows are LOCKED at 5 drawn cells.
 Guard: tests/test_prog4_name_entry_hankaku.py (row shape + slot count).
+
+v4 "DISPLAY TWINS" (2026-07-15, Ralf: "desenhar as letras do teclado no
+passo 16px mas registrar os caracteres no passo 8px"): the cells carry
+font_tools.TWIN_TILE_MAP tiles — WIDE-class copies of the hankaku
+letterforms, centered in the 16px tile (+TWIN_K, art = centered-4px
+transform, NOT the eagleIII zenkaku art). Wide class => the renderer
+steps 16px per key (the spaced columns, zero renderer change); still 5
+drawn glyphs/row => slot ABI intact; the PROG_4 append cave
+(prog4_name_twin_convert + name_twin_cave) subtracts TWIN_K so the name
+buffer receives hankaku tiles (8px). '_' empties are the twin SPACE
+(selecting one appends an 8px hankaku space after the conversion; tile 0
+would append a 16px blank). Guard: tests/test_name_entry_twin_glyphs.py
+(twin cells + every fetchable cell inside the twin band).
 """
 import struct
 
-# '_' = empty cell (hankaku space). Rows for records 0-18; 19-20 passthrough.
+# '_' = empty cell (twin space). Rows for records 0-18; 19-20 passthrough.
 KEYBOARD_ROWS = [
     "ABCDE", "FGHIJ", "KLMNO", "PQRST", "UVWXY", "Z____",
     "_____",
@@ -68,14 +78,14 @@ KEYBOARD_ROWS = [
 
 def hankaku_keyboard_records(button_records: list) -> list:
     """The 21 fntsys14 records: 19 generated 5-cell rows (SLOT-LOCKED,
-    see SPACING HISTORY) + the 2 button records (passed through verbatim
-    — our arrow/END art, positional actions)."""
-    from font_tools import HANKAKU_TILE_MAP
+    see SPACING HISTORY) of TWIN tiles + the 2 button records (passed
+    through verbatim — our arrow/END art, positional actions)."""
+    from font_tools import TWIN_TILE_MAP
     assert len(button_records) == 2, "expected the 2 button records (recs 19-20)"
-    space = HANKAKU_TILE_MAP[' ']
+    space = TWIN_TILE_MAP[' ']
     recs = []
     for row in KEYBOARD_ROWS:
-        cells = [space if ch == "_" else HANKAKU_TILE_MAP[ch] for ch in row]
+        cells = [space if ch == "_" else TWIN_TILE_MAP[ch] for ch in row]
         recs.append(b"".join(struct.pack(">H", c) for c in cells) + b"\xff\xff")
     recs.extend(button_records)
     return recs

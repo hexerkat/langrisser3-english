@@ -34,7 +34,7 @@ THE REWRITE (in place, 0x8E58..0x8EB8, 49 words — no cave needed):
   ONE loop, walking the re-read tile string, writing BOTH rows per glyph
   (bottom ptr r11 = r7 + 0x80 = one 64-cell row below). Per glyph:
     write top-left (+0) and bottom-left (+2), step both ptrs 1 cell;
-    if the tile is NOT in the hankaku band [1265..1419]: also write
+    if the tile is NOT in the hankaku band [1265..1349]: also write
     top-right (+1) / bottom-right (+3) and step 1 more cell (= JP 16px).
   Because both rows advance together, the width-blind `64 - count*2`
   inter-row jump is eliminated BY CONSTRUCTION — no row-width bookkeeping
@@ -45,10 +45,10 @@ THE REWRITE (in place, 0x8E58..0x8EB8, 49 words — no cave needed):
   them; the exit code at 0x8EBA is untouched and reads only r10/@(10,r14)).
 
   Width test (6 insns, 1 pool word): r0 = tile - 1265 (pool 0x04F1), then
-  unsigned r0 > 154 -> wide. Tiles below the band wrap to huge -> wide. The
-  narrow class [1265..1419] is the identical predicate PROG_3 Piece C uses
-  (font_tools "hankaku class range [1265..1419]"; cave/nakaguro at 1420+
-  deliberately test wide = zenkaku 16px).
+  unsigned r0 > 84 -> wide. Tiles below the band wrap to huge -> wide. The
+  narrow class [1265..1349] is the identical predicate PROG_3 Piece C uses
+  (balloon_zenkaku_cave HANKAKU_LO/HI); the v4 twin band (1350+) and the
+  cave/nakaguro block (1420+) deliberately test wide = zenkaku 16px.
 
   The pool constant lives in the function's own literal pool at 0x8EE6 — the
   mov.l-alignment PAD word (0x0000). Scanned: no mov.w pc-rel reaches it, no
@@ -68,7 +68,12 @@ patched bytes against the reference render model).
 # ── Width class (must equal the renderer's test; single source of truth for
 #    the Python model) ──────────────────────────────────────────────────────
 NARROW_LO = 1265          # font_tools.HANKAKU_BASE
-NARROW_HI = 1419          # band headroom top; 1420+ (cave/nakaguro) = wide
+NARROW_HI = 1349          # band headroom top (content ends 1344); the v4
+                          # name-entry TWIN band (1350..1416) and the
+                          # cave/nakaguro block (1420+) are wide by design.
+                          # Shrunk from 1419 on 2026-07-15: the headroom
+                          # tiles were blank/unreferenced and the twins need
+                          # the wide class (16px keyboard columns).
 ATTR_BASE = 0x5000        # r5: VDP2 pattern-name attribute bits
 SUBTILE_PER_GLYPH = 4     # pattern names per 16x16 staging char
 
@@ -105,8 +110,8 @@ POOL_CONST_OFF = 0x8EE6              # pool pad word -> 0x04F1 (=1265)
 #   8E82 7B02  add #2,r11
 #   8E84 912F  mov.w @(0x2F,pc),r1 ; = 0x04F1 from pool 0x8EE6
 #   8E86 3018  sub r1,r0           ; r0 = tile - 1265 (wraps huge if below)
-#   8E88 E14D  mov #77,r1
-#   8E8A 311C  add r1,r1           ; 154 = NARROW_HI - NARROW_LO
+#   8E88 E12A  mov #42,r1
+#   8E8A 311C  add r1,r1           ; 84 = NARROW_HI - NARROW_LO
 #   8E8C 3016  cmp/hi r1,r0        ; T = outside band -> wide
 #   8E8E 8B07  bf 0x8EA0           ; narrow: skip the right-half writes
 # wide:
@@ -131,7 +136,7 @@ _NEW_STREAM = bytes.fromhex(
     "E300" "E100" "3162" "8924"
     "6085" "6243" "323C" "6153" "312C" "2711" "7102" "2B11"
     "7702" "7B02"
-    "912F" "3018" "E14D" "311C" "3016" "8B07"
+    "912F" "3018" "E12A" "311C" "3016" "8B07"
     "6153" "312C" "7101" "2711" "7102" "2B11" "7702" "7B02"
     "7304" "613D" "3162" "8BE3"
     "A007" "0009"

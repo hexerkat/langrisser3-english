@@ -23,15 +23,15 @@ pinned the whole pipeline:
 
 THE REWRITE (in place, 0x4A9E..0x4AB9, 14 words — no cave needed):
   Same loop, but each word adds its WIDTH CLASS instead of a fixed 2:
-  narrow band [1265..1419] -> 1 cell, everything else (kanji, zenkaku,
+  narrow band [1265..1349] -> 1 cell, everything else (kanji, zenkaku,
   cave/nakaguro 1420+, control words like F600) -> 2 cells, exactly the
   predicate `a0lang_field_hankaku_step` put in the renderer — measurer and
   renderer count the SAME cells, so the box hugs by construction.
     - `mov.w @r2+,r0` + `cmp/eq #-1,r0` replaces the JP `mov.l 0xFFFF,r3`
       compare, freeing r3 AND the pool long at 0x4ADC.
-    - r3 = 1265 (pool pad 0x4ADA), r7 = 154 (freed pool word 0x4ADC),
+    - r3 = 1265 (pool pad 0x4ADA), r7 = band size (freed pool word 0x4ADC),
       loaded once before the loop; r7/r3 are dead here in the JP code.
-    - Wide test: r0 = tile - 1265; unsigned r0 > 154 -> wide. Sign-extended
+    - Wide test: r0 = tile - 1265; unsigned r0 > size -> wide. Sign-extended
       control words (0xF600 -> 0xFFFFF600) wrap huge -> wide, like JP.
     - The cap test at 0x4ABA (`mov #35,r1; cmp/hi r1,r5`) is untouched: the
       35-CELL screen-fit cap keeps its JP meaning. It used to mean ~16
@@ -63,7 +63,7 @@ CENTER = 18         # descriptor X = 18 - cells/2 (0x6012B80: mov #18)
 A0LANG_LOAD_BASE = 0x0600E000
 MEASURE_OFF = 0x4A9E             # file offset of the rewritten measure loop
 POOL_NARROW_OFF = 0x4ADA         # pad word          -> 0x04F1 (=1265)
-POOL_BAND_OFF = 0x4ADC           # freed FFFF-long hi -> 0x009A (=154)
+POOL_BAND_OFF = 0x4ADC           # freed FFFF-long hi -> band size (=84)
 
 # The rewritten measure loop (SH-2 big-endian, hand-assembled and locked by
 # the execution test). Addresses are load addresses (0x0600E000 + file off).
@@ -72,7 +72,7 @@ POOL_BAND_OFF = 0x4ADC           # freed FFFF-long hi -> 0x009A (=154)
 #   4AA0 E500  mov #0,r5           ; r5 = cells accumulator
 #   4AA2 6243  mov r4,r2           ; r2 = walker (r4 stays = string start)
 #   4AA4 9319  mov.w @(0x19,pc),r3 ; = 0x04F1 (1265) from pool 0x4ADA
-#   4AA6 9719  mov.w @(0x19,pc),r7 ; = 0x009A (154)  from pool 0x4ADC
+#   4AA6 9719  mov.w @(0x19,pc),r7 ; = band size (84) from pool 0x4ADC
 # loop:
 #   4AA8 6025  mov.w @r2+,r0       ; tile (sign-extended; glyphs are +ve)
 #   4AAA 88FF  cmp/eq #-1,r0       ; 0xFFFF terminator?
@@ -92,8 +92,11 @@ assert len(_NEW_STREAM) == 0x1C      # 14 words: exactly fills 0x4A9E..0x4AB9
 A0LANG_LABEL_BOX_WIDTH = {
     "A0LANG.BIN": [
         (MEASURE_OFF, _NEW_STREAM),
-        (POOL_NARROW_OFF, bytes.fromhex("04F1")),   # pad     0000 -> 1265
-        (POOL_BAND_OFF, bytes.fromhex("009A")),     # freed hi 0000 -> 154
+        # pool pad 0000 -> 1265; freed hi 0000 -> band size. Derived from the
+        # field-step constants so the measurer and the renderer can never
+        # disagree about the class bound (v4 shrank it 154 -> 84).
+        (POOL_NARROW_OFF, NARROW_LO.to_bytes(2, "big")),
+        (POOL_BAND_OFF, (NARROW_HI - NARROW_LO).to_bytes(2, "big")),
     ],
 }
 

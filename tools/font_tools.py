@@ -101,7 +101,7 @@ _UC_UI_OFFSETS = {
 ELLIPSIS_TILE = 906          # … two-dot ellipsis (tile 906)
 # Objectives bullet ・ (JP nakaguro, full-width): the JP glyph lives at tile
 # 217, which the bigram packer reclaimed — so the generator copies the JP
-# glyph to a free slot ABOVE the hankaku class range [1265..1419] (1426 is
+# glyph to a free slot ABOVE the hankaku class range [1265..1349] (1426 is
 # OFF-LIMITS: preserved legacy 'Yo' bigram, packer-reused; 1428 is clean; it must
 # render zenkaku 16px via the width-class dispatch) and below the _VD_SPACE
 # bigrams (1435+). Scripts write the literal ・ (objectives diagramming =
@@ -110,11 +110,13 @@ NAKAGURO_JP_TILE = 217
 NAKAGURO_TILE = 1428
 DQUOTE_TILE = 1470           # " double-quote (tile 1470)
 
-# v0.8 RESERVED tile range [1265..1434]: hankaku band (1265.. plus growth
-# headroom to 1419), zenkaku-dispatch scratch/cave (1420-1425), nakaguro
-# (1428), d00-offset cave (1427). The bigram packer MUST NOT allocate here
-# (regression 2026-07-08: a corpus shift spilled 'Yo'->1426 and '• '->1265,
-# silently overwritten by the band/cave writes). Ends at _VD_SPACE (1435).
+# v0.8 RESERVED tile range [1265..1434]: hankaku band (1265..1344 plus growth
+# headroom to the declared class top 1349), name-entry TWIN band (1350..1416,
+# v4 display twins), zenkaku-dispatch scratch/cave (1420-1425), d00-offset
+# cave (1427), nakaguro (1428), name-twin append cave (1429-1430). The bigram
+# packer MUST NOT allocate here (regression 2026-07-08: a corpus shift
+# spilled 'Yo'->1426 and '• '->1265, silently overwritten by the band/cave
+# writes). Ends at _VD_SPACE (1435).
 V08_RESERVED_TILES = frozenset(range(1265, 1435))
 
 # Apostrophe bigrams — one group (the font has no standalone ' tile, so every
@@ -752,6 +754,28 @@ _HANKAKU_CHARS = (
 HANKAKU_TILE_MAP = {ch: HANKAKU_BASE + i for i, ch in enumerate(_HANKAKU_CHARS)}
 # 8px ellipsis half-glyph (three 1px dots at cols 1/3/5, on the period baseline).
 _ELLIPSIS_HALF = bytes(0x54 if r in (11, 12) else 0 for r in range(16))
+
+# --- v0.8 name-entry TWIN band (v4 "display twins", 2026-07-15) ---------------
+# One WIDE-class tile per keyboard key: the char's hankaku letterform CENTERED
+# in the 16x16 tile (shifted 4px right — NOT the eagleIII-centered zenkaku
+# art). The keyboard records carry twins, so the field-UI renderer steps 16px
+# per key (spaced columns under the positional selector) with zero code
+# change and the 21x5 staging-slot ABI intact; the PROG_4 append cave
+# (name_twin_cave) subtracts TWIN_K so the NAME BUFFER receives the hankaku
+# tile (8px render, F600/save untouched). Twins live right above the shrunk
+# narrow band [1265..1349] (content tops at 1344; the declared top moved down
+# from 1419 because tiles 1435+ were NOT free — packed fresh bigrams start
+# there) and stay below the zenkaku-dispatch scratch/cave block at 1420+.
+# Twins never appear in prose: they exist only in the fntsys14 records.
+TWIN_K = 85
+TWIN_BASE = HANKAKU_BASE + TWIN_K            # 1350 = narrow-band top + 1
+_TWIN_CHARS = (
+    [chr(c) for c in range(ord('A'), ord('Z') + 1)]
+    + [chr(c) for c in range(ord('a'), ord('z') + 1)]
+    + [str(d) for d in range(10)]
+    + ['!', '?', ' ']
+)
+TWIN_TILE_MAP = {ch: HANKAKU_TILE_MAP[ch] + TWIN_K for ch in _TWIN_CHARS}
 
 # Apostrophe + hyphen completion: when the letter before a ' or - lands at odd
 # greedy parity it would fall to a standalone tile (blank right half) and spread
@@ -1469,6 +1493,13 @@ def _generate_data_driven_font(jp_font: bytes) -> bytes:
         half = _hk_halves.get(ch)
         if half is not None and t < NEW_FONT_TILES:
             out[t * 32:(t + 1) * 32] = _interleave(half, _BLANK_GLYPH)
+    # v4 name-entry twin band: the SAME hankaku letterform, centered in the
+    # 16px tile (cols 4-11) — wide class, keyboard records only. The space
+    # twin stays blank (its half is _BLANK_GLYPH).
+    for ch, t in TWIN_TILE_MAP.items():
+        half = _hk_halves.get(ch, _BLANK_GLYPH)
+        if t < NEW_FONT_TILES:
+            out[t * 32:(t + 1) * 32] = _render_glyph_centered(half)
     # Objectives bullet ・: JP nakaguro glyph rehomed above the hankaku class
     # range (its JP slot 217 is packer-reclaimed). Zenkaku class -> 16px.
     out[NAKAGURO_TILE * 32:(NAKAGURO_TILE + 1) * 32] = \
@@ -1484,6 +1515,11 @@ def _generate_data_driven_font(jp_font: bytes) -> bytes:
     from d00_offset_cave import D00_CAVE_TILE, d00_cave_blob
     _dblob = d00_cave_blob()
     out[D00_CAVE_TILE * 32:D00_CAVE_TILE * 32 + len(_dblob)] = _dblob
+    # v4 name-entry twin->hankaku append cave (tiles 1429-1430).
+    from name_twin_cave import NAME_TWIN_CAVE_TILE, cave_blob as _tw_blob
+    _tblob = _tw_blob()
+    out[NAME_TWIN_CAVE_TILE * 32:NAME_TWIN_CAVE_TILE * 32 + len(_tblob)] = \
+        _tblob
     return bytes(out)
 
 

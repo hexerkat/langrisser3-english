@@ -138,7 +138,9 @@ def test_pair_13_keyboard_exposes_full_en_key_set():
                      if w not in (0, 0xFFFF)}
 
     import font_tools as ft
-    m = ft.HANKAKU_TILE_MAP
+    # v4 (2026-07-15): the key pages carry DISPLAY TWINS (wide class ->
+    # 16px columns); the PROG_4 append cave converts them to hankaku.
+    m = ft.TWIN_TILE_MAP
     uc = {m[c] for c in "ABCDEFGHIJKLMNOPQRSTUVWXYZ"}
     lc = {m[c] for c in "abcdefghijklmnopqrstuvwxyz"}
     digits = {m[c] for c in "0123456789"}
