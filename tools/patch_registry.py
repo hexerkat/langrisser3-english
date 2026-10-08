@@ -43,6 +43,7 @@ ENGINE_PATCH_MODULES = (
     "prog3_nameplate_new_line",
     "prog3_statup_template",
     "prog3_item_use_glue",
+    "prog3_dialogue_hankaku_step",
     "prog4_field_box_geometry",
     "prog4_equip_title",
     "prog4_spell_name_table",

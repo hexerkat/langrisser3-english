@@ -592,6 +592,20 @@ def rebuild_d00(sections: list, new_text_areas: dict = None) -> bytes:
 # High-level insertion
 # ---------------------------------------------------------------------------
 
+# v0.8 SPIKE (branch font-hankaku-per-glyph): specific dialogue entries routed
+# through the per-glyph HANKAKU encoder (1 tile/char, no bigrams) instead of the
+# bigram packer, to prove per-glyph 8px dialogue in Ymir. Matched by (scen_num,
+# content prefix) so leading-blank offsets don't matter (feedback_check_jp_for_each
+# _entry). The full v0.8 rollout routes ALL prose through hankaku; this list is the
+# throwaway proof and is removed then.
+HANKAKU_SPIKE_ENTRIES = ((1, "…Youth aspiring"),)
+
+
+def _hankaku_spike_match(scen_num: int, text: str) -> bool:
+    return any(scen_num == s and text.startswith(pfx)
+               for s, pfx in HANKAKU_SPIKE_ENTRIES)
+
+
 def insert_translations(sections: list, scripts_dir: Path,
                         char_tile_map: dict, bigram_tile_map: dict = None,
                         verbose: bool = False) -> tuple:
@@ -630,7 +644,11 @@ def insert_translations(sections: list, scripts_dir: Path,
         # Encode entries
         encoded_entries = []
         for text in text_entries:
-            encoded = encode_text_to_entry(text, char_tile_map, bigram_tile_map)
+            if _hankaku_spike_match(scen_num, text):
+                from hankaku_encoder import encode_hankaku
+                encoded = encode_hankaku(text)
+            else:
+                encoded = encode_text_to_entry(text, char_tile_map, bigram_tile_map)
             # Ensure entry ends with a control code terminator
             if len(encoded) >= 2:
                 last_word = struct.unpack_from('>H', encoded, len(encoded) - 2)[0]

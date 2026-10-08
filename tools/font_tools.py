@@ -711,6 +711,24 @@ for _d in range(10):
     CHAR_TILE_MAP[str(_d)] = 201 + _d
 BIGRAM_TILE_MAP = build_bigram_tile_map()
 
+# --- v0.8 per-glyph HANKAKU band (branch font-hankaku-per-glyph) --------------
+# One 8px tile per character: the char's 8px half-glyph in the LEFT columns, right
+# half blank (overdrawn by the next glyph, which the dialogue renderer now steps
+# 8px — see prog3_dialogue_hankaku_step). Placed in the free tile range 1265-1469
+# (all blank in the current font; below every engine-fixed band). This REPLACES the
+# bigram packing for prose: 1 tile per LETTER, no combinatorics. HANKAKU_TILE_MAP
+# is the encoder's per-glyph lookup (new_encoder hankaku path).
+HANKAKU_BASE = 1265
+_HANKAKU_CHARS = (
+    [chr(c) for c in range(ord('A'), ord('Z') + 1)]
+    + [chr(c) for c in range(ord('a'), ord('z') + 1)]
+    + [str(d) for d in range(10)]
+    + [' ', '.', ',', '!', '?', "'", '-', '…', 'ä', 'ö', 'ü']
+)
+HANKAKU_TILE_MAP = {ch: HANKAKU_BASE + i for i, ch in enumerate(_HANKAKU_CHARS)}
+# 8px ellipsis half-glyph (three 1px dots at cols 1/3/5, on the period baseline).
+_ELLIPSIS_HALF = bytes(0x54 if r in (11, 12) else 0 for r in range(16))
+
 # Apostrophe + hyphen completion: when the letter before a ' or - lands at odd
 # greedy parity it would fall to a standalone tile (blank right half) and spread
 # the mark ("Freya 's", "Class - Up", stutters "N- no"). Adding every missing
@@ -1301,6 +1319,11 @@ _FRESH_LO, _FRESH_HI = 46, 1499
 # position so the unchanged CHAR_TILE_MAP keeps rendering them (no spacing change).
 CHAR_SINGLE_TILES = {t for t in CHAR_TILE_MAP.values()
                      if t is not None and _FRESH_LO <= t <= _FRESH_HI}
+# v0.8 hankaku band (1265-1339): lives in the free upper FRESH range the bigram
+# packer never reaches (max packed tile < 1265); composed below in
+# _generate_data_driven_font AFTER the bigram loop (one 8px glyph per char). Kept
+# OUT of PRESERVED_TILES so the bigram layout / CSV truth-lock is unchanged.
+HANKAKU_TILES = set(HANKAKU_TILE_MAP.values())
 PRESERVED_TILES = FIXED_TILES | KEPT_SPECIAL_TILES | CHAR_SINGLE_TILES
 DROPPED_TILES = {43, 45}   # parked low-band bigrams the rebuild drops (not engine)
 
@@ -1410,6 +1433,14 @@ def _generate_data_driven_font(jp_font: bytes) -> bytes:
     # engine 's possessive (tile 0x2C): the normal [',s] bigram (s in the RIGHT
     # half), so the engine-injected stat-up suffix keeps its gap ("Freya's Level").
     out[0x2C * 32:0x2D * 32] = compose_bigram("'", "s")
+    # v0.8 hankaku band: one 8px tile per char (glyph in the LEFT 8px, right half
+    # blank). Composed after the preserved-copy/bigram loops so it wins its slots.
+    _hk_halves = dict(HALF_GLYPHS)
+    _hk_halves.setdefault('…', _ELLIPSIS_HALF)
+    for ch, t in HANKAKU_TILE_MAP.items():
+        half = _hk_halves.get(ch)
+        if half is not None and t < NEW_FONT_TILES:
+            out[t * 32:(t + 1) * 32] = _interleave(half, _BLANK_GLYPH)
     return bytes(out)
 
 
