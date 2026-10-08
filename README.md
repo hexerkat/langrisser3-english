@@ -62,6 +62,12 @@ This produces a self-contained folder under `build/` named after the `.cue` (e.g
 
 3. **Load in your emulator** : open the `.cue` inside that folder and play.
 
+### Prefer a window?
+
+Run `python3 launcher.py` (on Windows, `py launcher.py` or double-click it). Pick your Japanese disc folder, choose whether to build the English opening movie, and press **Build patched game**. When it finishes, **Open output folder** takes you to the `.cue`.
+
+The window uses Tkinter. It comes with Python on Windows and macOS. On Linux you may need to install it (Debian/Ubuntu: `sudo apt install python3-tk`).
+
 ### The opening movie
 
 The opening FMV is game data, so no video ships here : only its English subtitle track (`assets/movie/opening_en.srt`). Add `--encode-movie` and the patcher builds the subtitled opening from the movie on *your* disc, keeping the Japanese voice track:
