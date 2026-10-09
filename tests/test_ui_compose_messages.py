@@ -77,3 +77,19 @@ def test_number_separator_is_one_8px_space(built):
     assert b["read"](uc.level_message(b["fs"], b["prog3"], TIARIS, 12, up=False)) \
         == "Tiaris's Level 12 fell!"
     assert b["read"](uc.mp_message(b["fs"], b["prog3"], 5)) == "MP 5 recovered!"
+
+
+SOLDIER, PRIEST, AQUATIC_ARCHER = 0, 1, 9      # fntsys7 records
+
+
+def test_unit_splash_words_are_spaced(built):
+    """The battle-map unit splash (A0LANG FUN_060128D8) glues three records
+    with no engine separator. Red state: v0.7 relied on the phantom blank of
+    odd words, so even troop types glued ("Enemy PriestUnit"), and the hybrid
+    glues every junction. End state: the left fragments carry their own
+    trailing space."""
+    b = built
+    read = lambda t, npc=False: b["read"](uc.unit_splash(b["fs"], t, npc))
+    assert read(SOLDIER) == "Enemy Soldier Unit"
+    assert read(PRIEST) == "Enemy Priest Unit"
+    assert read(AQUATIC_ARCHER, npc=True) == "NPC Aquatic Archer Unit"

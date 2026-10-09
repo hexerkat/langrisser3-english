@@ -75,7 +75,7 @@ Status<$FFFF>
 Equip<$FFFF>
 Confused and unable to give orders<$FFFF>
 Sound asleep and unable to give orders<$FFFF>
-Enemy<$FFFF>
+Enemy <$FFFF>
 Shop<$FFFF>
 Silenced<$FFFF>
 Command summoned creature<$FFFF>
@@ -127,7 +127,7 @@ Increase<$FFFF>
 Decrease<$FFFF>
 Enemy Unit<$FFFF>
 NPC Unit<$FFFF>
-NPC<$FFFF>
+NPC <$FFFF>
 Already equipped<$FFFF>
 Continue without saving?<$FFFF>
 Perspective<$FFFF>

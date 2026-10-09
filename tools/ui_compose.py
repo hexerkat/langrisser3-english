@@ -17,6 +17,9 @@ Composers (all addresses are runtime, JP load bases):
   ITEM ACTION BOX  A0LANG FUN_0601299c -> measured by FUN_06012A98
       [item fntsys10] + glue(A0LANG file 0x49CB) + [fntsys1 rec14 Use | rec13 Equip]
       + [fntsys1 rec at byte index A0LANG file 0x4A75]
+  UNIT SPLASH      A0LANG FUN_060128D8 -> measured by FUN_06012A98
+      [fntsys1 rec77 Enemy | rec129 NPC] + [troop type fntsys7] + [fntsys1 rec63 Unit]
+      (no engine glue at all: the records must carry their own spaces)
   EVENT MESSAGES   PROG_3 FUN_0607c430 (opcode switch)
       level  : [name] + glue(0x29DCF) + [fntsys3 rec24] + glue(0x29DE9) + digits + [rec0|rec29]
       item   : [name] + glue(0x2A0C3) + [item fntsys10] + [fntsys3 rec10]
@@ -24,7 +27,8 @@ Composers (all addresses are runtime, JP load bases):
 """
 import struct
 
-FNTSYS1, FNTSYS3, FNTSYS10, FNTSYS11 = 0, 2, 9, 10    # FNT_SYS pair indices
+FNTSYS1, FNTSYS3, FNTSYS7, FNTSYS10, FNTSYS11 = 0, 2, 6, 9, 10   # FNT_SYS pairs
+ENEMY, NPC, UNIT = 77, 129, 63                          # fntsys1 splash records
 from width_class import is_narrow_tile                  # the ONE width rule
 DIGIT_BASE = 7                                          # engine digits: value + 7
 TERMINATOR = 0xFFFF
@@ -108,3 +112,8 @@ def item_use_message(fs, prog3: bytes, name: int, item: int) -> list[int]:
 def mp_message(fs, prog3: bytes, value: int) -> list[int]:
     return (_record(fs, FNTSYS3, 20) + [_byte(prog3, 0x29F83)] + _digits(value)
             + _record(fs, FNTSYS3, 28))
+
+
+def unit_splash(fs, troop: int, npc: bool = False) -> list[int]:
+    return (_record(fs, FNTSYS1, NPC if npc else ENEMY)
+            + _record(fs, FNTSYS7, troop) + _record(fs, FNTSYS1, UNIT))
