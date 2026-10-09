@@ -1,5 +1,10 @@
 """tools/prog3_statup_template.py — our stat-up message-template patch.
 
+GLYPH NOTE (2026-10-08, Ralf): tile 44 now draws the right arrow "→" (the
+ADV button art), not the possessive 's: "[Name]→[Item] was used!",
+"[Name]→Level 3 rose!". The 's history below is kept for the record;
+tests/test_ui_compose_messages.py pins the effective line.
+
 SIX owned byte patches over the **JP** `LANG/PROG_3.BIN`. These are OURS
 (RG, ~v0.5 phase 3a, commit 717d850) — NOT 0.2 patch bytes. They lived mislabeled
 inside `byte_overlays.PROG_3_OVERLAY` until 2026-06-10 (roadmap T08); this
@@ -52,9 +57,9 @@ four and missed 0x29F83 (opcode 0x15).
 
 Patch sites (file offsets in LANG/PROG_3.BIN; JP baseline byte first)
 ---------------------------------------------------------------------
-    0x29DCF  0x5C -> 0x2C   's  (opcode 0x12: NAME's Level n went down!)
+    0x29DCF  0x5C -> 0x2C   →   (opcode 0x12: NAME's Level n went down!)
     0x29DE9  0x39 -> 0x2B   8px glue space before the value (same template)
-    0x29E09  0x5C -> 0x2C   's  (second name+stat template path)
+    0x29E09  0x5C -> 0x2C   →   (second name+stat template path)
     0x29E23  0x39 -> 0x2B   8px glue space before the value
     0x29EB7  0x39 -> 0x2B   8px glue space before the value (MP-recovery template)
     0x29F2D  0x39 -> 0x2B   8px glue space before the value (generic stat-up)
@@ -72,9 +77,9 @@ from width_class import NARROW_GLUE_TILE   # tile 43: blank, narrow class
 
 PROG3_STATUP_TEMPLATE = {
     "LANG/PROG_3.BIN": [
-        (0x00029DCF, b"\x2c"),  # 0x5C(の) -> tile 44 's
+        (0x00029DCF, b"\x2c"),  # 0x5C(の) -> tile 44 → (glue arrow)
         (0x00029DE9, bytes([NARROW_GLUE_TILE])),  # 0x39 -> 8px glue space
-        (0x00029E09, b"\x2c"),  # 0x5C(の) -> tile 44 's
+        (0x00029E09, b"\x2c"),  # 0x5C(の) -> tile 44 → (glue arrow)
         (0x00029E23, bytes([NARROW_GLUE_TILE])),  # 0x39 -> 8px glue space
         (0x00029EB7, bytes([NARROW_GLUE_TILE])),  # 0x39 -> 8px glue space
         (0x00029F2D, bytes([NARROW_GLUE_TILE])),  # 0x39 -> 8px glue space

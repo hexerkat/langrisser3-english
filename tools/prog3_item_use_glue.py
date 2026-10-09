@@ -1,5 +1,10 @@
 """tools/prog3_item_use_glue.py — item-use message の-glue -> 's.
 
+GLYPH NOTE (2026-10-08, Ralf): tile 44 now draws the right arrow "→" (the
+ADV button art), not the possessive 's: "[Name]→[Item] was used!",
+"[Name]→Level 3 rose!". The 's history below is kept for the record;
+tests/test_ui_compose_messages.py pins the effective line.
+
 TWO owned byte patches over the **JP** `LANG/PROG_3.BIN`, in the same system-
 message builder as the stat-up template (FUN_0607c430, load base 0x06052800).
 
@@ -37,8 +42,8 @@ band for engine `mov #imm` tiles.
 
 PROG3_ITEM_USE_GLUE = {
     "LANG/PROG_3.BIN": [
-        (0x0002A0C3, b"\x2c"),   # の -> 's tile 44 (sign-safe; item-use path A)
-        (0x0002A11B, b"\x2c"),   # の -> 's tile 44 (sign-safe; item-use path B)
+        (0x0002A0C3, b"\x2c"),   # の -> tile 44 → (sign-safe; item-use path A)
+        (0x0002A11B, b"\x2c"),   # の -> tile 44 → (sign-safe; item-use path B)
     ],
 }
 

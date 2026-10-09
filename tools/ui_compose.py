@@ -50,11 +50,16 @@ class CellReader:
             if ch != ' ':
                 self.by_half.setdefault(bytes(half), ch)
         self.whole = {DIGIT_BASE + d: str(d) for d in range(10)}
+        # whole-tile glyphs recognised by their pixels (engine glue art)
+        self.by_tile = {bytes(ft._NAME_ENTRY_BUTTON_TILES[1488]): '→'}
 
     def tile_text(self, t: int) -> str:
         left, right = _halves(self.font[t * 32:(t + 1) * 32])
         if t in self.whole:
             return self.whole[t]
+        art = bytes(self.font[t * 32:(t + 1) * 32])
+        if art in self.by_tile:
+            return self.by_tile[art]
         cells = [left] if is_narrow_tile(t) else [left, right]
         out = []
         for c in cells:

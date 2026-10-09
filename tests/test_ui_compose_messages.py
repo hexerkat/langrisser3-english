@@ -9,6 +9,10 @@ Red state (2026-10-08, RE + byte decode): tile 0x2C, the engine possessive, was
 redrawn as a compact "'s " in 57450d6 (2026-06-14) but the data-driven font
 generator (9abc4ba, 2026-06-26) drew it again as a plain (', s) pair, so v0.7.x
 shows "Tiaris'sMagic Herb was used!" and "Freya'sLevel 3 rose!".
+
+Decision (Ralf 2026-10-08): the engine glue tile 0x2C draws the right arrow
+(the name-entry ADV glyph, tile 1488) instead of the possessive:
+"Tiaris→Magic Herb was used!", "Freya→Level 3 rose!".
 """
 import sys
 from pathlib import Path
@@ -46,18 +50,18 @@ def built():
     }
 
 
-def test_item_use_possessive_has_its_space(built):
+def test_item_use_glue_is_the_arrow(built):
     b = built
     assert b["read"](uc.item_use_message(b["fs"], b["prog3"], TIARIS, MAGIC_HERB)) \
-        == "Tiaris's Magic Herb was used!"
+        == "Tiaris→Magic Herb was used!"
     assert b["read"](uc.item_use_message(b["fs"], b["prog3"], FREYA, MAGIC_HERB)) \
-        == "Freya's Magic Herb was used!"
+        == "Freya→Magic Herb was used!"
 
 
-def test_level_message_possessive_has_its_space(built):
+def test_level_message_glue_is_the_arrow(built):
     b = built
     text = b["read"](uc.level_message(b["fs"], b["prog3"], FREYA, 3))
-    assert text.startswith("Freya's Level"), text
+    assert text.startswith("Freya→Level"), text
 
 
 def test_item_action_box_has_no_phantom_gap(built):
@@ -73,9 +77,9 @@ def test_number_separator_is_one_8px_space(built):
     (two cells). End state: the 8px glue space (width_class, tile 43)."""
     b = built
     assert b["read"](uc.level_message(b["fs"], b["prog3"], FREYA, 3)) \
-        == "Freya's Level 3 rose!"
+        == "Freya→Level 3 rose!"
     assert b["read"](uc.level_message(b["fs"], b["prog3"], TIARIS, 12, up=False)) \
-        == "Tiaris's Level 12 fell!"
+        == "Tiaris→Level 12 fell!"
     assert b["read"](uc.mp_message(b["fs"], b["prog3"], 5)) == "MP 5 recovered!"
 
 

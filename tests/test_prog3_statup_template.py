@@ -6,7 +6,8 @@ tests/test_prog3_nameplate_new_line.py:
 1. Every patch site holds the documented JP byte (0x5C/0x39) in the
    pristine PROG_3.BIN — if the offsets drift, this fails loudly instead
    of silently patching the wrong instruction.
-2. The replacement bytes are the documented 0x2C ('s tile 44) / 0x2B
+2. The replacement bytes are the documented 0x2C (tile 44, the glue arrow
+   "→" since 2026-10-08, formerly 's) / 0x2B
    (tile 43, the 8px glue space of tools/width_class.py, since 2026-10-08) — and tile 44 in the GENERATED font really is the 's
    glyph (absolute-glyph-index rule: any hardcoded tile index must be
    validated against the font it indexes).
@@ -60,7 +61,7 @@ def test_patch_values_are_documented_tiles():
     runs = PROG3_STATUP_TEMPLATE[ISO_PATH]
     assert len(runs) == 7
     values = {off: chunk for off, chunk in runs}
-    assert values[0x29DCF] == values[0x29E09] == b"\x2c"   # 's tile 44
+    assert values[0x29DCF] == values[0x29E09] == b"\x2c"   # glue arrow tile 44
     # FIVE 0x39 separator sites. 0x29F83 (opcode 0x15, item-effect value
     # message) was missed by the original 4-site sweep — the user saw it
     # as "MPak 18 recovered" (tile 0x39 = our 'ak' bigram), playtest

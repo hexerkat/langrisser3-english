@@ -1,7 +1,7 @@
 """Part 0 of the new-font rebuild: LOCK the engine-mandatory tile skeleton.
 
 The engine writes/reads these tile indices from compiled SH-2 code — `mov #imm`
-glue (blank 0x00, ": " 0x01, 's 0x2C) and the number formatter (digits 7-16 =
+glue (blank 0x00, ": " 0x01, arrow 0x2C) and the number formatter (digits 7-16 =
 value+7). The new from-scratch FONT.BIN MUST keep them at these EXACT positions,
 so this guard byte-locks them against the generated font: any accidental move or
 corruption during the data-driven rebuild turns it RED.
@@ -9,11 +9,10 @@ corruption during the data-driven rebuild turns it RED.
 See archive/docs/20260625_new_font_from_scratch_plan.md (Part 0) and the
 engine-fixed map in 20260625_font_refactor_handoff.md.
 
-Glyph note: tiles 0,1,7-16 are immutable. Tile 44 ('s possessive) keeps its
-POSITION fixed forever. Its glyph is the compact "'s " (2026-06-14): the right
-half is the space before the record the engine appends next. The Part 3
-"normal 's" standardization dropped that space and glued every composed line
-("Tiaris'sMagic Herb"), so it was reverted on 2026-10-08
+Glyph note: tiles 0,1,7-16 are immutable. Tile 44 (the engine の glue) keeps
+its POSITION fixed forever. Its glyph history: compact "'s " (2026-06-14), a
+"normal 's" that glued every composed line ("Tiaris'sMagic Herb", Part 3), and
+since 2026-10-08 the right arrow (Ralf), the same art as the ADV button
 (tests/test_ui_compose_messages.py pins the effective line).
 """
 import sys
@@ -28,7 +27,7 @@ JP_FONT = REPO / "data" / "jp" / "font_jp.bin"
 TILE = 32  # bytes per 16x16 1bpp tile
 
 # Byte-exact golden for the engine-mandatory tiles in the NEW (shipping) font.
-# 0,1,7-16 are preserved from the JP base; tile 44 is the compact "'s " drawn by
+# 0,1,7-16 are preserved from the JP base; tile 44 is the glue arrow drawn by
 # the legacy generator at the の position. Deterministic.
 GOLDEN = {
     0:  '0000000000000000000000000000000000000000000000000000000000000000',  # full-width blank
@@ -43,7 +42,7 @@ GOLDEN = {
     14: '0000000000000fe00c60006000c000c001800180030003000300000000000000',  # 7
     15: '00000000000007c00c600c600c6007c00c600c600c600c6007c0000000000000',  # 8
     16: '000000000000038006c00c600c600c6006e003e0006000c00780000000000000',  # 9
-    44: '00000000c000c000800000003e00630060003e00030063003e00000000000000',  # "'s " compact (の): 's left + 8px space right
+    44: '00000000000000000008000c000e7ffe000e000c000800000000000000000000',  # "→" engine glue (の), the ADV arrow art
 }
 
 

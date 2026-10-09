@@ -1122,27 +1122,14 @@ def generate_english_font(jp_font: bytes) -> bytes:
     # --- Tile 43: blank (previously JP kanji leftover) ---
     write_tile(43, b'\x00' * TILE_SIZE)
 
-    # --- Tile 44: "'s " — COMPACT possessive (left half) + trailing space ---
-    # 8-bit-loadable slot for SH-2 `mov #0x2C, Rn`, used by both the stat-up
-    # template ("[Name]'s Level ...") and the item-use message ("[Name]'s
-    # [Item] was used!") in prog_3.bin.
-    #
-    # Redesigned 2026-06-14 (user): the possessive 's no longer spans a whole
-    # bigram. It is drawn COMPACT in the LEFT half — apostrophe touching the
-    # top-left corner, the s shifted right to touch col 7 — so the RIGHT half is
-    # an 8px trailing SPACE. This puts the post-'s separator INSIDE the tile,
-    # fixing the item-use glue ("Tiaris'sMagic Herb" -> "Tiaris's Magic Herb")
-    # with no 2nd low slot. Stays at index 44 (<= 0x7F, sign-safe; see
-    # reference_engine_immediate_tile_constraint).
-    #
-    # NOTE: the gap now lives in the tile, so the stat-up suffix's own leading
-    # space (" Level") would DOUBLE the gap in those messages — handled in the
-    # fntsys suffix if playtest shows it (see prog3_statup_template).
-    _s_possessive = bytearray(b >> 1 for b in _LETTER_GLYPHS['s'])  # s -> cols 1-7
-    _s_possessive[2] |= 0xC0   # apostrophe, top-left corner
-    _s_possessive[3] |= 0xC0
-    _s_possessive[4] |= 0x80
-    write_tile(44, _interleave(bytes(_s_possessive), _BLANK_GLYPH))
+    # --- Tile 44: the engine glue arrow "→" ---
+    # 8-bit-loadable slot for SH-2 `mov #0x2C, Rn` (<= 0x7F, sign-safe; see
+    # reference_engine_immediate_tile_constraint), the JP の glue of the PROG_3
+    # stat-up ("[Name]→Level 3 rose!") and item-use ("[Name]→[Item] was used!")
+    # messages. Ralf 2026-10-08: the right arrow replaces the possessive 's
+    # (compact "'s " 2026-06-14). Same art as the name-entry ADV button (1488),
+    # whose 1px margins keep the arrow clear of both neighbouring words.
+    write_tile(44, _NAME_ENTRY_BUTTON_TILES[1488])
 
     # --- Tile 45: blank (previously JP kanji leftover) ---
     write_tile(45, b'\x00' * TILE_SIZE)
