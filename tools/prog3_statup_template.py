@@ -25,8 +25,10 @@ so the EN build must substitute:
                   on purpose: SH-2 `mov #imm,Rn` immediates are 8-bit, so
                   the normal `'s` bigram tile (1498) cannot be encoded.
                   Tile 44 is guarded by the font CSV truth-lock.
-    0x39 -> 0x00  tile 0 = full-width blank (the only index that never
-                  moves on font rebuilds).
+    0x39 -> 0x2B  tile 43 = the 8px glue space (tools/width_class.py): a
+                  blank in the NARROW width class, so the number sits one
+                  normal space after the word. Was tile 0 (16px blank) until
+                  2026-10-08, which left a ~20px hole before the digit.
 
 Composed result (level-change template, opcode 0x12 family):
 
@@ -51,12 +53,12 @@ four and missed 0x29F83 (opcode 0x15).
 Patch sites (file offsets in LANG/PROG_3.BIN; JP baseline byte first)
 ---------------------------------------------------------------------
     0x29DCF  0x5C -> 0x2C   's  (opcode 0x12: NAME's Level n went down!)
-    0x29DE9  0x39 -> 0x00   blank before the value (same template)
+    0x29DE9  0x39 -> 0x2B   8px glue space before the value (same template)
     0x29E09  0x5C -> 0x2C   's  (second name+stat template path)
-    0x29E23  0x39 -> 0x00   blank before the value
-    0x29EB7  0x39 -> 0x00   blank before the value (MP-recovery template)
-    0x29F2D  0x39 -> 0x00   blank before the value (generic stat-up)
-    0x29F83  0x39 -> 0x00   blank before the value (opcode 0x15, item-
+    0x29E23  0x39 -> 0x2B   8px glue space before the value
+    0x29EB7  0x39 -> 0x2B   8px glue space before the value (MP-recovery template)
+    0x29F2D  0x39 -> 0x2B   8px glue space before the value (generic stat-up)
+    0x29F83  0x39 -> 0x2B   8px glue space before the value (opcode 0x15, item-
                             effect "MP/HP n recovered"; "MPak" fix)
 
 RE artifacts: /home/ralf/romhack/langrisser3-english-reverse-engineering/
@@ -66,15 +68,17 @@ archive/docs/20260609_fntsys_systems_and_encoder.md §4.
 
 # (file offset in LANG/PROG_3.BIN, replacement bytes). Same shape as
 # byte_overlays.BYTE_OVERLAYS so build.py applies it through the same loop.
+from width_class import NARROW_GLUE_TILE   # tile 43: blank, narrow class
+
 PROG3_STATUP_TEMPLATE = {
     "LANG/PROG_3.BIN": [
         (0x00029DCF, b"\x2c"),  # 0x5C(の) -> tile 44 's
-        (0x00029DE9, b"\x00"),  # 0x39 -> tile 0 blank
+        (0x00029DE9, bytes([NARROW_GLUE_TILE])),  # 0x39 -> 8px glue space
         (0x00029E09, b"\x2c"),  # 0x5C(の) -> tile 44 's
-        (0x00029E23, b"\x00"),  # 0x39 -> tile 0 blank
-        (0x00029EB7, b"\x00"),  # 0x39 -> tile 0 blank
-        (0x00029F2D, b"\x00"),  # 0x39 -> tile 0 blank
-        (0x00029F83, b"\x00"),  # 0x39 -> tile 0 blank (opcode 0x15, item-
+        (0x00029E23, bytes([NARROW_GLUE_TILE])),  # 0x39 -> 8px glue space
+        (0x00029EB7, bytes([NARROW_GLUE_TILE])),  # 0x39 -> 8px glue space
+        (0x00029F2D, bytes([NARROW_GLUE_TILE])),  # 0x39 -> 8px glue space
+        (0x00029F83, bytes([NARROW_GLUE_TILE])),  # 0x39 -> 8px glue space (opcode 0x15, item-
                                 # effect value: "MP/HP n recovered"). Missed by
                                 # the original 4-site sweep; user saw "MPak 18
                                 # recovered" (0x39 = our 'ak' bigram), playtest

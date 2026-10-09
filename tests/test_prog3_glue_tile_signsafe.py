@@ -63,8 +63,10 @@ def test_every_glue_tile_is_renderable():
 
 
 def test_nonblank_glue_tiles_have_a_glyph():
-    """Each non-zero glue tile must actually have ink in the generated font at
-    its EFFECTIVE index (0 = intentional blank/space, skipped)."""
+    """Each glue tile must actually have ink in the generated font at its
+    EFFECTIVE index, except the two intentional blanks: tile 0 (16px) and the
+    8px glue space of tools/width_class.py (tile 43, narrow class)."""
+    from width_class import NARROW_GLUE_TILE
     jp = PROJ / "data" / "jp" / "font_jp.bin"
     if not jp.exists():
         pytest.skip("data/jp/font_jp.bin not present")
@@ -73,7 +75,7 @@ def test_nonblank_glue_tiles_have_a_glyph():
     bad = []
     for name, off, imm in _all_glue_patches():
         eff = effective_tile(imm)
-        if eff == 0 or eff >= NUM_TILES:
+        if eff in (0, NARROW_GLUE_TILE) or eff >= NUM_TILES:
             continue
         ink = sum(bin(b).count("1") for b in font[eff * 32:(eff + 1) * 32])
         if ink == 0:

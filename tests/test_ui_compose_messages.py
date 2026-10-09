@@ -66,3 +66,14 @@ def test_item_action_box_has_no_phantom_gap(built):
         == "Magic Herb: Use"
     assert b["read"](uc.item_action(b["fs"], b["a0lang"], LONGSWORD, use=False)) \
         == "Longsword: Equip"
+
+
+def test_number_separator_is_one_8px_space(built):
+    """Red state: the PROG_3 glue before a number was tile 0, a 16px blank
+    (two cells). End state: the 8px glue space (width_class, tile 43)."""
+    b = built
+    assert b["read"](uc.level_message(b["fs"], b["prog3"], FREYA, 3)) \
+        == "Freya's Level 3 rose!"
+    assert b["read"](uc.level_message(b["fs"], b["prog3"], TIARIS, 12, up=False)) \
+        == "Tiaris's Level 12 fell!"
+    assert b["read"](uc.mp_message(b["fs"], b["prog3"], 5)) == "MP 5 recovered!"

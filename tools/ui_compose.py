@@ -25,7 +25,7 @@ Composers (all addresses are runtime, JP load bases):
 import struct
 
 FNTSYS1, FNTSYS3, FNTSYS10, FNTSYS11 = 0, 2, 9, 10    # FNT_SYS pair indices
-NARROW_LO, NARROW_HI = 1265, 1349                       # renderer width class
+from width_class import is_narrow_tile                  # the ONE width rule
 DIGIT_BASE = 7                                          # engine digits: value + 7
 TERMINATOR = 0xFFFF
 
@@ -51,7 +51,7 @@ class CellReader:
         left, right = _halves(self.font[t * 32:(t + 1) * 32])
         if t in self.whole:
             return self.whole[t]
-        cells = [left] if NARROW_LO <= t <= NARROW_HI else [left, right]
+        cells = [left] if is_narrow_tile(t) else [left, right]
         out = []
         for c in cells:
             if not any(c):

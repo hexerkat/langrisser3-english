@@ -6,8 +6,8 @@ tests/test_prog3_nameplate_new_line.py:
 1. Every patch site holds the documented JP byte (0x5C/0x39) in the
    pristine PROG_3.BIN — if the offsets drift, this fails loudly instead
    of silently patching the wrong instruction.
-2. The replacement bytes are the documented 0x2C ('s tile 44) / 0x00
-   (blank tile 0) — and tile 44 in the GENERATED font really is the 's
+2. The replacement bytes are the documented 0x2C ('s tile 44) / 0x2B
+   (tile 43, the 8px glue space of tools/width_class.py, since 2026-10-08) — and tile 44 in the GENERATED font really is the 's
    glyph (absolute-glyph-index rule: any hardcoded tile index must be
    validated against the font it indexes).
 3. The fntsys3 records appended after a DIGIT/stat keep their load-bearing
@@ -66,7 +66,7 @@ def test_patch_values_are_documented_tiles():
     # as "MPak 18 recovered" (tile 0x39 = our 'ak' bigram), playtest
     # 2026-06-13.
     for off in (0x29DE9, 0x29E23, 0x29EB7, 0x29F2D, 0x29F83):
-        assert values[off] == b"\x00"                       # blank tile 0
+        assert values[off] == bytes([43])                   # 8px glue space
 
 
 def test_tile_44_is_the_apostrophe_s_glyph(jp_prog3):
