@@ -22,6 +22,9 @@ Composers (all addresses are runtime, JP load bases):
       (no engine glue at all: the records must carry their own spaces)
   EVENT MESSAGES   PROG_3 FUN_0607c430 (opcode switch)
       level  : [name] + glue(0x29DCF) + [fntsys3 rec24] + glue(0x29DE9) + digits + [rec0|rec29]
+      lv-up  : [name] + glue(0x29DCF) + [fntsys3 rec24] + glue(0x29DE9) + [rec0]
+               (opcode 1, no number; the glue survives only if the delay-slot
+               `add #2,r8` at 0x29DF0 still advances past it)
       item   : [name] + glue(0x2A0C3) + [item fntsys10] + [fntsys3 rec10]
       MP     : [fntsys3 rec20] + glue(0x29F83) + digits + [fntsys3 rec28]
 """
@@ -122,3 +125,14 @@ def mp_message(fs, prog3: bytes, value: int) -> list[int]:
 def unit_splash(fs, troop: int, npc: bool = False) -> list[int]:
     return (_record(fs, FNTSYS1, NPC if npc else ENEMY)
             + _record(fs, FNTSYS7, troop) + _record(fs, FNTSYS1, UNIT))
+
+
+LEVEL_UP_ADVANCE_OFF = 0x29DF0     # PROG_3: `add #2,r8` (0x7802) after the glue
+
+
+def level_up_message(fs, prog3: bytes, name: int) -> list[int]:
+    glue = [_byte(prog3, 0x29DE9)]
+    if prog3[LEVEL_UP_ADVANCE_OFF:LEVEL_UP_ADVANCE_OFF + 2] != b"\x78\x02":
+        glue = []          # the suffix copy lands on the glue and overwrites it
+    return (_record(fs, FNTSYS11, name) + [_byte(prog3, 0x29DCF)]
+            + _record(fs, FNTSYS3, 24) + glue + _record(fs, FNTSYS3, 0))

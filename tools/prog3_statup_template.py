@@ -88,6 +88,11 @@ PROG3_STATUP_TEMPLATE = {
                                 # the original 4-site sweep; user saw "MPak 18
                                 # recovered" (0x39 = our 'ak' bigram), playtest
                                 # 2026-06-13.
+        (0x00029DF1, b"\x00"),  # opcode 1 (level up, NO number): the delay-
+                                # slot `add #2,r8` -> `add #0,r8`, so the suffix
+                                # " rose!" is copied over the glue and brings the
+                                # only space (was "Diehärte→Level  rose!",
+                                # playtest 2026-10-09).
     ],
 }
 
@@ -100,4 +105,5 @@ JP_BASELINE = {
     0x00029EB7: 0x39,
     0x00029F2D: 0x39,
     0x00029F83: 0x39,
+    0x00029DF1: 0x02,   # low byte of `add #2,r8` (0x7802) @ runtime 0x0607C5F0
 }

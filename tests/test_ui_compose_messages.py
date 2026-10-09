@@ -97,3 +97,15 @@ def test_unit_splash_words_are_spaced(built):
     assert read(SOLDIER) == "Enemy Soldier Unit"
     assert read(PRIEST) == "Enemy Priest Unit"
     assert read(AQUATIC_ARCHER, npc=True) == "NPC Aquatic Archer Unit"
+
+
+DIEHARTE = 0                                    # fntsys11 record
+
+
+def test_level_up_without_number_has_one_space(built):
+    """Opcode 1 (JP 「〇〇のレベルが上がった」) has no number: the glue before
+    the suffix plus the suffix's own leading space showed two spaces
+    (Ralf's playtest 2026-10-09: "Diehärte->Level  rose!")."""
+    b = built
+    assert b["read"](uc.level_up_message(b["fs"], b["prog3"], DIEHARTE)) \
+        == "Diehärte→Level rose!"

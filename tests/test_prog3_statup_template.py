@@ -59,7 +59,7 @@ def test_jp_baseline_bytes_match(jp_prog3):
 
 def test_patch_values_are_documented_tiles():
     runs = PROG3_STATUP_TEMPLATE[ISO_PATH]
-    assert len(runs) == 7
+    assert len(runs) == 8
     values = {off: chunk for off, chunk in runs}
     assert values[0x29DCF] == values[0x29E09] == b"\x2c"   # glue arrow tile 44
     # FIVE 0x39 separator sites. 0x29F83 (opcode 0x15, item-effect value
@@ -68,6 +68,9 @@ def test_patch_values_are_documented_tiles():
     # 2026-06-13.
     for off in (0x29DE9, 0x29E23, 0x29EB7, 0x29F2D, 0x29F83):
         assert values[off] == bytes([43])                   # 8px glue space
+    # opcode 1 (no number): `add #2,r8` -> `add #0,r8`, the suffix overwrites
+    # the glue so " rose!" carries the only space
+    assert values[0x29DF1] == b"\x00"
 
 
 def test_tile_44_is_the_apostrophe_s_glyph(jp_prog3):
