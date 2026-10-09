@@ -1482,9 +1482,9 @@ def _generate_data_driven_font(jp_font: bytes) -> bytes:
     _bullet = CHAR_TILE_MAP.get('•')
     if _bullet is not None and _bullet < NEW_FONT_TILES:
         out[_bullet * 32:(_bullet + 1) * 32] = compose_bigram('•', ' ')
-    # engine 's possessive (tile 0x2C): the normal [',s] bigram (s in the RIGHT
-    # half), so the engine-injected stat-up suffix keeps its gap ("Freya's Level").
-    out[0x2C * 32:0x2D * 32] = compose_bigram("'", "s")
+    # Tile 0x2C (engine 's possessive) is NOT recomposed here: it is a FIXED tile
+    # copied above from the legacy generator, the compact "'s " (2026-06-14) whose
+    # right half is the space before the next record (tests/test_ui_compose_messages).
     # v0.8 hankaku band: one 8px tile per char (glyph in the LEFT 8px, right half
     # blank). Composed after the preserved-copy/bigram loops so it wins its slots.
     _hk_halves = dict(HALF_GLYPHS)

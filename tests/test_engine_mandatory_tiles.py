@@ -10,9 +10,11 @@ See archive/docs/20260625_new_font_from_scratch_plan.md (Part 0) and the
 engine-fixed map in 20260625_font_refactor_handoff.md.
 
 Glyph note: tiles 0,1,7-16 are immutable. Tile 44 ('s possessive) keeps its
-POSITION fixed forever; its GLYPH is slated to be standardized (condensed ->
-normal 's) in Part 3 — when that lands, update GOLDEN[44] in the SAME commit.
-The RED here is then the intended-change signal (TDD canon), not a regression.
+POSITION fixed forever. Its glyph is the compact "'s " (2026-06-14): the right
+half is the space before the record the engine appends next. The Part 3
+"normal 's" standardization dropped that space and glued every composed line
+("Tiaris'sMagic Herb"), so it was reverted on 2026-10-08
+(tests/test_ui_compose_messages.py pins the effective line).
 """
 import sys
 from pathlib import Path
@@ -26,8 +28,8 @@ JP_FONT = REPO / "data" / "jp" / "font_jp.bin"
 TILE = 32  # bytes per 16x16 1bpp tile
 
 # Byte-exact golden for the engine-mandatory tiles in the NEW (shipping) font.
-# 0,1,7-16 are preserved from the JP base; tile 44 is the standardized 's = [',s]
-# (apostrophe left + s right) that new_font draws at the の position. Deterministic.
+# 0,1,7-16 are preserved from the JP base; tile 44 is the compact "'s " drawn by
+# the legacy generator at the の position. Deterministic.
 GOLDEN = {
     0:  '0000000000000000000000000000000000000000000000000000000000000000',  # full-width blank
     1:  '0000000000000000000000001800180000000000000018001800000000000000',  # ": "
@@ -41,7 +43,7 @@ GOLDEN = {
     14: '0000000000000fe00c60006000c000c001800180030003000300000000000000',  # 7
     15: '00000000000007c00c600c600c6007c00c600c600c600c6007c0000000000000',  # 8
     16: '000000000000038006c00c600c600c6006e003e0006000c00780000000000000',  # 9
-    44: '000000000000180018003000007c00c600c0007c000600c6007c000000000000',  # 's = [',s] (の): apostrophe left + s right
+    44: '00000000c000c000800000003e00630060003e00030063003e00000000000000',  # "'s " compact (の): 's left + 8px space right
 }
 
 
