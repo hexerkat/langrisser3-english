@@ -195,11 +195,17 @@ class TestBandShrinkConsistency(unittest.TestCase):
         self.assertEqual(BALLOON.HANKAKU_HI, NARROW_HI)
         self.assertEqual(BALLOON.HANKAKU_LO, NARROW_LO)
 
-    def test_label_box_pool_encodes_the_same_size(self):
+    def test_label_box_calls_the_cave_that_encodes_the_same_band(self):
+        # since 2026-10-08 the measurers ask tools/width_class.py's font cave
         import a0lang_label_box_width as LB
+        import width_class as WC
         edits = dict(LB.A0LANG_LABEL_BOX_WIDTH['A0LANG.BIN'])
-        want = (NARROW_HI - NARROW_LO).to_bytes(2, 'big')
-        self.assertEqual(edits[LB.POOL_BAND_OFF], want)
+        self.assertEqual(edits[LB.POOL_LONG_OFF],
+                         WC.WIDTH_CAVE_ADDR.to_bytes(4, 'big'))
+        self.assertEqual((WC.NARROW_LO, WC.NARROW_HI), (NARROW_LO, NARROW_HI))
+        blob = WC.cave_blob()
+        self.assertTrue(blob.endswith(NARROW_LO.to_bytes(2, 'big')
+                                      + (NARROW_HI - NARROW_LO + 1).to_bytes(2, 'big')))
 
     def test_field_step_stream_encodes_the_same_size(self):
         """The rewrite loads the size as `mov #imm; add r1,r1` — the size

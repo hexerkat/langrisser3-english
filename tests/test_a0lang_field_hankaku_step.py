@@ -87,8 +87,11 @@ NARROW_HI = 1349           # twins (1350+) and cave/nakaguro (1420+) = 16px
 # This is the source of truth the module must reproduce. It mirrors the
 # Phase-2 loop: pattern names are per-glyph (g*4 + subtile), but the tilemap
 # CELL cursor accumulates by WIDTH CLASS, not a fixed 2 cells.
+import width_class as WC   # noqa: E402  (the ONE width rule, 2026-10-08)
+
+
 def _ref_is_narrow(tile):
-    return NARROW_LO <= tile <= NARROW_HI
+    return WC.is_narrow_tile(tile)
 
 
 def _ref_field_row(tiles, base_pn, row, width_aware):
@@ -507,6 +510,8 @@ class _Sh2Phase2:
             self.T = 1 if R[n] >= R[m] else 0
         elif (w & 0xF00F) == 0x3006:                       # cmp/hi Rm,Rn
             self.T = 1 if R[n] > R[m] else 0
+        elif (w & 0xFF00) == 0x8800:                       # cmp/eq #imm,r0
+            self.T = 1 if R[0] == (_sx8(w & 0xFF) & M) else 0
         else:
             raise AssertionError(f'unimplemented opcode {w:04X} @0x{pc:X}')
 
@@ -581,6 +586,11 @@ class TestExecutePatchedBytes(unittest.TestCase):
 
     def test_band_edges(self):
         tiles = [NARROW_LO, NARROW_HI, NARROW_LO - 1, NARROW_HI + 1]
+        self._check(self.vm, tiles, width_aware=True)
+
+    def test_engine_glue_space_is_narrow(self):
+        tiles = [HANKAKU_TILE_MAP['H'], WC.NARROW_GLUE_TILE, 7,
+                 HANKAKU_TILE_MAP['P']]
         self._check(self.vm, tiles, width_aware=True)
 
     def test_empty_string_writes_nothing(self):

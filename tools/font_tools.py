@@ -1520,6 +1520,10 @@ def _generate_data_driven_font(jp_font: bytes) -> bytes:
     _tblob = _tw_blob()
     out[NAME_TWIN_CAVE_TILE * 32:NAME_TWIN_CAVE_TILE * 32 + len(_tblob)] = \
         _tblob
+    # The shared width-class rule (tile 1431), called by the A0LANG measurers.
+    from width_class import WIDTH_CAVE_TILE, cave_blob as _wc_blob
+    _wblob = _wc_blob()
+    out[WIDTH_CAVE_TILE * 32:WIDTH_CAVE_TILE * 32 + len(_wblob)] = _wblob
     return bytes(out)
 
 

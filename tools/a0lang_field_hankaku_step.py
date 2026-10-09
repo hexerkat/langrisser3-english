@@ -108,39 +108,42 @@ POOL_CONST_OFF = 0x8EE6              # pool pad word -> 0x04F1 (=1265)
 #   8E7E 2B11  mov.w r1,@r11       ; write bottom-left
 #   8E80 7702  add #2,r7           ; both rows step 1 cell
 #   8E82 7B02  add #2,r11
-#   8E84 912F  mov.w @(0x2F,pc),r1 ; = 0x04F1 from pool 0x8EE6
-#   8E86 3018  sub r1,r0           ; r0 = tile - 1265 (wraps huge if below)
-#   8E88 E12A  mov #42,r1
-#   8E8A 311C  add r1,r1           ; 84 = NARROW_HI - NARROW_LO
-#   8E8C 3016  cmp/hi r1,r0        ; T = outside band -> wide
-#   8E8E 8B07  bf 0x8EA0           ; narrow: skip the right-half writes
+#   8E84 882B  cmp/eq #43,r0       ; engine glue space (width_class, 2026-10-08)
+#   8E86 890D  bt 0x8EA4           ; narrow: skip the right-half writes
+#   8E88 912D  mov.w @(0x2D,pc),r1 ; = 0x04F1 from pool 0x8EE6
+#   8E8A 3018  sub r1,r0           ; r0 = tile - 1265 (wraps huge if below)
+#   8E8C E12A  mov #42,r1
+#   8E8E 311C  add r1,r1           ; 84 = NARROW_HI - NARROW_LO
+#   8E90 3016  cmp/hi r1,r0        ; T = outside band -> wide
+#   8E92 8B07  bf 0x8EA4           ; narrow: skip the right-half writes
 # wide:
-#   8E90 6153  mov r5,r1
-#   8E92 312C  add r2,r1           ; r2 still base+g*4
-#   8E94 7101  add #1,r1           ; top-right pn (+1)
-#   8E96 2711  mov.w r1,@r7
-#   8E98 7102  add #2,r1           ; bottom-right pn (+3)
-#   8E9A 2B11  mov.w r1,@r11
-#   8E9C 7702  add #2,r7           ; second cell = the JP 16px step
-#   8E9E 7B02  add #2,r11
+#   8E94 6153  mov r5,r1
+#   8E96 312C  add r2,r1           ; r2 still base+g*4
+#   8E98 7101  add #1,r1           ; top-right pn (+1)
+#   8E9A 2711  mov.w r1,@r7
+#   8E9C 7102  add #2,r1           ; bottom-right pn (+3)
+#   8E9E 2B11  mov.w r1,@r11
+#   8EA0 7702  add #2,r7           ; second cell = the JP 16px step
+#   8EA2 7B02  add #2,r11
 # cont:
-#   8EA0 7304  add #4,r3
-#   8EA2 613D  extu.w r3,r1
-#   8EA4 3162  cmp/hs r6,r1
-#   8EA6 8BE3  bf 0x8E70           ; next glyph
-#   8EA8 A007  bra 0x8EBA          ; -> untouched exit code
-#   8EAA 0009  nop                 ; (delay)
-#   8EAC-8EB8  7x 0009 nop         ; unreachable pad to the region end
+#   8EA4 7304  add #4,r3
+#   8EA6 613D  extu.w r3,r1
+#   8EA8 3162  cmp/hs r6,r1
+#   8EAA 8BE1  bf 0x8E70           ; next glyph
+#   8EAC A005  bra 0x8EBA          ; -> untouched exit code
+#   8EAE 0009  nop                 ; (delay)
+#   8EB0-8EB8  5x 0009 nop         ; unreachable pad to the region end
 _NEW_STREAM = bytes.fromhex(
     "4608" "6893" "61A3" "311C" "3818" "EB40" "4B00" "3B7C"
     "E300" "E100" "3162" "8924"
     "6085" "6243" "323C" "6153" "312C" "2711" "7102" "2B11"
     "7702" "7B02"
-    "912F" "3018" "E12A" "311C" "3016" "8B07"
+    "882B" "890D"
+    "912D" "3018" "E12A" "311C" "3016" "8B07"
     "6153" "312C" "7101" "2711" "7102" "2B11" "7702" "7B02"
-    "7304" "613D" "3162" "8BE3"
-    "A007" "0009"
-    "0009" "0009" "0009" "0009" "0009" "0009" "0009"
+    "7304" "613D" "3162" "8BE1"
+    "A005" "0009"
+    "0009" "0009" "0009" "0009" "0009"
 )
 assert len(_NEW_STREAM) == 0x62      # 49 words: exactly fills 0x8E58..0x8EB9
 
@@ -169,8 +172,10 @@ A0LANG_FIELD_HANKAKU_STEP_JP_BASELINE = {
 
 # ── Python render model (the requirement the bytes implement) ───────────────
 def is_narrow_tile(tile: int) -> bool:
-    """Width class: True = hankaku band = 1 cell (8px); else 2 cells (16px)."""
-    return NARROW_LO <= tile <= NARROW_HI
+    """Width class (tools/width_class.py, the ONE rule): hankaku band or the
+    engine glue space 43 = 1 cell (8px); anything else 2 cells (16px)."""
+    from width_class import is_narrow_tile as _rule
+    return _rule(tile)
 
 
 def simulate_field_row(tiles, base_pn: int, row: str, width_aware: bool):

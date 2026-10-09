@@ -60,6 +60,7 @@ ENGINE_PATCH_MODULES = (
     "a0lang_item_action_box",
     "a0lang_field_hankaku_step",
     "a0lang_label_box_width",
+    "a0lang_centered_box_width",
     "prog4_name_entry_hankaku",
     "prog4_name_twin_convert",
     "prog3_text_tables",

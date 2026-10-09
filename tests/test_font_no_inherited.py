@@ -66,6 +66,7 @@ def test_unmapped_tiles_are_blank():
     from balloon_zenkaku_cave import CAVE_TILE, CAVE_TILES
     from d00_offset_cave import D00_CAVE_TILE, D00_CAVE_TILES
     from name_twin_cave import NAME_TWIN_CAVE_TILE, NAME_TWIN_CAVE_TILES
+    from width_class import WIDTH_CAVE_TILE, WIDTH_CAVE_TILES
     # HANKAKU_TILES = the v0.8 per-glyph 8px band (mapped via HANKAKU_TILE_MAP).
     # TWIN_TILE_MAP = the v4 name-entry display twins (centered 16px keys).
     # CAVE tiles = the v0.8 width-class + d00-offset + name-twin code riding
@@ -76,6 +77,7 @@ def test_unmapped_tiles_are_blank():
             | set(range(D00_CAVE_TILE, D00_CAVE_TILE + D00_CAVE_TILES))
             | set(range(NAME_TWIN_CAVE_TILE,
                         NAME_TWIN_CAVE_TILE + NAME_TWIN_CAVE_TILES))
+            | set(range(WIDTH_CAVE_TILE, WIDTH_CAVE_TILE + WIDTH_CAVE_TILES))
             | {ft.NAKAGURO_TILE})
     junk = [t for t in range(ft.NEW_FONT_TILES)
             if t not in used and _tile(gen, t) != BLANK]

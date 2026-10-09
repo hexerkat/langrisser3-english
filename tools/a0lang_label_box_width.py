@@ -48,9 +48,10 @@ patched-stream lock + an SH-2 mini-interpreter that EXECUTES the patched
 bytes against the reference geometry model).
 """
 
-from a0lang_field_hankaku_step import (
+from width_class import (
     NARROW_LO,
     NARROW_HI,
+    WIDTH_CAVE_ADDR,
     is_narrow_tile,
 )
 
@@ -62,45 +63,41 @@ CENTER = 18         # descriptor X = 18 - cells/2 (0x6012B80: mov #18)
 # ── Patch site bookkeeping ──────────────────────────────────────────────────
 A0LANG_LOAD_BASE = 0x0600E000
 MEASURE_OFF = 0x4A9E             # file offset of the rewritten measure loop
-POOL_NARROW_OFF = 0x4ADA         # pad word          -> 0x04F1 (=1265)
-POOL_BAND_OFF = 0x4ADC           # freed FFFF-long hi -> band size (=84)
+POOL_LONG_OFF = 0x4ADC           # JP 0x0000FFFF -> width-class cave address
 
-# The rewritten measure loop (SH-2 big-endian, hand-assembled and locked by
-# the execution test). Addresses are load addresses (0x0600E000 + file off).
+# The measure loop (2026-10-08: asks the shared width-class cave per word, so
+# the label box, the centred box and the renderers share ONE rule, including
+# the engine's 8px glue tile 43).
 #
 #   4A9E 6653  mov r5,r6           ; keep: arg copy for FUN_06012AF4
 #   4AA0 E500  mov #0,r5           ; r5 = cells accumulator
 #   4AA2 6243  mov r4,r2           ; r2 = walker (r4 stays = string start)
-#   4AA4 9319  mov.w @(0x19,pc),r3 ; = 0x04F1 (1265) from pool 0x4ADA
-#   4AA6 9719  mov.w @(0x19,pc),r7 ; = band size (84) from pool 0x4ADC
+#   4AA4 D30D  mov.l @(0x4ADC),r3  ; r3 = &is_narrow (the JP 0xFFFF pool)
 # loop:
-#   4AA8 6025  mov.w @r2+,r0       ; tile (sign-extended; glyphs are +ve)
-#   4AAA 88FF  cmp/eq #-1,r0       ; 0xFFFF terminator?
-#   4AAC 8905  bt 0x4ABA           ; -> untouched cap test (mov #35,r1)
-#   4AAE 7501  add #1,r5           ; every glyph >= 1 cell
-#   4AB0 3038  sub r3,r0           ; r0 = tile - 1265 (wraps huge if below)
-#   4AB2 3076  cmp/hi r7,r0        ; T = outside band -> wide
-#   4AB4 8BF8  bf 0x4AA8           ; narrow: next word
-#   4AB6 AFF7  bra 0x4AA8          ; wide: loop with...
-#   4AB8 7501  add #1,r5           ; (delay) ...the second cell
+#   4AA6 6025  mov.w @r2+,r0       ; word (sign-extended)
+#   4AA8 88FF  cmp/eq #-1,r0       ; 0xFFFF terminator?
+#   4AAA 8906  bt 0x4ABA           ; -> untouched cap test (mov #35,r1)
+#   4AAC 430B  jsr @r3             ; is_narrow(r0) -> T, keeps r1-r14
+#   4AAE 7501  add #1,r5           ; (delay) every word >= 1 cell
+#   4AB0 89F9  bt loop             ; narrow: next word
+#   4AB2 AFF8  bra loop
+#   4AB4 7501  add #1,r5           ; (delay) wide: second cell
+#   4AB6 0009  nop x2              ; pad to the region end
+# FUN_06012A98 saves PR at entry (4F22 @0x4A9A), so the jsr is safe.
 _NEW_STREAM = bytes.fromhex(
-    "6653" "E500" "6243" "9319" "9719"
-    "6025" "88FF" "8905" "7501" "3038" "3076" "8BF8" "AFF7" "7501"
+    "6653" "E500" "6243" "D30D"
+    "6025" "88FF" "8906" "430B" "7501" "89F9" "AFF8" "7501" "0009" "0009"
 )
 assert len(_NEW_STREAM) == 0x1C      # 14 words: exactly fills 0x4A9E..0x4AB9
 
 A0LANG_LABEL_BOX_WIDTH = {
     "A0LANG.BIN": [
         (MEASURE_OFF, _NEW_STREAM),
-        # pool pad 0000 -> 1265; freed hi 0000 -> band size. Derived from the
-        # field-step constants so the measurer and the renderer can never
-        # disagree about the class bound (v4 shrank it 154 -> 84).
-        (POOL_NARROW_OFF, NARROW_LO.to_bytes(2, "big")),
-        (POOL_BAND_OFF, (NARROW_HI - NARROW_LO).to_bytes(2, "big")),
+        (POOL_LONG_OFF, WIDTH_CAVE_ADDR.to_bytes(4, "big")),
     ],
 }
 
-# JP baseline at all three sites — truth-locked against the pristine JP disc
+# JP baseline at both sites — truth-locked against the pristine JP disc
 # by tests/test_a0lang_label_box_width.py before any build.
 A0LANG_LABEL_BOX_WIDTH_JP_BASELINE = {
     MEASURE_OFF: bytes.fromhex(
@@ -109,8 +106,7 @@ A0LANG_LABEL_BOX_WIDTH_JP_BASELINE = {
         "6121" "7502" "611d" "3130" "8ffa" "7202"   # the width-blind loop
         "72fe" "655d"                               # r2 fixup + extu
     ),
-    POOL_NARROW_OFF: bytes.fromhex("0000"),         # alignment pad
-    POOL_BAND_OFF: bytes.fromhex("0000"),           # hi half of 0x0000FFFF
+    POOL_LONG_OFF: bytes.fromhex("0000ffff"),       # the terminator constant
 }
 
 

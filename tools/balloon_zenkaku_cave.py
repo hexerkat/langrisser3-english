@@ -57,8 +57,9 @@ ROWCUR_ADDR = 0x06088518         # per-row column cursor, 5 B/window (unmoved)
 # 1344) without a cave rebuild; the v4 name-entry TWIN band (1350..1416) and
 # the cave itself (1420+) sit above the class range, below the _VD_SPACE
 # bigrams at 1435. Shrunk from 1419 on 2026-07-15 so the twins render 16px.
-HANKAKU_LO = 1265                # hankaku band bounds (font_tools HANKAKU_BASE)
-HANKAKU_HI = 1349
+from width_class import NARROW_LO as HANKAKU_LO   # the ONE rule (2026-10-08):
+from width_class import NARROW_HI as HANKAKU_HI   # band + the glue space 43
+from width_class import NARROW_GLUE_TILE
 
 
 def _assemble(resolve, labels):
@@ -110,12 +111,15 @@ def _assemble(resolve, labels):
 
     # ---- class test -------------------------------------------------------
     w(0x6051)                    # mov.w @r5,r0        ; tile code
+    w(0x8800 | NARROW_GLUE_TILE)  # cmp/eq #43,r0       ; engine 8px glue space
+    bt('hk')
     movw_pc(1, 'BAND_LO')        # mov.w #1265,r1
     w(0x3013)                    # cmp/ge r1,r0        ; T = tile >= 1265
     bf('zk')
     movw_pc(1, 'BAND_HI')        # mov.w #HANKAKU_HI,r1
     w(0x3017)                    # cmp/gt r1,r0        ; T = tile > HI
     bt('zk')
+    mark('hk')
     movl_pc(1, 'CF80')           # hankaku: tail-jump the real cf80
     w(0x412B)                    # jmp @r1
     w(0x0009)                    # (delay) nop

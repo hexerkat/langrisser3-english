@@ -76,14 +76,15 @@ CENTER = 18                # descriptor X = 18 - cells/2 (@0x6012B80)
 
 MEASURE_OFF = 0x4A9E       # file offset of the rewritten measure loop
 MEASURE_LEN = 0x1C         # 14 words: 0x4A9E..0x4AB9, cap @0x4ABA untouched
-POOL_NARROW_OFF = 0x4ADA   # pad word            -> 0x04F1 (1265)
-POOL_BAND_OFF = 0x4ADC     # freed FFFF-long hi  -> 0x0054 (84 = HI-LO)
+POOL_LONG_OFF = 0x4ADC     # JP 0x0000FFFF -> address of the width-class cave
 CAP_OFF = 0x4ABA           # first untouched word (mov #35,r1)
+
+import width_class as WC   # noqa: E402  (the ONE width rule, 2026-10-08)
 
 
 # ── Reference geometry model (the REQUIREMENT) ──────────────────────────────
 def _ref_is_narrow(tile):
-    return NARROW_LO <= tile <= NARROW_HI
+    return WC.is_narrow_tile(tile)
 
 
 def _ref_cells(tiles):
@@ -232,7 +233,7 @@ JP_MEASURE_BASELINE = bytes.fromhex(
     "72fe"   # 4AB6 add #-2,r2
     "655d"   # 4AB8 extu.w r5,r5
 )
-JP_POOL_BASELINE = {POOL_NARROW_OFF: b'\x00\x00', POOL_BAND_OFF: b'\x00\x00'}
+JP_POOL_BASELINE = {POOL_LONG_OFF: b'\x00\x00\xff\xff'}
 JP_CAP_WORD = 0xE123        # 4ABA mov #35,r1 — stays untouched
 
 A0LANG_PATH = 'A0LANG.BIN'
@@ -262,12 +263,10 @@ class TestMeasureJPBaseline(unittest.TestCase):
         self.assertEqual(got, JP_MEASURE_BASELINE,
                          "measure loop drifted; re-verify the disasm")
 
-    def test_pool_words_are_free(self):
+    def test_pool_long_is_the_terminator_constant(self):
         for off, val in JP_POOL_BASELINE.items():
-            self.assertEqual(bytes(self.jp[off:off + 2]), val,
-                             f"pool word at 0x{off:X} not the expected pad")
-        # the FFFF half of the freed long is left in place
-        self.assertEqual(bytes(self.jp[0x4ADE:0x4AE0]), b'\xff\xff')
+            self.assertEqual(bytes(self.jp[off:off + len(val)]), val,
+                             f"pool long at 0x{off:X} not the JP 0x0000FFFF")
 
     def test_cap_untouched_word(self):
         got = (self.jp[CAP_OFF] << 8) | self.jp[CAP_OFF + 1]
@@ -283,13 +282,12 @@ class TestPatchDeclaration(unittest.TestCase):
 
     def test_exact_region_and_pools(self):
         edits = dict(MOD.A0LANG_LABEL_BOX_WIDTH['A0LANG.BIN'])
-        self.assertEqual(set(edits),
-                         {MEASURE_OFF, POOL_NARROW_OFF, POOL_BAND_OFF})
+        self.assertEqual(set(edits), {MEASURE_OFF, POOL_LONG_OFF})
         self.assertEqual(len(edits[MEASURE_OFF]), MEASURE_LEN)
         # the stream must NOT touch the cap test at 0x4ABA
         self.assertEqual(MEASURE_OFF + len(edits[MEASURE_OFF]), CAP_OFF)
-        self.assertEqual(edits[POOL_NARROW_OFF], b'\x04\xF1')    # 1265
-        self.assertEqual(edits[POOL_BAND_OFF], b'\x00\x54')     # 84
+        self.assertEqual(edits[POOL_LONG_OFF],
+                         WC.WIDTH_CAVE_ADDR.to_bytes(4, 'big'))
 
     def test_baseline_covers_same_offsets_same_lengths(self):
         edits = dict(MOD.A0LANG_LABEL_BOX_WIDTH['A0LANG.BIN'])
@@ -312,6 +310,7 @@ class TestPatchDeclaration(unittest.TestCase):
             self.assertTrue(MOD.is_narrow_tile(t))
         self.assertFalse(MOD.is_narrow_tile(1420))
         self.assertFalse(MOD.is_narrow_tile(1428))
+        self.assertTrue(MOD.is_narrow_tile(WC.NARROW_GLUE_TILE))
 
     def test_registered_in_build(self):
         import build
@@ -338,111 +337,33 @@ class TestPatchDeclaration(unittest.TestCase):
                                  f"offset collision with {name}")
 
 
-# ── SH-2 mini-interpreter (subset used by both measure loops) ───────────────
-def _sx8(v):
-    return v - 0x100 if v & 0x80 else v
+# ── Execute the REAL bytes on tools/sh2_mini (with the real width cave) ─────
+from sh2_mini import Sh2   # noqa: E402
 
-
-def _sx16(v):
-    return v - 0x10000 if v & 0x8000 else v
+STR_ADDR = 0x00200000
 
 
 class _Sh2Measure:
-    """Executes the measure loop (MEASURE_OFF until CAP_OFF) over a synthetic
-    image and returns the register state at the cap test.
-
-    Faithful-model note: this runs the REAL patch bytes (and the REAL JP
-    bytes), so the assertions pin effective engine behavior."""
-    STR = 0x100000
+    """Runs MEASURE_OFF..CAP_OFF of an A0LANG-shaped image (addresses = file
+    offsets, every access PC-relative) and returns the registers at the cap."""
+    STR = STR_ADDR
 
     def __init__(self, image):
         self.image = image
 
     def run(self, tiles, arg=0x12):
-        ram = {}
-        for i, t in enumerate(tiles):
-            ram[self.STR + 2 * i] = t & 0xFFFF
-        ram[self.STR + 2 * len(tiles)] = 0xFFFF
-        R = [0] * 16
-        R[4] = self.STR
-        R[5] = arg
-        self.R, self.ram, self.T = R, ram, 0
-        pc, steps = MEASURE_OFF, 0
-        while pc != CAP_OFF:
-            steps += 1
-            if steps > 100000:
-                raise AssertionError('interpreter runaway (bad branch?)')
-            pc = self._step(pc)
-        return R
-
-    def _rw(self, addr):
-        if addr in self.ram:
-            return self.ram[addr]
-        return (self.image[addr] << 8) | self.image[addr + 1]
-
-    def _rl(self, addr):
-        return (self._rw(addr) << 16) | self._rw(addr + 2)
-
-    def _exec(self, pc):
-        R, w = self.R, (self.image[pc] << 8) | self.image[pc + 1]
-        n, m = (w >> 8) & 0xF, (w >> 4) & 0xF
-        M = 0xFFFFFFFF
-        if w == 0x0009:                                    # nop
-            pass
-        elif (w & 0xF00F) == 0x6003:                       # mov Rm,Rn
-            R[n] = R[m]
-        elif (w & 0xF000) == 0xE000:                       # mov #imm8,Rn
-            R[n] = _sx8(w & 0xFF) & M
-        elif (w & 0xF00F) == 0x6001:                       # mov.w @Rm,Rn
-            R[n] = _sx16(self._rw(R[m])) & M
-        elif (w & 0xF00F) == 0x6005:                       # mov.w @Rm+,Rn
-            R[n] = _sx16(self._rw(R[m])) & M
-            R[m] = (R[m] + 2) & M
-        elif (w & 0xF000) == 0x9000:                       # mov.w @(d,PC),Rn
-            R[n] = _sx16(self._rw(pc + 4 + (w & 0xFF) * 2)) & M
-        elif (w & 0xF000) == 0xD000:                       # mov.l @(d,PC),Rn
-            R[n] = self._rl(((pc + 4) & ~3) + (w & 0xFF) * 4) & M
-        elif (w & 0xF000) == 0x7000:                       # add #imm,Rn
-            R[n] = (R[n] + _sx8(w & 0xFF)) & M
-        elif (w & 0xF00F) == 0x3008:                       # sub Rm,Rn
-            R[n] = (R[n] - R[m]) & M
-        elif (w & 0xF00F) == 0x600D:                       # extu.w Rm,Rn
-            R[n] = R[m] & 0xFFFF
-        elif (w & 0xFF00) == 0x8800:                       # cmp/eq #imm,r0
-            self.T = 1 if R[0] == (_sx8(w & 0xFF) & M) else 0
-        elif (w & 0xF00F) == 0x3000:                       # cmp/eq Rm,Rn
-            self.T = 1 if R[n] == R[m] else 0
-        elif (w & 0xF00F) == 0x3006:                       # cmp/hi Rm,Rn
-            self.T = 1 if R[n] > R[m] else 0
-        else:
-            raise AssertionError(f'unimplemented opcode {w:04X} @0x{pc:X}')
-
-    def _step(self, pc):
-        w = (self.image[pc] << 8) | self.image[pc + 1]
-        hi = w >> 8
-        if hi in (0x89, 0x8B):                             # bt / bf
-            taken = self.T == (1 if hi == 0x89 else 0)
-            return pc + 4 + _sx8(w & 0xFF) * 2 if taken else pc + 2
-        if hi in (0x8D, 0x8F):                             # bt/s / bf/s
-            taken = self.T == (1 if hi == 0x8D else 0)
-            self._exec(pc + 2)
-            return pc + 4 + _sx8(w & 0xFF) * 2 if taken else pc + 4
-        if (w & 0xF000) == 0xA000:                         # bra
-            d = w & 0xFFF
-            if d & 0x800:
-                d -= 0x1000
-            self._exec(pc + 2)
-            return pc + 4 + d * 2
-        self._exec(pc)
-        return pc + 2
+        s = b''.join((t & 0xFFFF).to_bytes(2, 'big') for t in tiles) + b'\xff\xff'
+        cpu = Sh2({0: self.image, WC.WIDTH_CAVE_ADDR: WC.cave_blob(),
+                   self.STR: s + bytes(8)})
+        cpu.call(MEASURE_OFF, {4: self.STR, 5: arg}, stop=CAP_OFF)
+        return cpu.R
 
 
 def _make_image(stream, pools):
     img = bytearray(0x5000)
     img[MEASURE_OFF:MEASURE_OFF + len(stream)] = stream
     for off, val in pools.items():
-        img[off:off + 2] = val
-    # the cap word (first untouched instruction) as the stop sentinel
+        img[off:off + len(val)] = val
     img[CAP_OFF] = JP_CAP_WORD >> 8
     img[CAP_OFF + 1] = JP_CAP_WORD & 0xFF
     return bytes(img)
@@ -456,14 +377,8 @@ class TestExecutePatchedBytes(unittest.TestCase):
     def setUpClass(cls):
         edits = dict(MOD.A0LANG_LABEL_BOX_WIDTH['A0LANG.BIN'])
         cls.vm = _Sh2Measure(_make_image(
-            edits[MEASURE_OFF],
-            {POOL_NARROW_OFF: edits[POOL_NARROW_OFF],
-             POOL_BAND_OFF: edits[POOL_BAND_OFF]}))
-        cls.jp_vm = _Sh2Measure(_make_image(
-            JP_MEASURE_BASELINE,
-            {POOL_NARROW_OFF: b'\x00\x00',
-             POOL_BAND_OFF: b'\x00\x00',
-             0x4ADE: b'\xff\xff'}))
+            edits[MEASURE_OFF], {POOL_LONG_OFF: edits[POOL_LONG_OFF]}))
+        cls.jp_vm = _Sh2Measure(_make_image(JP_MEASURE_BASELINE, JP_POOL_BASELINE))
 
     def _cells(self, vm, tiles):
         return vm.run(tiles)[5]        # r5 = measured cells at the cap test
@@ -492,6 +407,10 @@ class TestExecutePatchedBytes(unittest.TestCase):
         tiles = [0xF600, 0x0000]
         self.assertEqual(self._cells(self.vm, tiles),
                          self._cells(self.jp_vm, tiles))
+
+    def test_engine_glue_space_is_narrow(self):
+        tiles = _label_tiles('ab') + [WC.NARROW_GLUE_TILE] + [7]
+        self.assertEqual(self._cells(self.vm, tiles), 1 + 1 + 1 + 2)
 
     def test_empty_string(self):
         self.assertEqual(self._cells(self.vm, []), 0)
