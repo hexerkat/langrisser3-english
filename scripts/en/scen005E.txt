@@ -80,7 +80,7 @@ Listen up everyone, all<$FFFC>citizens should escape<$FFFC>to the east!<$FFFE>
 Y-Yes!<$FFFE>
 Listen up everyone, all<$FFFC>citizens should escape<$FFFC>to the west!<$FFFE>
 Whaaat!?<$FFFE>
-What are you saying?!<$FFFC>We'll be caught by the<$FFFC>imperial troops!<$FFFE>
+What are you saying?!<$FFFC>They'll be caught by the<$FFFC>imperial troops!<$FFFE>
 O-Oh… That's right.<$FFFD>Sorry, everyone! Quick,<$FFFC>escape over this way!<$FFFE>
 Yes!<$FFFE>
 No. They'll come fleeing<$FFFC>this way on their own.<$FFFE>
