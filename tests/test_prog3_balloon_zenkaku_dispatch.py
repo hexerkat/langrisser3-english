@@ -68,8 +68,6 @@ def test_cave_geometry_is_consistent():
     assert not spill, f"packer FRESH-allocated inside the v0.8 range: {spill}"
     ours = (set(ft.HANKAKU_TILE_MAP.values()) | tiles
             | {ft.NAKAGURO_TILE, cave.SCRATCH_TILE})
-    from d00_offset_cave import D00_CAVE_TILE, D00_CAVE_TILES
-    ours |= set(range(D00_CAVE_TILE, D00_CAVE_TILE + D00_CAVE_TILES))
     assert not ours & bigram_tiles, f"our tiles collide with bigrams: {ours & bigram_tiles}"
     assert set(ft.HANKAKU_TILE_MAP.values()) <= ft.V08_RESERVED_TILES
     assert ft.NAKAGURO_TILE in ft.V08_RESERVED_TILES

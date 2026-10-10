@@ -1,7 +1,7 @@
 """tools/name_twin_cave.py — twin->hankaku append cave (v4 "display twins").
 
 SH-2 code cave riding FONT.BIN (LWRAM 0x00288000, resident whenever text can
-render — the balloon_zenkaku_cave / d00_offset_cave delivery pattern; tiles
+render — the balloon_zenkaku_cave delivery pattern; tiles
 1429-1430, the free pair right above the nakaguro at 1428; 1426 stays
 off-limits per the legacy-'Yo' canon).
 

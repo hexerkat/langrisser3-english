@@ -112,8 +112,8 @@ DQUOTE_TILE = 1470           # " double-quote (tile 1470)
 
 # v0.8 RESERVED tile range [1265..1434]: hankaku band (1265..1344 plus growth
 # headroom to the declared class top 1349), name-entry TWIN band (1350..1416,
-# v4 display twins), zenkaku-dispatch scratch/cave (1420-1425), d00-offset
-# cave (1427), nakaguro (1428), name-twin append cave (1429-1430). The bigram
+# v4 display twins), zenkaku-dispatch scratch/cave (1420-1425), free (1427),
+# nakaguro (1428), name-twin append cave (1429-1430). The bigram
 # packer MUST NOT allocate here (regression 2026-07-08: a corpus shift
 # spilled 'Yo'->1426 and '• '->1265, silently overwritten by the band/cave
 # writes). Ends at _VD_SPACE (1435).
@@ -1498,10 +1498,6 @@ def _generate_data_driven_font(jp_font: bytes) -> bytes:
     from balloon_zenkaku_cave import CAVE_TILE, cave_blob
     _blob = cave_blob()
     out[CAVE_TILE * 32:CAVE_TILE * 32 + len(_blob)] = _blob
-    # Piece D: the composer's scaled-offset fetch cave (tile 1427).
-    from d00_offset_cave import D00_CAVE_TILE, d00_cave_blob
-    _dblob = d00_cave_blob()
-    out[D00_CAVE_TILE * 32:D00_CAVE_TILE * 32 + len(_dblob)] = _dblob
     # v4 name-entry twin->hankaku append cave (tiles 1429-1430).
     from name_twin_cave import NAME_TWIN_CAVE_TILE, cave_blob as _tw_blob
     _tblob = _tw_blob()

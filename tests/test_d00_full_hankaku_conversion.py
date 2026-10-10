@@ -36,8 +36,7 @@ def test_every_entry_routes_hankaku():
     assert is_hankaku_entry(1, "…Youth aspiring to knighthood,")
     assert is_hankaku_entry(44, "Any line of any scen")
     assert is_hankaku_entry(125, "<$FFFF>Castle Gate")
-    # scen124 included since Piece D (prog3_d00_offset_scale lifted the u16
-    # section ceiling to 128 KB) — no exceptions remain.
+    # scen124 included: the hybrid encoder keeps it under the u16 ceiling.
     assert is_hankaku_entry(124, "epilogue prose")
 
 

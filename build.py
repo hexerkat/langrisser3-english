@@ -73,7 +73,6 @@ from prog3_item_use_glue import PROG3_ITEM_USE_GLUE
 from prog3_dialogue_hankaku_step import PROG3_DIALOGUE_HANKAKU_STEP
 from prog3_balloon_hankaku_grid import PROG3_BALLOON_HANKAKU_GRID
 from prog3_balloon_zenkaku_dispatch import PROG3_BALLOON_ZENKAKU_DISPATCH
-from prog3_d00_offset_scale import PROG3_D00_OFFSET_SCALE
 from a0lang_field_hankaku_step import A0LANG_FIELD_HANKAKU_STEP
 from a0lang_label_box_width import A0LANG_LABEL_BOX_WIDTH
 from a0lang_centered_box_width import A0LANG_CENTERED_BOX_WIDTH
@@ -228,7 +227,6 @@ ENGINE_MODULE_DICTS = {
     "prog3_dialogue_hankaku_step": PROG3_DIALOGUE_HANKAKU_STEP,
     "prog3_balloon_hankaku_grid": PROG3_BALLOON_HANKAKU_GRID,
     "prog3_balloon_zenkaku_dispatch": PROG3_BALLOON_ZENKAKU_DISPATCH,
-    "prog3_d00_offset_scale": PROG3_D00_OFFSET_SCALE,
     "a0lang_field_hankaku_step": A0LANG_FIELD_HANKAKU_STEP,
     "a0lang_label_box_width": A0LANG_LABEL_BOX_WIDTH,
     "a0lang_centered_box_width": A0LANG_CENTERED_BOX_WIDTH,
