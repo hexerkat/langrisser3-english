@@ -236,7 +236,7 @@ Cancel use of item?<$FFFF>
 Final Level<$FFFF>
 Kills<$FFFF>
 Retreats<$FFFF>
-That name is unusable<$FFFF>
+That name can't be used<$FFFF>
 Gone berserk!<$FFFF>
 Cursed and unable to cast spells!<$FFFF>
 Monsters under your control will be dismissed.<$FFFF>
