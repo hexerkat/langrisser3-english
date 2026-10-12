@@ -1,0 +1,51 @@
+# Builds the standalone patcher (launcher.spec) for Windows and Linux and
+# attaches both to the GitHub release that triggered it.
+name: patcher-binaries
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            built: dist/Langrisser3-Patcher.exe
+            asset: Langrisser3-Patcher-windows.exe
+          - os: ubuntu-22.04
+            built: dist/Langrisser3-Patcher
+            asset: Langrisser3-Patcher-linux.tar.gz
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pyinstaller==6.22.3 pytest
+      - run: python -m pytest -q tests/test_launcher_core.py tests/test_lzh.py tests/test_jpeg_baseline.py
+      - run: python -c "import tkinter"
+      - run: pyinstaller --noconfirm launcher.spec
+      - name: Package
+        shell: bash
+        run: |
+          if [ "${{ runner.os }}" = "Linux" ]; then
+            tar -C dist -czf "${{ matrix.asset }}" Langrisser3-Patcher
+          else
+            cp "${{ matrix.built }}" "${{ matrix.asset }}"
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.asset }}
+          path: ${{ matrix.asset }}
+      - name: Attach to release
+        if: github.event_name == 'release'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${{ github.event.release.tag_name }}" "${{ matrix.asset }}" --clobber

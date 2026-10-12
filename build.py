@@ -90,8 +90,15 @@ import title_dg2
 # Configuration
 # ---------------------------------------------------------------------------
 
-BUILD_DIR = SCRIPT_DIR / 'build'
-CACHE_DIR = SCRIPT_DIR / 'cache'   # JP baseline cache (gitignored)
+def output_root(frozen: bool, executable: str, script_dir: Path) -> Path:
+    """Where build/ and cache/ go: the repo, or next to the packaged
+    executable (its own folder is a temporary unpack dir)."""
+    return Path(executable).resolve().parent if frozen else script_dir
+
+
+OUTPUT_ROOT = output_root(getattr(sys, 'frozen', False), sys.executable, SCRIPT_DIR)
+BUILD_DIR = OUTPUT_ROOT / 'build'
+CACHE_DIR = OUTPUT_ROOT / 'cache'   # JP baseline cache (gitignored)
 PATCHES_DIR = SCRIPT_DIR / 'patches'  # Menu/UI translation patches
 
 # Opening FMV (LANG/LANG.CPK). Three ways to get the English opening, in order:
@@ -302,10 +309,10 @@ def preflight(args) -> None:
         movie_tools.require_ffmpeg()
 
 
-def main():
+def main(argv=None):
     import os
     parser = build_arg_parser()
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     preflight(args)
     lang_display = LANGUAGES[args.lang]
     SCRIPTS_DIR = SCRIPT_DIR / 'scripts' / args.lang

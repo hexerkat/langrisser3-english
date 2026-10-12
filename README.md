@@ -62,6 +62,17 @@ This produces a self-contained folder under `build/` named after the `.cue` (e.g
 
 3. **Load in your emulator** : open the `.cue` inside that folder and play.
 
+### Prefer a window?
+
+Each release also ships a ready-to-run patcher, with nothing to install (no Python needed):
+
+- **Windows**: `Langrisser3-Patcher-windows.exe`. Double-click it.
+- **Linux**: `Langrisser3-Patcher-linux.tar.gz`. Extract it and run `./Langrisser3-Patcher`.
+
+Pick your Japanese disc folder and press **Build patched game**. The patched game lands in a `build/` folder next to the patcher, and **Open output folder** takes you there. The English opening movie option needs [ffmpeg](https://ffmpeg.org/download.html) installed; without it the game keeps the Japanese opening.
+
+From a source checkout, the same window runs with `python3 launcher.py` (needs Tkinter: on Debian/Ubuntu, `sudo apt install python3-tk`).
+
 ### The opening movie
 
 The opening FMV is game data, so no video ships here : only its English subtitle track (`assets/movie/opening_en.srt`). Add `--encode-movie` and the patcher builds the subtitled opening from the movie on *your* disc, keeping the Japanese voice track:
