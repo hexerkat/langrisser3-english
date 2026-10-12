@@ -6,6 +6,14 @@ The repository ships only source: you build the patched game from your own Japan
 (see the [README](README.md)). No copyrighted game data is included. Format loosely
 follows [Keep a Changelog](https://keepachangelog.com/); dates are `YYYY-MM-DD`.
 
+## [Unreleased]
+
+### Added
+- A ready-to-run patcher for Windows and Linux. Download it, choose your Japanese disc
+  folder, and press Build. No Python and no terminal needed.
+- The patcher checks that the folder really holds the Langrisser III disc before it
+  builds, and shows Tiaris from the disc's own art gallery once it does.
+
 ## [0.7.2] - 2026-08-24
 
 ### Fixed

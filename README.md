@@ -28,11 +28,7 @@ A work-in-progress English translation patch for *Langrisser III* (Sega Saturn, 
 
 ## Applying the patch
 
-You need:
-
-- **Python 3.10+** (check with `python3 --version`). The build itself uses only the standard library : no `pip install`, no packages to add.
-- **Your own Japanese *Langrisser III* disc image** : a folder with a `.cue` file, the Track 01 data `.bin`, and the audio track `.bin` files. This patch requires the original disc; no game data is distributed here.
-- **[ffmpeg](https://ffmpeg.org/download.html)** : required to patch the opening movie (`--encode-movie`). Not needed for anything else.
+You need **your own Japanese *Langrisser III* disc image**: a folder with a `.cue` file, the Track 01 data `.bin`, and the audio track `.bin` files. This patch requires the original disc. No game data is distributed here.
 
 ### Source ISO
 
@@ -46,32 +42,37 @@ Size:    77,178,624 bytes (32,815 sectors × 2,352 bytes)
 
 Other Redump variants of the same Japanese disc are accepted by the build, but only (3M) is regression-tested : a different hash may still work, unverified.
 
-### Steps
+### Easiest: the patcher (Windows and Linux)
 
-1. **Download the latest release** from [GitHub Releases](https://github.com/hexerkat/langrisser3-english/releases) (Source code ZIP) and extract it.
+Nothing to install, no Python, no terminal.
 
-2. **Run the patcher:**
+1. **Download the patcher** for your system from [GitHub Releases](https://github.com/hexerkat/langrisser3-english/releases):
+   - **Windows**: `Langrisser3-Patcher-windows.exe`
+   - **Linux**: `Langrisser3-Patcher-linux.tar.gz` (extract it first)
+2. **Open it.** Windows may say it protected your PC, because the patcher is not signed. Click **More info**, then **Run anyway**.
+3. **Choose your Japanese disc folder** with **Browse…**. The patcher checks that it really is the Langrisser III disc. When it is, Tiaris shows up behind the window.
+4. **Press Build patched game.** It takes a few minutes. When it finishes, **Open folder** shows the patched game, in a `build/` folder next to the patcher.
+5. **Load the `.cue`** from that folder in your emulator and play.
+
+The English opening movie option needs [ffmpeg](https://ffmpeg.org/download.html) installed. Without it the game keeps the Japanese opening.
+
+### From source (Python)
+
+For developers, or if the patcher does not run on your system. You need **Python 3.10+** (check with `python3 --version`). The build uses only the standard library, so there is nothing to `pip install`.
+
+1. **Download the source** from [GitHub Releases](https://github.com/hexerkat/langrisser3-english/releases) (Source code ZIP) and extract it.
+
+2. **Run the build:**
 
 ```bash
 python3 build.py --jp-iso "/path/to/Langrisser III (Japan)"
 ```
 
-The folder you point to should contain the `.cue` plus the Track 01 data `.bin` and all audio track `.bin` files.
+This produces a self-contained folder under `build/` named after the `.cue` (e.g. `build/Langrisser III (English v0.7.2)/`) holding the `.cue` and all track `.bin` files, ready to play.
 
-This produces a self-contained folder under `build/` named after the `.cue` (e.g. `build/Langrisser III (English v0.7.2)/`) holding the `.cue` and all track `.bin` files : ready to play.
+3. **Load in your emulator**: open the `.cue` inside that folder and play.
 
-3. **Load in your emulator** : open the `.cue` inside that folder and play.
-
-### Prefer a window?
-
-Each release also ships a ready-to-run patcher, with nothing to install (no Python needed):
-
-- **Windows**: `Langrisser3-Patcher-windows.exe`. Double-click it.
-- **Linux**: `Langrisser3-Patcher-linux.tar.gz`. Extract it and run `./Langrisser3-Patcher`.
-
-Pick your Japanese disc folder and press **Build patched game**. The patched game lands in a `build/` folder next to the patcher, and **Open output folder** takes you there. The English opening movie option needs [ffmpeg](https://ffmpeg.org/download.html) installed; without it the game keeps the Japanese opening.
-
-From a source checkout, the same window runs with `python3 launcher.py` (needs Tkinter: on Debian/Ubuntu, `sudo apt install python3-tk`).
+The same window as the patcher runs with `python3 launcher.py` (needs Tkinter: on Debian/Ubuntu, `sudo apt install python3-tk`).
 
 ### The opening movie
 
