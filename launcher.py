@@ -4,6 +4,8 @@
 A small window around build.py for people who would rather not use a
 terminal: pick the Japanese disc folder, choose whether to build the English
 opening movie, press Build, then open the folder with the patched game.
+Once a disc is picked, the background shows Tiaris from that disc's own
+gallery (LANG/OMAKE/GRAPHIC.LZH); nothing from the game ships with the patcher.
 
 Run:  python3 launcher.py   (Windows: double-click, or `py launcher.py`)
 With arguments it is the command-line build: launcher.py --jp-iso <folder>.
@@ -64,15 +66,27 @@ class _QueueWriter:
 
 class Launcher(tk.Tk):
 
+    W, H = 576, 435                 # the wallpaper at half size
+    PANEL = (0, 0, 300, 226)        # controls, top left (over sky, clear of Tiaris)
+    BAND = (0, 345, 576, 435)       # last log lines, bottom
+    LOG_LINES = 5
+    BG = "#1b2130"
+    TEXT, DIM = "#ffffff", "#c9d1e0"
+    OK, BAD = "#7ee08a", "#ff8a80"
+
     def __init__(self):
         super().__init__()
         self.title(f"Langrisser III English Patch v{VERSION}")
-        self.minsize(640, 460)
+        self.resizable(False, False)
         self.settings = lc.load_settings()
         self.running = False
         self.lines = queue.Queue()
         self.log_lines = []
         self.result = None
+        self.checks = {}            # disc folder -> lc.DiscCheck
+        self.pictures = {}          # disc folder -> PPM bytes of its Tiaris
+        self.verifying = set()      # folders being verified right now
+        self.photo = None
 
         start_dir = self.settings.get("disc_dir") or os.environ.get("LANG3_JP_DIR", "")
         self.disc_var = tk.StringVar(value=start_dir)
@@ -88,42 +102,125 @@ class Launcher(tk.Tk):
 
     # --- layout ------------------------------------------------------------
 
+    def _text(self, x, y, text="", fill=None, tag=None, **kw):
+        return self.canvas.create_text(x, y, text=text, fill=fill or self.TEXT,
+                                       anchor="nw", tags=tag, **kw)
+
+    def _set_text(self, tag, text, fill=None):
+        self.canvas.itemconfigure(tag, text=text, **({"fill": fill} if fill else {}))
+
+    def _style(self):
+        style = ttk.Style(self)
+        if "clam" in style.theme_names():
+            style.theme_use("clam")
+        edge, face, hover, field = "#4a5670", "#2b3446", "#3b4760", "#10141d"
+        style.configure("TButton", background=face, foreground=self.TEXT, bordercolor=edge,
+                        lightcolor=face, darkcolor=face, focuscolor=face, padding=(8, 3))
+        style.map("TButton", background=[("disabled", "#20273a"), ("active", hover)],
+                  foreground=[("disabled", "#76809a")])
+        style.configure("TEntry", fieldbackground=field, foreground=self.TEXT,
+                        insertcolor=self.TEXT, bordercolor=edge, lightcolor=field,
+                        darkcolor=field)
+        style.configure("Horizontal.TProgressbar", troughcolor=field, background="#e0703a",
+                        bordercolor=edge, lightcolor="#e0703a", darkcolor="#e0703a")
+
     def _layout(self):
-        pad = {"padx": 10, "pady": 4}
-        frame = ttk.Frame(self)
-        frame.pack(fill="both", expand=True, padx=6, pady=6)
-        frame.columnconfigure(0, weight=1)
+        self._style()
+        c = self.canvas = tk.Canvas(self, width=self.W, height=self.H,
+                                    highlightthickness=0, bg=self.BG)
+        c.pack()
+        self.bg_item = c.create_image(0, 0, anchor="nw")
+        self.band_rect = c.create_rectangle(*self.BAND, fill="#10141d", width=0)
 
-        ttk.Label(frame, text="Japanese disc folder (.cue + Track .bin files)").grid(
-            row=0, column=0, columnspan=2, sticky="w", **pad)
-        ttk.Entry(frame, textvariable=self.disc_var).grid(
-            row=1, column=0, sticky="ew", **pad)
-        ttk.Button(frame, text="Browse…", command=self._browse).grid(
-            row=1, column=1, **pad)
-        self.disc_status = ttk.Label(frame, text="")
-        self.disc_status.grid(row=2, column=0, columnspan=2, sticky="w", **pad)
+        self._text(12, 10, f"Langrisser III English Patch  v{VERSION}",
+                   font=("TkDefaultFont", 11, "bold"))
+        self._text(12, 36, "Japanese disc folder (.cue + Track .bin files)", fill=self.DIM)
+        entry = ttk.Entry(c, textvariable=self.disc_var, width=20)
+        c.create_window(12, 56, window=entry, anchor="nw")
+        c.create_window(288, 55, window=ttk.Button(c, text="Browse…", command=self._browse),
+                        anchor="ne")
+        self._text(12, 88, tag="status", width=280)
 
-        movie_text = "Build the English opening movie (needs ffmpeg, takes longer)"
-        if not self.has_ffmpeg:
-            movie_text += ": ffmpeg not found"
-        self.movie_box = ttk.Checkbutton(frame, text=movie_text, variable=self.movie_var)
-        self.movie_box.grid(row=3, column=0, columnspan=2, sticky="w", **pad)
-        if not self.has_ffmpeg:
-            self.movie_box.state(["disabled"])
+        # Movie option drawn on the canvas: a ttk checkbox is an opaque box.
+        on = self.has_ffmpeg
+        color = self.TEXT if on else "#76809a"
+        c.create_rectangle(13, 135, 27, 149, outline=color, width=1, tags="movie")
+        self._text(14, 132, "", fill=self.OK, tag="movie_mark", font=("TkDefaultFont", 10, "bold"))
+        label = "Build the English opening movie\n" + ("(needs ffmpeg, takes longer)" if on
+                                                      else "(ffmpeg not found)")
+        self._text(36, 130, label, tag="movie", fill=self.DIM if on else color)
+        if on:
+            for t in ("movie", "movie_mark"):
+                c.tag_bind(t, "<Button-1>", lambda e: self.movie_var.set(not self.movie_var.get()))
+                c.tag_bind(t, "<Enter>", lambda e: c.config(cursor="hand2"))
+                c.tag_bind(t, "<Leave>", lambda e: c.config(cursor=""))
+        self.movie_var.trace_add("write", lambda *_: self._draw_movie())
+        self._draw_movie()
 
-        buttons = ttk.Frame(frame)
-        buttons.grid(row=4, column=0, columnspan=2, sticky="ew", **pad)
-        self.build_btn = ttk.Button(buttons, text="Build patched game", command=self._build)
-        self.build_btn.pack(side="left")
-        self.open_btn = ttk.Button(buttons, text="Open output folder",
+        self.build_btn = ttk.Button(c, text="Build patched game", command=self._build)
+        c.create_window(12, 172, window=self.build_btn, anchor="nw")
+        self.open_btn = ttk.Button(c, text="Open folder",
                                    command=self._open_output, state="disabled")
-        self.open_btn.pack(side="left", padx=8)
-        self.progress = ttk.Progressbar(buttons, mode="indeterminate", length=160)
-        self.progress.pack(side="right")
+        c.create_window(288, 172, window=self.open_btn, anchor="ne")
+        self.progress = ttk.Progressbar(c, mode="indeterminate", length=276)
+        self.progress_item = c.create_window(12, 206, window=self.progress, anchor="nw",
+                                             state="hidden")
 
-        self.log = ScrolledText(frame, height=16, state="disabled", wrap="word")
-        self.log.grid(row=5, column=0, columnspan=2, sticky="nsew", **pad)
-        frame.rowconfigure(5, weight=1)
+        self._text(12, self.BAND[1] + 6, tag="log", fill=self.DIM,
+                   font=("TkFixedFont", 8), width=self.W - 110)
+        self.log_btn = ttk.Button(c, text="View log", command=self._show_log)
+        c.create_window(self.W - 12, self.H - 12, window=self.log_btn, anchor="se")
+        self.log_win = None
+
+    def _draw_movie(self):
+        self._set_text("movie_mark", "✓" if self.movie_var.get() else "")
+
+    # --- disc verification + wallpaper ---------------------------------------
+
+    def _busy(self, on):
+        self.canvas.itemconfigure(self.progress_item, state="normal" if on else "hidden")
+        (self.progress.start if on else self.progress.stop)(*((12,) if on else ()))
+
+    def _verify(self, disc):
+        """Check the disc content off the main thread; the verified picture
+        becomes the background."""
+        self.verifying.add(disc)
+        self._busy(True)
+
+        def work():
+            check = lc.verify_disc(disc)
+            data = None
+            if check.ok:
+                try:
+                    w, h, rgb = lc.wallpaper(check.jpeg)
+                    rgb = lc.shade(rgb, w, h, self.PANEL, 0.42)
+                    rgb = lc.shade(rgb, w, h, self.BAND, 0.35)
+                    data = lc.ppm(w, h, rgb)
+                except Exception:  # noqa: BLE001 - verified disc, just no picture
+                    data = None
+            self.after(0, lambda: self._verified(disc, check, data))
+
+        threading.Thread(target=work, daemon=True).start()
+
+    def _verified(self, disc, check, data):
+        self.verifying.discard(disc)
+        self.checks[disc] = check
+        if data is not None:
+            self.pictures[disc] = data
+        if not self.running and not self.verifying:
+            self._busy(False)
+        self._check_disc()
+
+    def _show_picture(self, disc):
+        data = self.pictures.get(disc)
+        if data is None:
+            self.photo = None
+            self.canvas.itemconfigure(self.bg_item, image="")
+            self.canvas.itemconfigure(self.band_rect, state="normal")
+            return
+        self.photo = tk.PhotoImage(data=data, format="PPM")
+        self.canvas.itemconfigure(self.bg_item, image=self.photo)
+        self.canvas.itemconfigure(self.band_rect, state="hidden")
 
     # --- disc folder -------------------------------------------------------
 
@@ -135,13 +232,28 @@ class Launcher(tk.Tk):
             self.disc_var.set(chosen)
 
     def _check_disc(self):
+        """Show the state of the chosen folder; True only once its content
+        is verified. Names are checked at once, content in the background."""
         path = self.disc_var.get().strip()
-        if not path:
-            ok, msg = False, "Choose the folder that holds your Japanese disc image."
+        disc = Path(path) if path else None
+        ok = False
+        if disc is None:
+            self._set_text("status", "✗ Choose the folder that holds your Japanese disc image.",
+                           self.BAD)
+        elif disc in self.checks:
+            check = self.checks[disc]
+            ok = check.ok
+            self._set_text("status", ("✓ " if ok else "✗ ") + check.message,
+                           self.OK if ok else self.BAD)
         else:
-            ok, msg = lc.check_disc_dir(Path(path))
-        self.disc_status.config(text=("✓ " if ok else "✗ ") + msg,
-                                foreground="#1a7f37" if ok else "#b42318")
+            names_ok, msg = lc.check_disc_dir(disc)
+            if not names_ok:
+                self._set_text("status", "✗ " + msg, self.BAD)
+            else:
+                self._set_text("status", lc.VERIFYING, self.DIM)
+                if disc not in self.verifying:
+                    self._verify(disc)
+        self._show_picture(disc if ok else None)
         if not self.running:
             self.build_btn.state(["!disabled"] if ok else ["disabled"])
         return ok
@@ -160,12 +272,10 @@ class Launcher(tk.Tk):
 
         self.log_lines = []
         self.result = None
-        self.log.config(state="normal")
-        self.log.delete("1.0", "end")
-        self.log.config(state="disabled")
+        self._refresh_log()
         self.build_btn.state(["disabled"])
         self.open_btn.state(["disabled"])
-        self.progress.start(12)
+        self._busy(True)
 
         self.running = True
         args = lc.build_args(disc, self.movie_var.get())
@@ -189,6 +299,7 @@ class Launcher(tk.Tk):
 
     def _poll(self):
         done = False
+        got = False
         try:
             while True:
                 line = self.lines.get_nowait()
@@ -196,21 +307,44 @@ class Launcher(tk.Tk):
                     done = True
                     break
                 self.log_lines.append(line)
-                self.log.config(state="normal")
-                self.log.insert("end", line)
-                self.log.see("end")
-                self.log.config(state="disabled")
+                got = True
         except queue.Empty:
             pass
+        if got:
+            self._refresh_log()
         if done:
             self._finish()
         else:
             self.after(100, self._poll)
 
+    def _refresh_log(self):
+        text = "".join(self.log_lines)
+        tail = [ln.rstrip() for ln in text.splitlines() if ln.strip()][-self.LOG_LINES:]
+        self._set_text("log", "\n".join(ln[:80] for ln in tail))
+        if self.log_win is not None and self.log_win.winfo_exists():
+            box = self.log_win.box
+            box.config(state="normal")
+            box.delete("1.0", "end")
+            box.insert("end", text)
+            box.see("end")
+            box.config(state="disabled")
+
+    def _show_log(self):
+        if self.log_win is not None and self.log_win.winfo_exists():
+            self.log_win.lift()
+            return
+        self.log_win = tk.Toplevel(self)
+        self.log_win.title("Build log")
+        self.log_win.box = ScrolledText(self.log_win, width=100, height=30,
+                                        state="disabled", wrap="word")
+        self.log_win.box.pack(fill="both", expand=True)
+        self._refresh_log()
+
     def _finish(self):
         code = self.code
         self.running = False
-        self.progress.stop()
+        if not self.verifying:
+            self._busy(False)
         self._check_disc()
         self.result = lc.output_folder("".join(self.log_lines).splitlines())
         if code == 0 and self.result is not None:
@@ -220,7 +354,7 @@ class Launcher(tk.Tk):
                                 "Load the .cue file in your emulator.")
         else:
             messagebox.showerror("Build failed",
-                                 "The build stopped. The log shows why.")
+                                 "The build stopped. View log shows why.")
 
     def _open_output(self):
         if self.result is not None:

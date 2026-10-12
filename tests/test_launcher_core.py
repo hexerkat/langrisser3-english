@@ -135,3 +135,68 @@ class TestOpenFolder:
 
     def test_windows(self):
         assert lc.open_folder_command(Path("C:/o"), "win32") == ["explorer", str(Path("C:/o"))]
+
+
+class TestVerifyDisc:
+    """Red state (2026-10-12): a disc folder passes on file NAMES alone, so
+    any folder with a .cue and Track .bin files enables Build. The disc must
+    prove it is Langrisser III (Japan): its gallery archive
+    LANG/OMAKE/GRAPHIC.LZH must yield TIALISU.JPG with a good LZH CRC and the
+    pinned SHA-256. That same picture is the window background (Tiaris, at
+    half size), read from the player's disc and never bundled."""
+
+    TIALISU_SHA256 = "1cb3d55d62eb1532a0fd1c2e8a012ec8af652c757289e26158b177cd5d41c79e"
+
+    @staticmethod
+    def _jp():
+        import os
+        import pytest
+        jp = os.environ.get("LANG3_JP_DIR")
+        if not jp:
+            pytest.skip("LANG3_JP_DIR not set")
+        return Path(jp)
+
+    def test_right_file_names_with_wrong_content_fail(self, tmp_path):
+        check = lc.verify_disc(_disc(tmp_path, *REDUMP))
+        assert not check.ok and check.jpeg is None
+        assert "Langrisser III" in check.message
+
+    def test_missing_folder_fails_with_the_name_check_message(self, tmp_path):
+        check = lc.verify_disc(tmp_path / "nope")
+        assert not check.ok and "not found" in check.message
+
+    def test_real_disc_is_verified_and_gives_tiaris(self):
+        import hashlib
+        check = lc.verify_disc(self._jp())
+        assert check.ok, check.message
+        assert hashlib.sha256(check.jpeg).hexdigest() == self.TIALISU_SHA256
+        w, h, rgb = lc.wallpaper(check.jpeg)
+        assert (w, h) == (576, 435) and len(rgb) == w * h * 3
+
+    def test_damaged_picture_on_a_real_track_fails(self, tmp_path):
+        import lzh
+        from iso_tools import SECTOR_SIZE, _find_jp_track, build_file_index, extract_file_data
+        track = bytearray(_find_jp_track(self._jp(), 1).read_bytes())
+        e = build_file_index(track)[lc.WALLPAPER_ARCHIVE]
+        archive = extract_file_data(track, e.extent, e.size)
+        member = next(m for m in lzh.list_members(archive) if m.name == lc.WALLPAPER_MEMBER)
+        off = member.data_offset + 1000
+        track[(e.extent + off // 2048) * SECTOR_SIZE + 16 + off % 2048] ^= 0xFF
+        disc = _disc(tmp_path, REDUMP[0], REDUMP[2])
+        (disc / REDUMP[1]).write_bytes(track)
+        check = lc.verify_disc(disc)
+        assert not check.ok and check.jpeg is None
+
+class TestPicture:
+
+    def test_ppm_header_and_size(self):
+        data = lc.ppm(3, 2, bytes(18))
+        assert data.startswith(b"P6\n3 2\n255\n")
+        assert len(data) == len(b"P6\n3 2\n255\n") + 18
+
+    def test_shade_darkens_only_the_box(self):
+        rgb = bytearray([200] * (4 * 2 * 3))          # 4x2, all 200
+        out = lc.shade(rgb, 4, 2, (1, 0, 3, 1), 0.5)  # x 1..2, row 0
+        px = lambda x, y: out[(y * 4 + x) * 3]
+        assert [px(x, 0) for x in range(4)] == [200, 100, 100, 200]
+        assert [px(x, 1) for x in range(4)] == [200] * 4

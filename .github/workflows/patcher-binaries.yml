@@ -28,7 +28,7 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install pyinstaller==6.22.3 pytest
-      - run: python -m pytest -q tests/test_launcher_core.py
+      - run: python -m pytest -q tests/test_launcher_core.py tests/test_lzh.py tests/test_jpeg_baseline.py
       - run: python -c "import tkinter"
       - run: pyinstaller --noconfirm launcher.spec
       - name: Package
