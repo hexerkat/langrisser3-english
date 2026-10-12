@@ -31,7 +31,7 @@ Imperial Field Marshal<$FFFC>Altemüller…<$FFFE>
 Papa…<$FFFE>
 …Uh…urghh…<$FFFE>
 Gerold, hold on! Gerold!<$FFFE>
-It's a terrible wound.<$FFFC>But linger here too long<$FFFC>and the Empire's hunters<$FFFC>will run us down.<$FFFE>
+It's a serious wound.<$FFFC>But linger here too long<$FFFC>and the Empire's men<$FFFC>will run us down.<$FFFE>
 I'm sorry, Gerold. You<$FFFC>must hold out until we<$FFFC>make it to Laffel!<$FFFE>
 Understood… and don't<$FFFC>worry…<$FFFE>
 Come, Tiaris. We must be<$FFFC>on our way.<$FFFE>

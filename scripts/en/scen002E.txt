@@ -29,7 +29,7 @@ The Floating Castle<$FFFF>
 Ugh, seriously! Why<$FFFC>does this have to happen<$FFFC>now, of all times?<$FFFE>
 They used the storm.<$FFFC>They hid above the rain<$FFFC>clouds to sneak up on<$FFFC>the castle.<$FFFE>
 And it just had to fall<$FFFC>on your knighting<$FFFC>ceremony, huh…<$FFFE>
-Yeah, and perfect timing<$FFFC>for the enemy.<$FFFD>But griping won't help.<$FFFC>Let's go, Tiaris! We've<$FFFC>got this castle and the<$FFFC>Magic Cannon to protect!<$FFFE>
+Yeah, a perfect timing<$FFFC>for the enemy.<$FFFD>But griping won't help.<$FFFC>Let's go, Tiaris! We've<$FFFC>got this castle and the<$FFFC>Magic Cannon to protect!<$FFFE>
 We're in time. The enemy<$FFFC>has yet to appear.<$FFFE>
 Let's hurry and get set<$FFFC>to intercept the enemy<$FFFC>here.<$FFFE>
 We're in position, sir!<$FFFE>
@@ -37,8 +37,8 @@ Lord William! The enemy<$FFFC>has come into sight!<$FFFE>
 Get ready to intercept<$FFFC>them!<$FFFE>
 They're panicking.<$FFFE>
 Just as you planned,<$FFFC>Your Excellency.<$FFFE>
-Hmph. Yet they foresaw<$FFFC>our main force striking<$FFFC>from the east. Not bad…<$FFFC>not bad for a foe.<$FFFE>
-Still, where's the fun<$FFFC>without a fight? Good…<$FFFC>now destroy that central<$FFFC>crystal at all costs!<$FFFE>
+Hmph. Yet they foresaw<$FFFC>our main force striking<$FFFC>from the east. Not bad…<$FFFC>not bad at all.<$FFFE>
+Still, where's the fun<$FFFC>without a fight? Good…<$FFFC>Now destroy the central<$FFFC>crystal at all costs!<$FFFE>
 The Empire was after the<$FFFC>crystal all along, then.<$FFFE>
 What?! If the crystal<$FFFC>breaks… never mind the<$FFFC>Magic Cannon, the whole<$FFFC>castle will fall!<$FFFE>
 If it falls, all Larcuss<$FFFC>falls with it. We can't<$FFFC>lose here… not now,<$FFFC>not ever!<$FFFE>
@@ -61,8 +61,8 @@ Stop!<$FFFE>
 Ngh! I have to protect<$FFFC>the crystal…<$FFFE>
 To think you could<$FFFC>wound me this deeply…<$FFFC>But your strength is<$FFFC>spent.<$FFFD>…Gerold. A shame to<$FFFC>lose such a man.<$FFFE>
 With this, the fate of<$FFFC>Larcuss is sealed.<$FFFE>
-So this is how it ends.<$FFFE>
-No wonder he became<$FFFC>Field Marshal so young…<$FFFC>S-so this is the end…<$FFFE>
+To think this place<$FFFC>would fall…<$FFFE>
+No wonder he became<$FFFC>Field Marshal so young…<$FFFC>I-is this the end…?<$FFFE>
 <$F600><$0000>…<$FFFE>
 Go to Laffel and contact<$FFFC>our allies in Barral.<$FFFC>Then raise an army to<$FFFC>begin the counterattack.<$FFFE>
 I leave Gerold… and my<$FFFC>dear daughter… in your<$FFFC>hands now… I beg you…<$FFFE>
@@ -75,15 +75,15 @@ That's not good! We have<$FFFC>to get out of here now!<$FFFE>
 No! Open your eyes!<$FFFC>Please, Papa!<$FFFE>
 Now commencing attack<$FFFC>on the crystal!<$FFFE>
 No good! It won't break!<$FFFE>
-Understood. I'll handle<$FFFC>the crystal myself!<$FFFE>
+Stand aside! I'll handle<$FFFC>the crystal myself!<$FFFE>
 Yes, sir!<$FFFC>We'll keep up the attack<$FFFC>on the castle defenders!<$FFFE>
 Now commencing attack<$FFFC>on the crystal!<$FFFE>
 No good! It won't break!<$FFFE>
-Understood. I'll handle<$FFFC>the crystal myself!<$FFFE>
+Stand aside! I'll handle<$FFFC>the crystal myself!<$FFFE>
 Yes, sir!<$FFFC>We'll keep up the attack<$FFFC>on the castle defenders!<$FFFE>
 Attack the crystal!<$FFFE>
 No good, sir! We can't<$FFFC>even leave a scratch!<$FFFE>
-Understood. I'll handle<$FFFC>the crystal myself!<$FFFE>
+Stand aside! I'll handle<$FFFC>the crystal myself!<$FFFE>
 Yes, sir!<$FFFC>We'll keep up the attack<$FFFC>on the castle defenders!<$FFFE>
 A magic herb is growing<$FFFC>in the pillar's shadow.<$FFFE>
 Acquired a Magic Herb!<$FFFE>
@@ -102,7 +102,7 @@ Milord!<$FFFE>
 Grrr! Such skill! My<$FFFC>finest troops can't even<$FFFC>lay a hand on him!<$FFFE>
 Naturally! Did you<$FFFC>really think such a<$FFFC>small force could take<$FFFC>this castle?<$FFFE>
 You there! You must be<$FFFC>the famed Field Marshal<$FFFC>Altemüller of Rigüler.<$FFFD>Don't think you'll leave<$FFFC>this castle alive!<$FFFE>
-This floating castle is<$FFFC>an eyesore to Rigüler<$FFFC>and its expansion plans.<$FFFC>Pity, but it must fall.<$FFFE>
+This floating castle is<$FFFC>an eyesore to Rigüler<$FFFC>and its expansion plans.<$FFFC>So it must fall.<$FFFE>
 You won't lay a finger<$FFFC>on it! Prepare yourself!<$FFFE>
 Ghh… You live up to<$FFFC>your name, Altemüller…<$FFFC>You're the first to<$FFFC>ever defeat me…<$FFFE>
 Even Gerold too?<$FFFE>
@@ -121,7 +121,7 @@ Imperial Field Marshal<$FFFC>Altemüller! You'll pay<$FFFC>with your life for wh
 Urrgh!<$FFFE>
 So this is the end!<$FFFE>
 Urrgh!<$FFFE>
-Careless of me!<$FFFE>
+How careless of me!<$FFFE>
 I-I can't believe it!<$FFFE>
 Out of my way. We're<$FFFC>coming through!<$FFFE>
 What!? I-impossible…<$FFFD>Cheating, are we…<$FFFC>Those who won't fight<$FFFC>fair get what they<$FFFC>deserve!<$FFFE>
