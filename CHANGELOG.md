@@ -14,6 +14,23 @@ follows [Keep a Changelog](https://keepachangelog.com/); dates are `YYYY-MM-DD`.
 - The patcher checks that the folder really holds the Langrisser III disc before it
   builds, and shows Tiaris from the disc's own art gallery once it does.
 
+### Changed
+- Text is drawn with a new mix of wide and narrow letters. Letters still pair up as
+  before, but a letter left on its own now takes half the width, so the odd gap after a
+  word in dialogue, menus and battle windows is gone.
+- The name entry screen types your name in the same narrow letters, with a cursor that
+  fits them.
+- Labels on the field screens sit in boxes sized to their text.
+- Messages the game builds from a name and an item or a stat now put an arrow after the
+  name ("Diehärte→Healing Herb was used!") instead of an "'s" glued to the next word.
+
+### Fixed
+- Spacing in the messages the game puts together: numbers no longer touch the word before
+  them, the level up message lost its extra space, and unit introductions no longer run
+  words together.
+- A line from Tiaris in scenario 5 now warns that the citizens will be caught, as in the
+  Japanese.
+
 ## [0.7.2] - 2026-08-24
 
 ### Fixed
