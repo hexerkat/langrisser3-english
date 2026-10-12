@@ -1,4 +1,4 @@
-"""jpeg_baseline.py — decode a baseline JPEG to RGB, standard library only.
+"""Decode a baseline JPEG to RGB, standard library only.
 
 Tkinter cannot show JPEG and the launcher may not depend on Pillow, so this
 decodes the disc gallery picture itself. Scope: baseline / extended sequential

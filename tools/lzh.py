@@ -1,4 +1,4 @@
-"""lzh.py — read members of an LHA/LZH archive (-lh0- stored, -lh5- LZ+Huffman).
+"""Read members of an LHA/LZH archive (-lh0- stored, -lh5- LZ+Huffman).
 
 Standard library only, so the packaged launcher can open the disc gallery
 (LANG/OMAKE/GRAPHIC.LZH) without 7-Zip. Header levels 0 and 1, which is what

@@ -1,4 +1,4 @@
-"""test_lzh.py — the stdlib LZH reader the launcher uses for the disc gallery.
+"""Tests for the stdlib LZH reader the launcher uses for the disc gallery.
 
 Red state (2026-10-12): tools/lzh.py does not exist.
 

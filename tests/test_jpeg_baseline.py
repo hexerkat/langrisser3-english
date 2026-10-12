@@ -1,5 +1,4 @@
-"""test_jpeg_baseline.py — the stdlib baseline-JPEG decoder for the launcher
-wallpaper.
+"""Tests for the stdlib baseline-JPEG decoder behind the launcher wallpaper.
 
 Red state (2026-10-12): tools/jpeg_baseline.py does not exist.
 
