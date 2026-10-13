@@ -210,12 +210,15 @@ class TestPatchDeclaration(unittest.TestCase):
 
     def test_exact_sites(self):
         edits = dict(MOD.PROG4_NAME_ENTRY_HANKAKU[PROG4_PATH])
-        self.assertEqual(set(edits), {CURSOR_MUL_OFF, PARKED_X_OFF})
+        self.assertEqual(set(edits), {CURSOR_MUL_OFF, PARKED_X_OFF, MOD.BAR_WIDTH_OFF})
         # cursor: pos*16 -> pos*8 (shll2 ; add r1,r1)
         self.assertEqual(edits[CURSOR_MUL_OFF], bytes.fromhex('4108311c'))
         # parked X: 0xB0 + 15*8 = 0x128 (the JP last-slot rule, 16 cells;
         # 2026-10-12 red state: 0xE8 = the 8-letter cell)
         self.assertEqual(edits[PARKED_X_OFF], bytes.fromhex('0128'))
+        # cursor bar: right edge X+7, one 8px cell (2026-10-13 red state:
+        # the JP X+15 bar covered two letters)
+        self.assertEqual(edits[MOD.BAR_WIDTH_OFF], bytes.fromhex('7207'))
 
     def test_fetch_stays_jp(self):
         """col*2 must match the 5-cell records — and the records are

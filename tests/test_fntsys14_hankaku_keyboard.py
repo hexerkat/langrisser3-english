@@ -77,8 +77,8 @@ def test_grid_tiles_are_all_in_the_twin_band():
     tiles = {c for r in recs for c in _cells(r) if c and c != 0xFFFF}
     assert tiles <= set(ft.TWIN_TILE_MAP.values())
     # full coverage: 26 UC + 26 lc + 10 digits + ! ? + the column space
-    # + ä ö ü and Ä Ö Ü (2026-10-12)
-    assert len(tiles) == 71
+    # + ä ö ü and Ä Ö Ü (2026-10-12) + the hyphen (2026-10-13)
+    assert len(tiles) == 72
 
 
 
@@ -151,11 +151,21 @@ def test_uppercase_umlauts_ride_the_band_headroom():
 
 
 def test_uppercase_umlaut_art_is_the_capital_with_dots():
-    """Body = our A/O/U half-glyph (rows 3..15), dots on rows 0-1 at the
-    letter's side columns (c6, like ö)."""
+    """Body = our A/O/U half-glyph (rows 3..15), 1px dots on row 1 at the
+    letter's side columns (c6, like ö), a blank row 2 between dots and body.
+    Playtest 2026-10-13: dots on rows 0-1 sat too high; then dots on rows
+    1-2 merged with the U stems into a long U. Red state: 00 c6 c6."""
     import font_tools as ft
     for up, base in (('Ä', 'A'), ('Ö', 'O'), ('Ü', 'U')):
         g, b = ft.HANKAKU_HALF_GLYPHS[up], ft.HALF_GLYPHS[base]
         assert g[3:] == b[3:]
-        assert g[:3] == bytes([0xC6, 0xC6, 0x00])
+        assert g[:3] == bytes([0x00, 0xC6, 0x00])
 
+
+def test_hyphen_key_follows_the_question_mark():
+    """Ralf 2026-10-13: the keyboard needs a hyphen. Red state: row 14 was
+    '_!?__' and '-' had no twin tile."""
+    import font_tools as ft
+    from fntsys14_hankaku_keyboard import KEYBOARD_ROWS
+    assert KEYBOARD_ROWS[14] == '_!?-_'
+    assert ft.TWIN_TILE_MAP['-'] == ft.HANKAKU_TILE_MAP['-'] + ft.TWIN_K

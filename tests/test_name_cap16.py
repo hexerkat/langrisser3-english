@@ -320,6 +320,22 @@ class TestLengthEndAndCursor(unittest.TestCase):
             want = 0xB0 + min(pos, 15) * 8
             self.assertEqual(vm.R[3] & 0xFFFF, want, f'pos {pos}')
 
+    def test_cursor_bar_is_one_8px_cell_wide(self):
+        """The blinking bar is a VDP1 quad built on the stack: corners
+        (X, 0x26) (X+w, 0x26) (X+w, 0x27) (X, 0x27). JP w = 15 (one 16px
+        zenkaku cell); with 8px letters it must be 7. Red state: the JP
+        `add #15,r2` at 0x060920CE drew the bar over two letters."""
+        blink = 0x06095610                 # frame counter; > 15 = bar shown
+        p4 = bytearray(self.p4)
+        p4[blink - P4_BASE:blink - P4_BASE + 4] = (0x10).to_bytes(4, 'big')
+        for pos in (0, 5, 15, 16):
+            vm = _call(bytes(p4), HOME.NAME_HOME, 0x06092078, [0xFFFF], {4: pos},
+                       stop=0x060920FE)
+            quad = _words(vm, vm.R[14] + 0x0C, 8)
+            x = 0xB0 + min(pos, 15) * 8
+            self.assertEqual(quad, [x, 0x26, x + 7, 0x26, x + 7, 0x27, x, 0x27],
+                             f'pos {pos}')
+
 
 @unittest.skipIf(DEFNAME is None, 'modules absent (RED)')
 class TestDefaultName(unittest.TestCase):

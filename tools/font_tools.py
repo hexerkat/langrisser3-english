@@ -576,13 +576,16 @@ _DQUOTE_TILE_DATA = bytes.fromhex(
 
 # Name-entry keyboard buttons (fntsys14 rows reference tiles 1488-1490).
 # OUR art (2026-06-11, replaces the old stacked-letter ADV/BAK/END):
-# ADV = right arrow, BAK = left arrow (EagleIII arrowheads, extended
-# shaft), END = condensed "END" text in a single 16x16 tile.
+# ADV = right arrow, BAK = left arrow, END = condensed "END" text in a single
+# 16x16 tile. The arrows are the EagleIII "→" / "←" glyphs unchanged
+# (the face of the 8px letters), centered in columns 4..11. Playtest
+# 2026-10-13: the slim arrow's tip at column 14 was cut, then the bold
+# redraw was too thick.
 _NAME_ENTRY_BUTTON_TILES = {
-    1488: bytes.fromhex('00000000000000000008000c000e7ffe'
-                        '000e000c000800000000000000000000'),  # ADV →
-    1489: bytes.fromhex('00000000000000001000300070007ffe'
-                        '70003000100000000000000000000000'),  # BAK ←
+    1488: bytes.fromhex('0000000000000000008000c000e00ff0'
+                        '00e000c0008000000000000000000000'),  # ADV →
+    1489: bytes.fromhex('00000000000000000100030007000ff0'
+                        '07000300010000000000000000000000'),  # BAK ←
     1490: bytes.fromhex('00000000000000007a2e4329432972a9'
                         '426942697a2e00000000000000000000'),  # END
 }
@@ -788,6 +791,7 @@ _TWIN_CHARS = (
     + ['!', '?', ' ']
     + ['ä', 'ö', 'ü']          # 2026-10-12: Diehärte, Böser, Rigüler
     + ['Ä', 'Ö', 'Ü']
+    + ['-']                    # 2026-10-13: hyphen key
 )
 TWIN_TILE_MAP = {ch: HANKAKU_TILE_MAP[ch] + TWIN_K for ch in _TWIN_CHARS}
 
@@ -1139,10 +1143,10 @@ def generate_english_font(jp_font: bytes) -> bytes:
     # --- Tile 44: the engine glue arrow "→" ---
     # 8-bit-loadable slot for SH-2 `mov #0x2C, Rn` (<= 0x7F, sign-safe; see
     # reference_engine_immediate_tile_constraint), the JP の glue of the PROG_3
-    # stat-up ("[Name]→Level 3 rose!") and item-use ("[Name]→[Item] was used!")
+    # stat-up ("[Name]→Level rose!") and item-use ("[Name]→[Item] was used!")
     # messages. Ralf 2026-10-08: the right arrow replaces the possessive 's
     # (compact "'s " 2026-06-14). Same art as the name-entry ADV button (1488),
-    # whose 1px margins keep the arrow clear of both neighbouring words.
+    # whose 4px margins keep the arrow clear of both neighboring words.
     write_tile(44, _NAME_ENTRY_BUTTON_TILES[1488])
 
     # --- Tile 45: blank (previously JP kanji leftover) ---
@@ -1398,9 +1402,10 @@ HALF_GLYPHS = build_half_glyphs()
 
 
 def _capital_with_dots(base: str) -> bytes:
-    """Our capital half-glyph (body rows 3..12) with umlaut dots on rows 0-1
-    at the side columns (0xC6, like the ö dots)."""
-    return bytes([0xC6, 0xC6, 0x00]) + HALF_GLYPHS[base][3:]
+    """Our capital half-glyph (body rows 3..12) with 1px umlaut dots on row 1
+    at the side columns (0xC6, like the ö dots) and a blank row 2, so the Ü
+    dots do not merge with its stems."""
+    return bytes([0x00, 0xC6, 0x00]) + HALF_GLYPHS[base][3:]
 
 
 # Half-glyphs of the 8px hankaku band: the bigram alphabet plus the 8px

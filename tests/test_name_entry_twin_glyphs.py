@@ -75,7 +75,8 @@ KEYBOARD_CHARS = (
     + ['!', '?', ' ']
     + ['ä', 'ö', 'ü']               # 2026-10-12: Diehärte, Böser, Rigüler
     + ['Ä', 'Ö', 'Ü']
-)                                   # the exact fetchable key set (71 chars)
+    + ['-']                         # 2026-10-13: hyphen key
+)                                   # the exact fetchable key set (72 chars)
 TWIN_BLOCK = range(1350, 1435)      # band + TWIN_K, for every band slot
 CAVE_BLOCK = range(1454, 1470)      # font caves, scratch and nakaguro
 PROG4_PATH = 'LANG/PROG_4.BIN'
