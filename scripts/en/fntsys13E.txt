@@ -134,9 +134,9 @@ A spiked-ball mace built for force.<$FFFF>
 It shatters foes armor and all, even<$FFFF>
 heavy troops.<$FFFF>
 ATK+5<$FFFF>
-A training tool the macho Big<$FFFF>
-Brother always carries, to build his<$FFFF>
-body anytime, anywhere.<$FFFF>
+A training tool the macho Bröther<$FFFF>
+always carries, to build his body<$FFFF>
+anytime, anywhere.<$FFFF>
 ATK+2<$FFFF>
 A huge hammer of mithril silver, a<$FFFF>
 magic metal. Light and sturdy, its<$FFFF>

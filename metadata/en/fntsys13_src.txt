@@ -142,7 +142,7 @@ A spiked-ball mace built for force. It shatters foes armor and all, even heavy t
 @stat ATK+5
 
 # 36  Iron Dumbbell
-A training tool the macho Big Brother always carries, to build his body anytime, anywhere.
+A training tool the macho Bröther always carries, to build his body anytime, anywhere.
 @stat ATK+2
 
 # 37  Mithril Hammer

@@ -322,35 +322,35 @@ Cherie<$FFFF>
 Adon<$FFFF>
 Samson<$FFFF>
 Valan<$FFFF>
-Big Brother<$FFFF>
-Big Brother<$FFFF>
-Big Brother<$FFFF>
-Big Brother<$FFFF>
-Big Brother<$FFFF>
-Big Brother<$FFFF>
-Big Brother<$FFFF>
-Big Brother<$FFFF>
-Big Brother<$FFFF>
-Big Brother<$FFFF>
-Big Brother<$FFFF>
-Big Brother<$FFFF>
-Big Brother<$FFFF>
-Big Brother<$FFFF>
-Big Brother<$FFFF>
-Big Brother<$FFFF>
-Big Brother<$FFFF>
-Big Brother<$FFFF>
-Big Brother<$FFFF>
-Big Brother<$FFFF>
-Big Brother<$FFFF>
-Big Brother<$FFFF>
-Big Brother<$FFFF>
-Big Brother<$FFFF>
-Big Brother<$FFFF>
-Big Brother<$FFFF>
-Big Brother<$FFFF>
-Big Brother<$FFFF>
-Big Brother<$FFFF>
+Bröther<$FFFF>
+Bröther<$FFFF>
+Bröther<$FFFF>
+Bröther<$FFFF>
+Bröther<$FFFF>
+Bröther<$FFFF>
+Bröther<$FFFF>
+Bröther<$FFFF>
+Bröther<$FFFF>
+Bröther<$FFFF>
+Bröther<$FFFF>
+Bröther<$FFFF>
+Bröther<$FFFF>
+Bröther<$FFFF>
+Bröther<$FFFF>
+Bröther<$FFFF>
+Bröther<$FFFF>
+Bröther<$FFFF>
+Bröther<$FFFF>
+Bröther<$FFFF>
+Bröther<$FFFF>
+Bröther<$FFFF>
+Bröther<$FFFF>
+Bröther<$FFFF>
+Bröther<$FFFF>
+Bröther<$FFFF>
+Bröther<$FFFF>
+Bröther<$FFFF>
+Bröther<$FFFF>
 Kirikaze<$FFFF>
 True Böser<$FFFF>
 Gilbert<$FFFF>

@@ -26,6 +26,9 @@ NAME_RENAMES = [
     ("Altemuller", "Altemüller", 1),   # field marshal
     ("Bozel",      "Böser",      1),   # demon overlord
     ("Riguler",    "Rigüler",    1),   # empire name
+    # 兄貴 (Cho Aniki cameo): the Langrisser I&II remake name. 29 fntsys11
+    # unit records + the Iron Dumbbell description (Ralf 2026-10-13).
+    ("Big Brother", "Bröther",   30),
 ]
 
 

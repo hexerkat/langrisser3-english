@@ -57,6 +57,7 @@ FLAT_FORBIDDEN = [
     'demonkind',       # 魔族 → "demons"
     'demonkin',        # 魔族 → "demons"
     'demon clan',      # 魔族 → "demons"
+    'Big Brother',     # 兄貴 → "Bröther" (remake name, also "Bröther Valan"; Ralf 2026-10-13)
 ]
 
 # Flagged only when the paired JP entry names the character (avoids matching the

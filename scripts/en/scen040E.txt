@@ -19,7 +19,7 @@ Emerick<$FFFF>
 Valan<$FFFF>
 Adon<$FFFF>
 Samson<$FFFF>
-Big Brother<$FFFF>
+Bröther<$FFFF>
 Queen Jessica<$FFFF>
 <$0000>・That's a secret!<$FFFE>
 <$0000>・Death of <$F600><$0000><$FFFC><$0000>・Death of any Female PC<$FFFE>
@@ -28,7 +28,7 @@ Haah!<$FFFE>
 Huff!<$FFFE>
 Hyaah!<$FFFE>
 Push harder now, Samson!<$FFFC>Drive that body on!<$FFFE>
-Sorry, Big Brother!<$FFFE>
+Sorry, Bröther!<$FFFE>
 This place…<$FFFE>
 Don't "is this it" me!<$FFFC>Where on earth are we?!<$FFFE>
 We should be heading to<$FFFC>Castle Velzeria, but…<$FFFD>I couldn't shake the<$FFFC>thought of where that<$FFFC>doll had flown off to…<$FFFE>
@@ -60,7 +60,7 @@ Nobody here asked you<$FFFC>for your opinion!<$FFFD>I beg you now, my Queen!<$FF
 Let's work up a fresh<$FFFC>sweat again today!<$FFFE>
 Coming to the gym<$FFFC>every day is such a joy!<$FFFE>
 Hm, what's this here?<$FFFC>Some new recruits, eh?<$FFFE>
-Hey there, Big Brother!<$FFFC>Are those scrawny runts<$FFFC>our new recruits, then?<$FFFE>
+Hey there, Bröther!<$FFFC>Are those scrawny runts<$FFFC>our new recruits, then?<$FFFE>
 Far from it! They are<$FFFC>spies from a rival gym,<$FFFC>here to bare our secret<$FFFC>of sculpted beauty!<$FFFE>
 Then we'll teach them<$FFFC>a real lesson!<$FFFE>
 Thanks for that, bro!<$FFFC>Keep it tight, ya know,<$FFFC>the Queen's right here!<$FFFE>
@@ -76,11 +76,11 @@ Adon! Samson!<$FFFE>
 Time to charge in?<$FFFE>
 Everyone is ready.<$FFFE>
 We'll cheer you on with<$FFFC>our posing and leave<$FFFC>the fighting to others.<$FFFE>
-Aw, Big Brother Valan.<$FFFC>That's a real lame look.<$FFFE>
+Aw, Bröther Valan.<$FFFC>That's a real lame look.<$FFFE>
 He's right, you know.<$FFFC>If we don't fight, we'll<$FFFC>never live it down.<$FFFE>
 Silence! What are you<$FFFC>saying!?<$FFFD>Our muscled beauty is<$FFFC>the finest in the world!<$FFFC>We bare it to bewitch<$FFFC>our foes!<$FFFE>
 Oh, I see it all now!<$FFFC>So that's how it was!<$FFFE>
-As impressive as ever,<$FFFC>Big Brother Valan!<$FFFE>
+As impressive as ever,<$FFFC>Bröther Valan!<$FFFE>
 And so, we'll cheer you<$FFFC>on with our posing.<$FFFD>You're the ones who'll<$FFFC>do the fighting!<$FFFE>
 Yuchee! Let's do this!<$FFFE>
 We'll keep a chair open<$FFFC>for the Queen.<$FFFC>Please, come quickly!<$FFFE>
