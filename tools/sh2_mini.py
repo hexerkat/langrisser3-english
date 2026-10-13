@@ -131,6 +131,8 @@ class Sh2:
             R[n] = self.MACL
         elif top == 0x0 and low == 0xD:                          # mov.w @(r0,Rm),Rn
             R[n] = _sx(self.rw((R[0] + R[m]) & M32), 16) & M32
+        elif top == 0x0 and low == 0xC:                          # mov.b @(r0,Rm),Rn
+            R[n] = _sx(self.rb((R[0] + R[m]) & M32), 8) & M32
         elif top == 0x0 and low == 0x5:                          # mov.w Rm,@(r0,Rn)
             self.ww((R[0] + R[n]) & M32, R[m])
         elif top == 0x6:

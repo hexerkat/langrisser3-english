@@ -293,11 +293,13 @@ class TestLengthEndAndCursor(unittest.TestCase):
         trimmed); JP stops counting at 8."""
         for n in range(17):
             vm = _call(self.p4, HOME.NAME_HOME, 0x06092348, BAND[:n] + [0xFFFF])
-            self.assertEqual(vm.R[0], max(n, 1) if n else 1, f'n={n}')
+            # n = 0: 0 since prog4_name_trim_space (JP read index 255 and
+            # returned 1 after flooding the zeroed test RAM with FFFF)
+            self.assertEqual(vm.R[0], n, f'n={n}')
             self.assertEqual(_words(vm, HOME.NAME_HOME, n + 1)[:n], BAND[:n])
 
     def test_length_matches_jp_up_to_8(self):
-        for n in range(9):
+        for n in range(1, 9):     # n = 0: see prog4_name_trim_space
             words = BAND[:n] + [0xFFFF]
             a = _call(self.p4, HOME.NAME_HOME, 0x06092348, words)
             b = _call(self.jp, JP_NAME_BUF, 0x06092348, words)

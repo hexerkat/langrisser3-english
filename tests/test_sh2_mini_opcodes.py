@@ -47,6 +47,13 @@ class TestNewOpcodes(unittest.TestCase):
         vm = _run([0x0365], {0: 4, 3: DATA, 6: 0x1234})  # mov.w r6,@(r0,r3)
         self.assertEqual(vm.rw(DATA + 4), 0x1234)
 
+    def test_mov_b_r0_indexed_load_sign_extends(self):
+        """Name check task (2026-10-13): the case-fold table lookup."""
+        vm = _run([0x013C], {0: 1, 3: DATA}, b'\x05\xff')  # mov.b @(r0,r3),r1
+        self.assertEqual(vm.R[1], 0xFFFFFFFF)
+        vm = _run([0x013C], {0: 0, 3: DATA}, b'\x05\xff')
+        self.assertEqual(vm.R[1], 5)
+
     def test_tst_sets_t_when_and_is_zero(self):
         vm = _run([0x2128], {1: 0xF0, 2: 0x0F})          # tst r2,r1
         self.assertEqual(vm.T, 1)

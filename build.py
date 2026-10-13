@@ -82,6 +82,8 @@ from prog4_name_twin_convert import PROG4_NAME_TWIN_CONVERT
 from name_buffer_home import NAME_BUFFER_HOME
 from prog4_name_cap16 import PROG4_NAME_CAP16
 from a0lang_save_name_pack import A0LANG_SAVE_NAME_PACK
+from prog4_name_trim_space import PROG4_NAME_TRIM_SPACE
+from name_check import NAME_CHECK
 from prog6_battle_cmd_width import PROG6_BATTLE_CMD_WIDTH
 from prog4_spell_name_table import PROG4_SPELL_NAME_TABLE
 from prog5_menu_geometry import PROG5_MENU_GEOMETRY
@@ -246,6 +248,8 @@ ENGINE_MODULE_DICTS = {
     "name_buffer_home": NAME_BUFFER_HOME,
     "prog4_name_cap16": PROG4_NAME_CAP16,
     "a0lang_save_name_pack": A0LANG_SAVE_NAME_PACK,
+    "prog4_name_trim_space": PROG4_NAME_TRIM_SPACE,
+    "name_check": NAME_CHECK,
     "prog6_battle_cmd_width": PROG6_BATTLE_CMD_WIDTH,
     "prog4_spell_name_table": PROG4_SPELL_NAME_TABLE,
     "prog5_menu_geometry": PROG5_MENU_GEOMETRY,

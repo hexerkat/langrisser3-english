@@ -427,7 +427,13 @@ def encode_fntsys(jp_baseline: bytes, scripts_dir: Path,
         fs.pairs[13].records = hankaku_keyboard_records(fs.pairs[13].records[19:21])
         fs.pairs[13].edited = True
 
-    return build_fnt_sys(fs)
+    out = build_fnt_sys(fs)
+    # The name check list rides the end of the file at a fixed offset
+    # (tools/name_check.py; the PROG_4 check reads it there).
+    if is_enabled('name_check'):
+        from name_check import with_list
+        out = with_list(out, scripts_dir)
+    return out
 
 
 def main():

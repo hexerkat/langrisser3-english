@@ -84,6 +84,9 @@ class _Asm:
     def bt(self, lbl):
         self.w(0x8900 | (self._disp(lbl, self.here() + 4, 2, -128, 127) & 0xFF))
 
+    def bts(self, lbl):                  # bt/s
+        self.w(0x8D00 | (self._disp(lbl, self.here() + 4, 2, -128, 127) & 0xFF))
+
     def bf(self, lbl):
         self.w(0x8B00 | (self._disp(lbl, self.here() + 4, 2, -128, 127) & 0xFF))
 
