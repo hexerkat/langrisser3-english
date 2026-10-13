@@ -72,11 +72,11 @@ from font_tools import TWIN_TILE_MAP  # noqa: E402
 TWIN_SPACE = TWIN_TILE_MAP[' ']
 BLOCK_X_CELLS = (3, 14, 25)        # row records +8 (8px cells) per block
 FIELD_BASE_PX = 0xB0               # typed-name field base X (FUN_06092070)
-NAME_CAP = 8                       # entries; buffer+save = 9 words (LOCKED)
+NAME_CAP = 16                      # entries (prog4_name_cap16, 2026-10-12)
 
 FETCH_OFF = 0x8D30                 # add r1,r1 (col*2) — JP, slot-locked
 CURSOR_MUL_OFF = 0x908A            # shll2; shll2 (pos*16 px)
-PARKED_X_OFF = 0x911E              # pool 0x0120 (pos>7 parked X)
+PARKED_X_OFF = 0x911E              # pool 0x0120 (JP: pos>7 parked X)
 CAP_OFF = 0x8D06                   # mov #7 — must stay byte-identical
 
 PROG4_PATH = 'LANG/PROG_4.BIN'
@@ -98,9 +98,10 @@ def _ref_cursor_x_px(pos, width_aware):
     """Typed-name insertion cursor X. width_aware=False = the JP 16px
     step (the bug); True = the fix (8px hankaku step)."""
     step = 8 if width_aware else 16
-    if pos > NAME_CAP - 1:
-        # JP parks the sprite ON the last slot: 0x120 = 0xB0 + 7*16
-        return FIELD_BASE_PX + (NAME_CAP - 1) * step
+    cap = NAME_CAP if width_aware else 8      # JP: 8 zenkaku
+    if pos > cap - 1:
+        # parks the sprite ON the last slot (JP: 0x120 = 0xB0 + 7*16)
+        return FIELD_BASE_PX + (cap - 1) * step
     return FIELD_BASE_PX + pos * step
 
 
@@ -191,11 +192,11 @@ class TestCursorModel(unittest.TestCase):
     def test_parked_position_follows_the_field(self):
         # JP pool 0x120 = 0xB0 + 7*16 (parks on the last slot)
         self.assertEqual(_ref_cursor_x_px(8, width_aware=False), 0x120)
-        self.assertEqual(_ref_cursor_x_px(8, width_aware=True), 0xE8)
+        self.assertEqual(_ref_cursor_x_px(16, width_aware=True), 0x128)
 
     @unittest.skipUnless(MODULE_PRESENT, "module absent (RED)")
     def test_module_model_matches_reference(self):
-        for pos in range(10):
+        for pos in range(18):
             self.assertEqual(MOD.cursor_x_px(pos),
                              _ref_cursor_x_px(pos, width_aware=True))
 
@@ -212,8 +213,9 @@ class TestPatchDeclaration(unittest.TestCase):
         self.assertEqual(set(edits), {CURSOR_MUL_OFF, PARKED_X_OFF})
         # cursor: pos*16 -> pos*8 (shll2 ; add r1,r1)
         self.assertEqual(edits[CURSOR_MUL_OFF], bytes.fromhex('4108311c'))
-        # parked X: 0xB0 + 7*8 = 0xE8 (same last-slot rule as JP)
-        self.assertEqual(edits[PARKED_X_OFF], bytes.fromhex('00e8'))
+        # parked X: 0xB0 + 15*8 = 0x128 (the JP last-slot rule, 16 cells;
+        # 2026-10-12 red state: 0xE8 = the 8-letter cell)
+        self.assertEqual(edits[PARKED_X_OFF], bytes.fromhex('0128'))
 
     def test_fetch_stays_jp(self):
         """col*2 must match the 5-cell records — and the records are
@@ -234,9 +236,8 @@ class TestPatchDeclaration(unittest.TestCase):
         self.assertEqual(base[PARKED_X_OFF], bytes.fromhex('0120'))
 
     def test_cap_is_not_touched(self):
-        """The 8-entry cap stays: buffer 0x6034D90 and the save block hold
-        exactly 9 words — extending is a separate, gated task (see the
-        magic-table canon)."""
+        """The cap itself belongs to prog4_name_cap16 (16 entries since
+        2026-10-12); this module only owns the cursor step and park X."""
         edits = dict(MOD.PROG4_NAME_ENTRY_HANKAKU[PROG4_PATH])
         for off in edits:
             span = range(off, off + len(edits[off]))

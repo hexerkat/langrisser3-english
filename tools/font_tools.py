@@ -107,17 +107,26 @@ ELLIPSIS_TILE = 906          # … two-dot ellipsis (tile 906)
 # bigrams (1435+). Scripts write the literal ・ (objectives diagramming =
 # <$0000>・text, Ralf 2026-07-08).
 NAKAGURO_JP_TILE = 217
-NAKAGURO_TILE = 1428
+NAKAGURO_TILE = 1466          # cave block (1428 until 2026-10-12)
 DQUOTE_TILE = 1470           # " double-quote (tile 1470)
 
 # v0.8 RESERVED tile range [1265..1434]: hankaku band (1265..1344 plus growth
 # headroom to the declared class top 1349), name-entry TWIN band (1350..1416,
 # v4 display twins), zenkaku-dispatch scratch/cave (1420-1425), free (1427),
-# nakaguro (1428), name-twin append cave (1429-1430). The bigram
+# nakaguro (1428), name-twin append cave (1429-1430), save name PACK
+# (1417-1419) and UNPACK (1432-1434) caves. The bigram
 # packer MUST NOT allocate here (regression 2026-07-08: a corpus shift
 # spilled 'Yo'->1426 and '• '->1265, silently overwritten by the band/cave
 # writes). Ends at _VD_SPACE (1435).
-V08_RESERVED_TILES = frozenset(range(1265, 1435))
+# 2026-10-12: the twin block grew to the whole band (1350..1434, band +
+# TWIN_K for every band slot, so ä ö ü have twins) and the code caves, the
+# balloon scratch glyph and the nakaguro moved to CAVE_BLOCK 1454..1469 (the
+# top of the free run 1437..1469; fresh bigrams keep growing from 1437 and
+# skip the block): PACK 1454-1456, UNPACK 1457-1459, balloon scratch 1460,
+# balloon cave 1461-1465, nakaguro 1466, name-twin cave 1467-1468, width
+# class 1469.
+CAVE_BLOCK = frozenset(range(1454, 1470))
+V08_RESERVED_TILES = frozenset(range(1265, 1435)) | CAVE_BLOCK
 
 # Apostrophe bigrams — one group (the font has no standalone ' tile, so every
 # apostrophe is encoded as a 2-char tile we draw via _interleave). Two index
@@ -750,6 +759,9 @@ _HANKAKU_CHARS = (
     # '*' is deliberately NOT here: it is the objectives-header marker and
     # renders as the original JP full-width ＊ (zenkaku 489), like '•'.
     + ['(', ')', '"', '%', '&', '+', '/']
+    # 2026-10-12: uppercase umlauts for the name keyboard (1345-1347, band
+    # headroom; art = our capital + dots, HANKAKU_HALF_GLYPHS).
+    + ['Ä', 'Ö', 'Ü']
 )
 HANKAKU_TILE_MAP = {ch: HANKAKU_BASE + i for i, ch in enumerate(_HANKAKU_CHARS)}
 # 8px ellipsis half-glyph (three 1px dots at cols 1/3/5, on the period baseline).
@@ -774,6 +786,8 @@ _TWIN_CHARS = (
     + [chr(c) for c in range(ord('a'), ord('z') + 1)]
     + [str(d) for d in range(10)]
     + ['!', '?', ' ']
+    + ['ä', 'ö', 'ü']          # 2026-10-12: Diehärte, Böser, Rigüler
+    + ['Ä', 'Ö', 'Ü']
 )
 TWIN_TILE_MAP = {ch: HANKAKU_TILE_MAP[ch] + TWIN_K for ch in _TWIN_CHARS}
 
@@ -1383,6 +1397,20 @@ def build_half_glyphs() -> dict:
 HALF_GLYPHS = build_half_glyphs()
 
 
+def _capital_with_dots(base: str) -> bytes:
+    """Our capital half-glyph (body rows 3..12) with umlaut dots on rows 0-1
+    at the side columns (0xC6, like the ö dots)."""
+    return bytes([0xC6, 0xC6, 0x00]) + HALF_GLYPHS[base][3:]
+
+
+# Half-glyphs of the 8px hankaku band: the bigram alphabet plus the 8px
+# ellipsis and the uppercase umlauts (band only: no bigram tiles for them).
+HANKAKU_HALF_GLYPHS = dict(HALF_GLYPHS)
+HANKAKU_HALF_GLYPHS.setdefault('…', _ELLIPSIS_HALF)
+HANKAKU_HALF_GLYPHS.update({up: _capital_with_dots(base)
+                            for up, base in (('Ä', 'A'), ('Ö', 'O'), ('Ü', 'U'))})
+
+
 def compose_bigram(a: str, b: str) -> bytes:
     """The 32-byte tile for the half-width pair (a, b): a's left half + b's right
     half, interleaved (the same composition the proven generator uses)."""
@@ -1474,8 +1502,7 @@ def _generate_data_driven_font(jp_font: bytes) -> bytes:
     # right half is the space before the next record (tests/test_ui_compose_messages).
     # v0.8 hankaku band: one 8px tile per char (glyph in the LEFT 8px, right half
     # blank). Composed after the preserved-copy/bigram loops so it wins its slots.
-    _hk_halves = dict(HALF_GLYPHS)
-    _hk_halves.setdefault('…', _ELLIPSIS_HALF)
+    _hk_halves = HANKAKU_HALF_GLYPHS
     for ch, t in HANKAKU_TILE_MAP.items():
         half = _hk_halves.get(ch)
         if half is not None and t < NEW_FONT_TILES:
@@ -1507,6 +1534,11 @@ def _generate_data_driven_font(jp_font: bytes) -> bytes:
     from width_class import WIDTH_CAVE_TILE, cave_blob as _wc_blob
     _wblob = _wc_blob()
     out[WIDTH_CAVE_TILE * 32:WIDTH_CAVE_TILE * 32 + len(_wblob)] = _wblob
+    # 16-letter name: save PACK (1417-1419) and load UNPACK (1432-1434).
+    from a0lang_save_name_pack import (PACK_TILE, UNPACK_TILE, pack_blob,
+                                       unpack_blob)
+    for _tile, _nblob in ((PACK_TILE, pack_blob()), (UNPACK_TILE, unpack_blob())):
+        out[_tile * 32:_tile * 32 + len(_nblob)] = _nblob
     return bytes(out)
 
 

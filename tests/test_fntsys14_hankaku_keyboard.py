@@ -77,7 +77,8 @@ def test_grid_tiles_are_all_in_the_twin_band():
     tiles = {c for r in recs for c in _cells(r) if c and c != 0xFFFF}
     assert tiles <= set(ft.TWIN_TILE_MAP.values())
     # full coverage: 26 UC + 26 lc + 10 digits + ! ? + the column space
-    assert len(tiles) == 65
+    # + ä ö ü and Ä Ö Ü (2026-10-12)
+    assert len(tiles) == 71
 
 
 
@@ -124,3 +125,37 @@ def test_built_track01_carries_the_hankaku_keyboard():
     recs = _pair13_engine_records(bytes(fnt))
     for i, want in enumerate(_expected_grid()):
         assert _cells(recs[i]) == want, f"shipped pair13 record {i} mismatch"
+
+
+def test_umlaut_keys_follow_the_z():
+    """Red state 2026-10-12: row 12 was 'z____', so Diehärte, Böser and
+    Rigüler could not be typed. The empty cells are reachable (they register
+    a space, Ralf 2026-10-12), so ä ö ü take the cells after the z."""
+    from fntsys14_hankaku_keyboard import KEYBOARD_ROWS
+    assert KEYBOARD_ROWS[12] == 'zäöü_'
+
+
+def test_uppercase_umlaut_keys_follow_the_Z():
+    """Red state 2026-10-12: row 5 was 'Z____' and the band had no
+    uppercase umlauts (Ralf: the capitals belong on the keyboard too)."""
+    from fntsys14_hankaku_keyboard import KEYBOARD_ROWS
+    assert KEYBOARD_ROWS[5] == 'ZÄÖÜ_'
+
+
+def test_uppercase_umlauts_ride_the_band_headroom():
+    import font_tools as ft
+    assert [ft.HANKAKU_TILE_MAP[c] for c in 'ÄÖÜ'] == [1345, 1346, 1347]
+    assert max(ft.HANKAKU_TILE_MAP.values()) <= 1349      # declared band top
+    for c in 'ÄÖÜ':
+        assert ft.TWIN_TILE_MAP[c] == ft.HANKAKU_TILE_MAP[c] + ft.TWIN_K
+
+
+def test_uppercase_umlaut_art_is_the_capital_with_dots():
+    """Body = our A/O/U half-glyph (rows 3..15), dots on rows 0-1 at the
+    letter's side columns (c6, like ö)."""
+    import font_tools as ft
+    for up, base in (('Ä', 'A'), ('Ö', 'O'), ('Ü', 'U')):
+        g, b = ft.HANKAKU_HALF_GLYPHS[up], ft.HALF_GLYPHS[base]
+        assert g[3:] == b[3:]
+        assert g[:3] == bytes([0xC6, 0xC6, 0x00])
+

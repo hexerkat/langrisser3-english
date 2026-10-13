@@ -42,6 +42,8 @@ def _words(raw):
 def test_built_fnt_sys_records_are_hybrid():
     from fnt_sys_tools import parse_fnt_sys, _parse_script_records
     from hybrid_encoder import encode_hybrid
+    from fntsys11_default_name import (DEFAULT_NAME_PAIR, DEFAULT_NAME_RECORD,
+                                       default_name_record)
     import font_tools as ft
 
     data = _grab("LANG/FNT_SYS.BIN")
@@ -58,6 +60,10 @@ def test_built_fnt_sys_records_are_hybrid():
             want = encode_hybrid(line, ft.FNTSYS_BIGRAM_TILE_MAP)
             if not want.endswith(b"\xff\xff"):
                 want += b"\xff\xff"
+            if (i, n) == (DEFAULT_NAME_PAIR, DEFAULT_NAME_RECORD):
+                # the default name the name screen copies: 8px letters only
+                # (tools/fntsys11_default_name.py, 16-letter name)
+                want = default_name_record(line)
             if rec != want:
                 bad.append((i + 1, n, line[:30]))
             checked += 1

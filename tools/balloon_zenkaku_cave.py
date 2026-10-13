@@ -31,10 +31,12 @@ tools/prog3_balloon_zenkaku_dispatch.py repoints it to this cave. The cave:
 
 WHY a cave in FONT.BIN: PROG_3 has no reachable free code bytes (bra ±4KB,
 pc-rel pools full), but FONT.BIN loads at LWRAM 0x00288000 and the
-tiles at 1420+ are unused (the hankaku band, its headroom and the v4 twin
-band end at 1416; the _VD_SPACE bigrams start at 1435, NEW_FONT_TILES=1691). The cave rides the font: resident whenever any
-text can render, fixed address, delivered by the normal build. Tile 1340 is
-the runtime scratch glyph (stays zero in the file); code occupies 1341-1345.
+cave block 1454..1469 is reserved for code (font_tools.CAVE_BLOCK; the
+hankaku band and its twin block end at 1434, fresh bigrams pack from 1435
+and skip the block). The cave rides the font: resident whenever any text can
+render, fixed address, delivered by the normal build. Tile 1460 is the
+runtime scratch glyph (stays zero in the file); code occupies 1461-1465.
+(1420-1425 until 2026-10-12, moved so the twin block could hold ä ö ü.)
 
 Register contract (verified in the d168/cf80 disassembly, RE doc §2):
 entry r4=win r5=&tile r6=column r7=row_raw; r0-r3 scratch; r8/r9 callee-saved
@@ -44,9 +46,9 @@ never reach the draw dispatcher (consumed upstream by FUN_0607cd58).
 """
 
 FONT_LWRAM_BASE = 0x00288000     # FONT.BIN load address (glyph src, RE-pinned)
-SCRATCH_TILE = 1420              # runtime scratch glyph slot (zero in the file)
-CAVE_TILE = 1421                 # cave code starts at this tile
-CAVE_TILES = 5                   # tiles 1421-1425 reserved for the cave
+SCRATCH_TILE = 1460              # runtime scratch glyph slot (zero in the file)
+CAVE_TILE = 1461                 # cave code starts at this tile
+CAVE_TILES = 5                   # tiles 1461-1465 reserved for the cave
 CAVE_ADDR = FONT_LWRAM_BASE + CAVE_TILE * 32
 SCRATCH_GLYPH_ADDR = FONT_LWRAM_BASE + SCRATCH_TILE * 32
 
@@ -54,9 +56,9 @@ CF80_ADDR = 0x0607CF80           # the real layout fn (JP pool value we replace)
 ROWCUR_ADDR = 0x06088518         # per-row column cursor, 5 B/window (unmoved)
 # Width-class bounds: [HANKAKU_LO..HANKAKU_HI] steps 8px, everything else is
 # zenkaku (2 cells). HI = 1349 leaves band GROWTH headroom (content ends at
-# 1344) without a cave rebuild; the v4 name-entry TWIN band (1350..1416) and
-# the cave itself (1420+) sit above the class range, below the _VD_SPACE
-# bigrams at 1435. Shrunk from 1419 on 2026-07-15 so the twins render 16px.
+# 1344) without a cave rebuild; the v4 name-entry TWIN block (1350..1434)
+# and the cave block (1454..1469) sit above the class range. Shrunk from
+# 1419 on 2026-07-15 so the twins render 16px.
 from width_class import NARROW_LO as HANKAKU_LO   # the ONE rule (2026-10-08):
 from width_class import NARROW_HI as HANKAKU_HI   # band + the glue space 43
 from width_class import NARROW_GLUE_TILE

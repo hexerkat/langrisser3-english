@@ -79,6 +79,9 @@ from a0lang_centered_box_width import A0LANG_CENTERED_BOX_WIDTH
 from a0lang_record_box_width import A0LANG_RECORD_BOX_WIDTH
 from prog4_name_entry_hankaku import PROG4_NAME_ENTRY_HANKAKU
 from prog4_name_twin_convert import PROG4_NAME_TWIN_CONVERT
+from name_buffer_home import NAME_BUFFER_HOME
+from prog4_name_cap16 import PROG4_NAME_CAP16
+from a0lang_save_name_pack import A0LANG_SAVE_NAME_PACK
 from prog6_battle_cmd_width import PROG6_BATTLE_CMD_WIDTH
 from prog4_spell_name_table import PROG4_SPELL_NAME_TABLE
 from prog5_menu_geometry import PROG5_MENU_GEOMETRY
@@ -240,6 +243,9 @@ ENGINE_MODULE_DICTS = {
     "a0lang_record_box_width": A0LANG_RECORD_BOX_WIDTH,
     "prog4_name_entry_hankaku": PROG4_NAME_ENTRY_HANKAKU,
     "prog4_name_twin_convert": PROG4_NAME_TWIN_CONVERT,
+    "name_buffer_home": NAME_BUFFER_HOME,
+    "prog4_name_cap16": PROG4_NAME_CAP16,
+    "a0lang_save_name_pack": A0LANG_SAVE_NAME_PACK,
     "prog6_battle_cmd_width": PROG6_BATTLE_CMD_WIDTH,
     "prog4_spell_name_table": PROG4_SPELL_NAME_TABLE,
     "prog5_menu_geometry": PROG5_MENU_GEOMETRY,

@@ -1,15 +1,14 @@
 """tools/name_twin_cave.py — twin->hankaku append cave (v4 "display twins").
 
 SH-2 code cave riding FONT.BIN (LWRAM 0x00288000, resident whenever text can
-render — the balloon_zenkaku_cave delivery pattern; tiles
-1429-1430, the free pair right above the nakaguro at 1428; 1426 stays
-off-limits per the legacy-'Yo' canon).
+render — the balloon_zenkaku_cave delivery pattern; tiles 1467-1468 of the
+cave block, font_tools.CAVE_BLOCK; 1429-1430 until 2026-10-12).
 
 WHY: the v4 name-entry keyboard records carry TWIN tiles (wide-class copies
 of the hankaku letterforms at +TWIN_K, font_tools.TWIN_TILE_MAP) so the
 field-UI renderer draws the keys in 16px columns under the positional
 selector. But the composer appends the CELL'S OWN tile to the name buffer
-(0x06034D90) — a raw twin there would render 16px in prose and break the
+(JP 0x06034D90, moved by name_buffer_home) — a raw twin there would render 16px in prose and break the
 8px name. This cave redoes the append FETCH and subtracts TWIN_K, so the
 buffer receives the hankaku tile: draw 16px, register 8px.
 
@@ -34,7 +33,7 @@ records guard pins every fetchable cell inside the twin band.
 from balloon_zenkaku_cave import FONT_LWRAM_BASE
 from font_tools import TWIN_K
 
-NAME_TWIN_CAVE_TILE = 1429       # free pair above the nakaguro (1428)
+NAME_TWIN_CAVE_TILE = 1467       # font_tools.CAVE_BLOCK
 NAME_TWIN_CAVE_TILES = 2
 NAME_TWIN_CAVE_ADDR = FONT_LWRAM_BASE + NAME_TWIN_CAVE_TILE * 32
 

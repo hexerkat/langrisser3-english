@@ -28,6 +28,7 @@ class Sh2:
         self.R = [0] * 16
         self.T = 0
         self.PR = 0
+        self.MACL = 0
         self.steps = 0
 
     # -- memory ---------------------------------------------------------------
@@ -124,8 +125,22 @@ class Sh2:
             R[n] = self.rl(((at + 4) & ~3) + (w & 0xFF) * 4)
         elif (w & 0xFF00) == 0x8800:                             # cmp/eq #imm,r0
             self.T = int(R[0] == (_sx(w & 0xFF, 8) & M32))
+        elif top == 0x0 and low == 0x7:                         # mul.l Rm,Rn
+            self.MACL = (R[n] * R[m]) & M32
+        elif top == 0x0 and (w & 0xFF) == 0x1A:                  # sts macl,Rn
+            R[n] = self.MACL
+        elif top == 0x0 and low == 0xD:                          # mov.w @(r0,Rm),Rn
+            R[n] = _sx(self.rw((R[0] + R[m]) & M32), 16) & M32
+        elif top == 0x0 and low == 0x5:                          # mov.w Rm,@(r0,Rn)
+            self.ww((R[0] + R[n]) & M32, R[m])
         elif top == 0x6:
-            if low == 0x3:
+            if low == 0x0:
+                R[n] = _sx(self.rb(R[m]), 8) & M32               # mov.b @Rm
+            elif low == 0x4:                                     # mov.b @Rm+
+                R[n] = _sx(self.rb(R[m]), 8) & M32
+                if n != m:
+                    R[m] = (R[m] + 1) & M32
+            elif low == 0x3:
                 R[n] = R[m]                                      # mov
             elif low == 0x1:
                 R[n] = _sx(self.rw(R[m]), 16) & M32              # mov.w @Rm
@@ -161,6 +176,10 @@ class Sh2:
                 self.wl(R[n], R[m])
             elif low == 0x0:
                 self.wb(R[n], R[m])                              # mov.b Rm,@Rn
+            elif low == 0x8:
+                self.T = int((R[n] & R[m]) == 0)                 # tst Rm,Rn
+            elif low == 0xB:
+                R[n] = R[n] | R[m]                               # or Rm,Rn
             else:
                 raise AssertionError(f'unimplemented {w:04X} @0x{at:X}')
         elif top == 0x3:
