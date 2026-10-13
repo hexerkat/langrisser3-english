@@ -1,6 +1,6 @@
 """tools/prog4_name_entry_hankaku.py — name-entry width-class fixes (v0.8).
 
-THREE owned byte patches over the **JP** `LANG/PROG_4.BIN` (load base
+FOUR owned byte patches over the **JP** `LANG/PROG_4.BIN` (load base
 0x06089000 — PROG_4 drives the name-entry screen; pinned 2026-07-14 by the
 Ymir wram dump: PROG_3 at 0x06052800 + PROG_4 keyboard state at 0x60954xx).
 
@@ -25,16 +25,19 @@ tools/fntsys14_hankaku_keyboard.py) needs its fetch stride doubled:
    hankaku-only by construction (the keyboard offers nothing else), so the
    correct step is a flat 8px: `shll2; add r1,r1` (pos*8).
 
-3. PARKED X (pool word file 0x911E): when pos > 7 the JP code parks the
-   cursor ON the last slot (0x120 = 0xB0 + 7*16). Same rule at 8px:
-   0xE8 = 0xB0 + 7*8.
+3. PARKED X (pool word file 0x911E): past the cap the JP code parks the
+   cursor ON the last slot (0x120 = 0xB0 + 7*16). Same rule at 8px with
+   the 16-letter cap: 0x128 = 0xB0 + 15*8 (0xE8 = 0xB0 + 7*8 until
+   2026-10-12).
 
-NOT TOUCHED — the 8-entry cap (`mov #7; cmp/hi` file 0x8D06): the name
-buffer 0x06034D90 and the save block copy at 0x0604BF58 hold exactly
-9 words (8 tiles + FFFF terminator) with live data adjacent on both sides
-(0x6034DA2 list-head var; 0x604BF6A next save field). Extending the name
-is buffer-relocation + save-format + magic-name-table surgery — a
-separate, gated task (feedback_magic_table_fragile).
+4. CURSOR BAR WIDTH (file 0x90CE, `add #15,r2` -> `add #7,r2`): the
+   blinking bar is a VDP1 quad with corners (X,0x26) (X+15,0x26)
+   (X+15,0x27) (X,0x27), one 16px zenkaku cell wide. With 8px letters it
+   covered two letters (playtest 2026-10-13); X+7 makes it one cell.
+
+NOT HERE: the cap itself (16 entries) and the park test `mov #15` live in
+prog4_name_cap16; the buffer move in name_buffer_home; the save format in
+a0lang_save_name_pack.
 
 The grid SELECTOR (blockX + col*16px, positional JP semantics) needs no
 patch: with the spaced records the key columns land exactly under it.
@@ -44,7 +47,7 @@ patched-byte locks + the geometry model of what the player sees).
 """
 
 # ── Engine geometry constants (FUN_06092070 / keyboard state disasm) ────────
-NAME_CAP = 8            # entries; buffer+save = 9 words (LOCKED, see above)
+NAME_CAP = 16           # entries (prog4_name_cap16)
 FIELD_BASE_PX = 0xB0    # typed-name field base X
 BLOCK_X_CELLS = (3, 14, 25)   # keyboard block origins (8px cells)
 
@@ -52,20 +55,23 @@ BLOCK_X_CELLS = (3, 14, 25)   # keyboard block origins (8px cells)
 PROG4_LOAD_BASE = 0x06089000
 FETCH_OFF = 0x8D30      # add r1,r1 (col*2) — JP, NOT patched (5-cell rows)
 CURSOR_MUL_OFF = 0x908A  # shll2; shll2 (pos*16) -> shll2; add r1,r1 (pos*8)
-PARKED_X_OFF = 0x911E   # pool 0x0120            -> 0x00E8
+PARKED_X_OFF = 0x911E   # pool 0x0120            -> 0x0128
+BAR_WIDTH_OFF = 0x90CE  # add #15,r2 (right edge X+15) -> add #7,r2
 
 PROG4_NAME_ENTRY_HANKAKU = {
     "LANG/PROG_4.BIN": [
         (CURSOR_MUL_OFF, bytes.fromhex("4108311C")),  # shll2 r1; add r1,r1
-        (PARKED_X_OFF, bytes.fromhex("00E8")),       # 0xB0 + 7*8
+        (PARKED_X_OFF, bytes.fromhex("0128")),       # 0xB0 + 15*8
+        (BAR_WIDTH_OFF, bytes.fromhex("7207")),      # add #7,r2
     ],
 }
 
-# JP baseline at both sites — truth-locked against the pristine JP disc
+# JP baseline at every site — truth-locked against the pristine JP disc
 # by tests/test_prog4_name_entry_hankaku.py before any build.
 PROG4_NAME_ENTRY_HANKAKU_JP_BASELINE = {
     CURSOR_MUL_OFF: bytes.fromhex("41084108"),       # shll2 r1; shll2 r1
     PARKED_X_OFF: bytes.fromhex("0120"),             # 0xB0 + 7*16
+    BAR_WIDTH_OFF: bytes.fromhex("720F"),            # add #15,r2
 }
 
 

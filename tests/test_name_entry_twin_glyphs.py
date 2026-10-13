@@ -73,8 +73,12 @@ KEYBOARD_CHARS = (
     + [chr(c) for c in range(ord('a'), ord('z') + 1)]
     + [str(d) for d in range(10)]
     + ['!', '?', ' ']
-)                                   # the exact fetchable key set (65 chars)
-SCRATCH_TILE = 1420                 # balloon dispatch scratch — twins stay below
+    + ['ä', 'ö', 'ü']               # 2026-10-12: Diehärte, Böser, Rigüler
+    + ['Ä', 'Ö', 'Ü']
+    + ['-']                         # 2026-10-13: hyphen key
+)                                   # the exact fetchable key set (72 chars)
+TWIN_BLOCK = range(1350, 1435)      # band + TWIN_K, for every band slot
+CAVE_BLOCK = range(1454, 1470)      # font caves, scratch and nakaguro
 PROG4_PATH = 'LANG/PROG_4.BIN'
 PROG4_LOAD_BASE = 0x06089000
 STUB_OFF = 0x8D2A                   # 6-word fetch block -> jmp stub
@@ -156,9 +160,29 @@ class TestTwinBandGeometry(unittest.TestCase):
             self.assertTrue(t > BALLOON.HANKAKU_HI,
                             f'twin({ch!r})={t} must be wide for the balloon')
 
-    def test_twins_stay_below_the_dispatch_scratch(self):
-        self.assertLess(max(ft.TWIN_TILE_MAP.values()), SCRATCH_TILE)
-        self.assertEqual(BALLOON.SCRATCH_TILE, SCRATCH_TILE)
+    def test_the_twin_block_holds_only_twins(self):
+        """Red state 2026-10-12: the caves, the balloon scratch and the
+        nakaguro sat at 1417..1434, so the twins of the band slots 67..84
+        (ä ö ü among them) had nowhere to go. Every band slot now owns
+        band + TWIN_K; the rest moved to CAVE_BLOCK."""
+        self.assertEqual(TWIN_BLOCK.start, ft.HANKAKU_BASE + ft.TWIN_K)
+        self.assertEqual(len(TWIN_BLOCK), ft.TWIN_K)
+        others = {BALLOON.SCRATCH_TILE, ft.NAKAGURO_TILE}
+        others |= set(range(BALLOON.CAVE_TILE, BALLOON.CAVE_TILE + BALLOON.CAVE_TILES))
+        others |= set(range(CAVE.NAME_TWIN_CAVE_TILE,
+                            CAVE.NAME_TWIN_CAVE_TILE + CAVE.NAME_TWIN_CAVE_TILES))
+        import width_class as WC
+        import a0lang_save_name_pack as NP
+        others |= set(range(WC.WIDTH_CAVE_TILE, WC.WIDTH_CAVE_TILE + WC.WIDTH_CAVE_TILES))
+        others |= set(range(NP.PACK_TILE, NP.PACK_TILE + NP.PACK_TILES))
+        others |= set(range(NP.UNPACK_TILE, NP.UNPACK_TILE + NP.UNPACK_TILES))
+        self.assertFalse(others & set(TWIN_BLOCK))
+        self.assertTrue(others <= set(CAVE_BLOCK), sorted(others - set(CAVE_BLOCK)))
+        self.assertTrue(set(CAVE_BLOCK) <= ft.V08_RESERVED_TILES)
+
+    def test_the_packer_never_lands_on_the_cave_block(self):
+        layout = ft.build_bigram_layout()
+        self.assertFalse(set(layout.values()) & set(CAVE_BLOCK))
 
     def test_twins_inside_the_packer_exclusion(self):
         twins = set(ft.TWIN_TILE_MAP.values())
@@ -323,12 +347,12 @@ class TestKeyboardRecordsUseTwins(unittest.TestCase):
 class TestConvertCave(unittest.TestCase):
     """Piece 3a — the cave: placement, size and pool contract."""
 
-    def test_cave_tiles_are_the_free_pair_above_nakaguro(self):
-        self.assertEqual(CAVE.NAME_TWIN_CAVE_TILE, 1429)
+    def test_cave_tiles_sit_in_the_cave_block(self):
+        self.assertEqual(CAVE.NAME_TWIN_CAVE_TILE, 1467)
         self.assertEqual(CAVE.NAME_TWIN_CAVE_TILES, 2)
 
     def test_cave_addr_is_the_font_lwram_slot(self):
-        self.assertEqual(CAVE.NAME_TWIN_CAVE_ADDR, 0x00288000 + 1429 * 32)
+        self.assertEqual(CAVE.NAME_TWIN_CAVE_ADDR, 0x00288000 + 1467 * 32)
         self.assertEqual(CAVE.NAME_TWIN_CAVE_ADDR % 4, 0)
 
     def test_cave_inside_the_packer_exclusion(self):
@@ -337,7 +361,6 @@ class TestConvertCave(unittest.TestCase):
         self.assertTrue(tiles <= ft.V08_RESERVED_TILES)
         self.assertFalse(tiles & set(ft.PRESERVED_TILES))
         self.assertFalse(tiles & set(ft.BIGRAM_TILE_MAP.values()))
-        self.assertNotIn(1426, tiles)     # legacy 'Yo' slot — off-limits
         self.assertNotIn(ft.NAKAGURO_TILE, tiles)
 
     def test_blob_fits_its_tiles(self):
@@ -596,7 +619,7 @@ class TestExecutePatchedAppend(unittest.TestCase):
         cls.jp_vm = _Sh2Append(_prog4_region({}), None)
 
     def test_every_key_registers_its_hankaku_tile(self):
-        for ch in 'AZaz09!? ':
+        for ch in 'AZaz09!? äöüÄÖÜ':
             cells = [ft.TWIN_TILE_MAP[c] for c in 'ABCDE']
             cells[3] = ft.TWIN_TILE_MAP[ch]
             out = self.vm.run(cells, col=3, pos=0)

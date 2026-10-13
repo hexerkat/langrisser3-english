@@ -63,6 +63,11 @@ ENGINE_PATCH_MODULES = (
     "a0lang_record_box_width",
     "prog4_name_entry_hankaku",
     "prog4_name_twin_convert",
+    "name_buffer_home",
+    "prog4_name_cap16",
+    "prog4_name_trim_space",
+    "a0lang_save_name_pack",
+    "name_check",
     "prog3_text_tables",
 )
 

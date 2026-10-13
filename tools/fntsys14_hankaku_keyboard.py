@@ -18,9 +18,9 @@ blends seamlessly into hankaku prose.
 
 Layout (same key POSITIONS as the JP/zenkaku grid — cursor/actions are
 positional, so occupied cells must not move):
-  recs 0-5   A-Z, 5 per row
+  recs 0-5   A-Z, 5 per row, then Ä Ö Ü after the Z (rec 5 = Z Ä Ö Ü _)
   rec  6     blank
-  recs 7-12  a-z
+  recs 7-12  a-z, then ä ö ü after the z (rec 12 = z ä ö ü _)
   rec  13    blank
   rec  14    [empty] ! ? [empty] [empty]
   recs 15-16 blank
@@ -28,9 +28,9 @@ positional, so occupied cells must not move):
   recs 19-20 PRESERVED VERBATIM from the script (ADV/BAK/END buttons
              1488-1490 — our arrow/END art; actions are positional)
 
-Deferred: germanic keys (ä ö ü are already in the band) — the empty cells
-are likely positionally UNREACHABLE by the cursor (engine-side valid-cell
-map); needs a one-cell reachability canary before shipping.
+Germanic keys (2026-10-12): the empty cells ARE reachable (they register a
+space, Ralf in Ymir), so ä ö ü take rec 12 after the z; their twins exist
+since the twin block covers the whole band (font_tools.CAVE_BLOCK note).
 
 Declarative: rows resolve through font_tools.HANKAKU_TILE_MAP at encode
 time, so hankaku band moves are followed automatically. Toggleable via
@@ -67,11 +67,11 @@ import struct
 
 # '_' = empty cell (twin space). Rows for records 0-18; 19-20 passthrough.
 KEYBOARD_ROWS = [
-    "ABCDE", "FGHIJ", "KLMNO", "PQRST", "UVWXY", "Z____",
+    "ABCDE", "FGHIJ", "KLMNO", "PQRST", "UVWXY", "ZÄÖÜ_",
     "_____",
-    "abcde", "fghij", "klmno", "pqrst", "uvwxy", "z____",
+    "abcde", "fghij", "klmno", "pqrst", "uvwxy", "zäöü_",
     "_____",
-    "_!?__",
+    "_!?-_",
     "_____", "_____",
     "12345", "67890",
 ]

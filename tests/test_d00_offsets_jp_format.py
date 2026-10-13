@@ -33,7 +33,7 @@ _PROG3_JP_READERS = {
     0x0607F418: "2149311c710462226013012d611d",
 }
 
-NAKAGURO_TILE = 1428          # `・`, the objectives bullet
+from font_tools import NAKAGURO_TILE  # noqa: E402  `・`, the objectives bullet
 
 
 def _built():

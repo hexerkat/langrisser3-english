@@ -1427,7 +1427,7 @@ tile_dec,tile_hex,label,source,coments
 1425,0591,,UNMAPPED,
 1426,0592,,UNMAPPED,
 1427,0593,,UNMAPPED,
-1428,0594,・,CHAR_TILE_MAP,"objectives bullet (JP nakaguro, rehomed from tile 217)"
+1428,0594,,UNMAPPED,
 1429,0595,,UNMAPPED,
 1430,0596,,UNMAPPED,
 1431,0597,,UNMAPPED,
@@ -1465,7 +1465,7 @@ tile_dec,tile_hex,label,source,coments
 1463,05B7,,UNMAPPED,
 1464,05B8,,UNMAPPED,
 1465,05B9,,UNMAPPED,
-1466,05BA,,UNMAPPED,
+1466,05BA,・,CHAR_TILE_MAP,"objectives bullet (JP nakaguro, rehomed from tile 217), moved from 1428 on 2026-10-12"
 1467,05BB,,UNMAPPED,
 1468,05BC,,UNMAPPED,
 1469,05BD,,UNMAPPED,

@@ -48,16 +48,16 @@ She'll soon be sixteen.<$FFFC>Grown quite the princess<$FFFC>by now, I bet…<$F
 Once the ceremony ends,<$FFFC>I'll tell her the news.<$FFFE>
 Castle Mountains<$FFFF>
 My Lord Altemüller.<$FFFE>
-Four days hidden here,<$FFFC>doing nothing. At this<$FFFC>rate the men will lose<$FFFC>all heart, my lord.<$FFFE>
-No need to worry.<$FFFC>We attack at once.<$FFFE>
-Impossible. A storm's<$FFFC>coming. We can't fly in<$FFFC>this.<$FFFE>
+Four days hidden here,<$FFFC>doing nothing. At this<$FFFC>rate the men will lose<$FFFC>morale.<$FFFE>
+There is no need to<$FFFC>worry. We'll attack<$FFFC>soon.<$FFFE>
+Impossible. A storm's<$FFFC>coming. We can't fly<$FFFC>that way.<$FFFE>
 You've heard tales of<$FFFC>the Demonic Cannon, no?<$FFFE>
 They say it can level<$FFFC>a whole city to dust.<$FFFE>
 Indeed. That cannon<$FFFC>has kept us from taking<$FFFC>Larcuss.<$FFFE>
 Then we must infiltrate<$FFFC>without being spotted<$FFFC>by the castle's men.<$FFFE>
 You intend to fly above<$FFFC>the clouds, sir?<$FFFE>
-That's why I assembled<$FFFC>a unit trained to fly.<$FFFC>Better the storm than<$FFFC>the Demonic Cannon, no?<$FFFE>
-As you command.<$FFFE>
+That's why I assembled<$FFFC>units trained to fly.<$FFFC>Better the storm than<$FFFC>the Demonic Cannon, no?<$FFFE>
+Yes. As you command.<$FFFE>
 All units, move out!<$FFFE>
 Investiture Hall<$FFFF>
 …Diehärte Klaus.<$FFFC>I bestow upon you the<$FFFC>honored rank of knight.<$FFFE>
@@ -80,7 +80,7 @@ Wow, you finally became<$FFFC>a real knight! Now you<$FFFC>protect this castle w
 Sure thing, Tiaris.<$FFFE>
 Well, everyone! Today<$FFFC>we have one more happy<$FFFC>thing to share.<$FFFE>
 Now then, Sir Gerold.<$FFFE>
-…Yes…<$FFFE>
+… Yes…<$FFFE>
 Layla and I have<$FFFC>decided to be married.<$FFFE>
 What?! Really!?<$FFFE>
 It's true, Tiaris.<$FFFE>
@@ -100,7 +100,7 @@ With Tiaris, hold west.<$FFFC>Intercept the foes!<$FFFC>Your first real fight…
 Gerold and I will head<$FFFC>to the east side!<$FFFE>
 Yes!<$FFFE>
 Gerold…<$FFFE>
-Be careful…my love…<$FFFE>
+Be careful… my love…<$FFFE>
 I'll be fine,<$FFFC>don't worry.<$FFFE>
 Be careful, Papa!<$FFFE>
 <$F600><$0000>, come!<$FFFC>We should hurry too!<$FFFE>

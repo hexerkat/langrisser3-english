@@ -77,5 +77,5 @@ def test_band_and_cave_are_disjoint_after_growth():
     tiles.add(cave.SCRATCH_TILE)
     assert not tiles & ft.HANKAKU_TILES
     assert not tiles & set(ft.BIGRAM_TILE_MAP.values())
-    assert max(tiles) < 1435, "cave must stay below the _VD_SPACE bigram range"
+    assert tiles <= ft.CAVE_BLOCK, "cave lives in the reserved cave block (2026-10-12)"
 

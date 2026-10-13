@@ -107,17 +107,26 @@ ELLIPSIS_TILE = 906          # … two-dot ellipsis (tile 906)
 # bigrams (1435+). Scripts write the literal ・ (objectives diagramming =
 # <$0000>・text, Ralf 2026-07-08).
 NAKAGURO_JP_TILE = 217
-NAKAGURO_TILE = 1428
+NAKAGURO_TILE = 1466          # cave block (1428 until 2026-10-12)
 DQUOTE_TILE = 1470           # " double-quote (tile 1470)
 
 # v0.8 RESERVED tile range [1265..1434]: hankaku band (1265..1344 plus growth
 # headroom to the declared class top 1349), name-entry TWIN band (1350..1416,
 # v4 display twins), zenkaku-dispatch scratch/cave (1420-1425), free (1427),
-# nakaguro (1428), name-twin append cave (1429-1430). The bigram
+# nakaguro (1428), name-twin append cave (1429-1430), save name PACK
+# (1417-1419) and UNPACK (1432-1434) caves. The bigram
 # packer MUST NOT allocate here (regression 2026-07-08: a corpus shift
 # spilled 'Yo'->1426 and '• '->1265, silently overwritten by the band/cave
 # writes). Ends at _VD_SPACE (1435).
-V08_RESERVED_TILES = frozenset(range(1265, 1435))
+# 2026-10-12: the twin block grew to the whole band (1350..1434, band +
+# TWIN_K for every band slot, so ä ö ü have twins) and the code caves, the
+# balloon scratch glyph and the nakaguro moved to CAVE_BLOCK 1454..1469 (the
+# top of the free run 1437..1469; fresh bigrams keep growing from 1437 and
+# skip the block): PACK 1454-1456, UNPACK 1457-1459, balloon scratch 1460,
+# balloon cave 1461-1465, nakaguro 1466, name-twin cave 1467-1468, width
+# class 1469.
+CAVE_BLOCK = frozenset(range(1454, 1470))
+V08_RESERVED_TILES = frozenset(range(1265, 1435)) | CAVE_BLOCK
 
 # Apostrophe bigrams — one group (the font has no standalone ' tile, so every
 # apostrophe is encoded as a 2-char tile we draw via _interleave). Two index
@@ -567,13 +576,16 @@ _DQUOTE_TILE_DATA = bytes.fromhex(
 
 # Name-entry keyboard buttons (fntsys14 rows reference tiles 1488-1490).
 # OUR art (2026-06-11, replaces the old stacked-letter ADV/BAK/END):
-# ADV = right arrow, BAK = left arrow (EagleIII arrowheads, extended
-# shaft), END = condensed "END" text in a single 16x16 tile.
+# ADV = right arrow, BAK = left arrow, END = condensed "END" text in a single
+# 16x16 tile. The arrows are the EagleIII "→" / "←" glyphs unchanged
+# (the face of the 8px letters), centered in columns 4..11. Playtest
+# 2026-10-13: the slim arrow's tip at column 14 was cut, then the bold
+# redraw was too thick.
 _NAME_ENTRY_BUTTON_TILES = {
-    1488: bytes.fromhex('00000000000000000008000c000e7ffe'
-                        '000e000c000800000000000000000000'),  # ADV →
-    1489: bytes.fromhex('00000000000000001000300070007ffe'
-                        '70003000100000000000000000000000'),  # BAK ←
+    1488: bytes.fromhex('0000000000000000008000c000e00ff0'
+                        '00e000c0008000000000000000000000'),  # ADV →
+    1489: bytes.fromhex('00000000000000000100030007000ff0'
+                        '07000300010000000000000000000000'),  # BAK ←
     1490: bytes.fromhex('00000000000000007a2e4329432972a9'
                         '426942697a2e00000000000000000000'),  # END
 }
@@ -750,6 +762,9 @@ _HANKAKU_CHARS = (
     # '*' is deliberately NOT here: it is the objectives-header marker and
     # renders as the original JP full-width ＊ (zenkaku 489), like '•'.
     + ['(', ')', '"', '%', '&', '+', '/']
+    # 2026-10-12: uppercase umlauts for the name keyboard (1345-1347, band
+    # headroom; art = our capital + dots, HANKAKU_HALF_GLYPHS).
+    + ['Ä', 'Ö', 'Ü']
 )
 HANKAKU_TILE_MAP = {ch: HANKAKU_BASE + i for i, ch in enumerate(_HANKAKU_CHARS)}
 # 8px ellipsis half-glyph (three 1px dots at cols 1/3/5, on the period baseline).
@@ -774,6 +789,9 @@ _TWIN_CHARS = (
     + [chr(c) for c in range(ord('a'), ord('z') + 1)]
     + [str(d) for d in range(10)]
     + ['!', '?', ' ']
+    + ['ä', 'ö', 'ü']          # 2026-10-12: Diehärte, Böser, Rigüler
+    + ['Ä', 'Ö', 'Ü']
+    + ['-']                    # 2026-10-13: hyphen key
 )
 TWIN_TILE_MAP = {ch: HANKAKU_TILE_MAP[ch] + TWIN_K for ch in _TWIN_CHARS}
 
@@ -1125,10 +1143,10 @@ def generate_english_font(jp_font: bytes) -> bytes:
     # --- Tile 44: the engine glue arrow "→" ---
     # 8-bit-loadable slot for SH-2 `mov #0x2C, Rn` (<= 0x7F, sign-safe; see
     # reference_engine_immediate_tile_constraint), the JP の glue of the PROG_3
-    # stat-up ("[Name]→Level 3 rose!") and item-use ("[Name]→[Item] was used!")
+    # stat-up ("[Name]→Level rose!") and item-use ("[Name]→[Item] was used!")
     # messages. Ralf 2026-10-08: the right arrow replaces the possessive 's
     # (compact "'s " 2026-06-14). Same art as the name-entry ADV button (1488),
-    # whose 1px margins keep the arrow clear of both neighbouring words.
+    # whose 4px margins keep the arrow clear of both neighboring words.
     write_tile(44, _NAME_ENTRY_BUTTON_TILES[1488])
 
     # --- Tile 45: blank (previously JP kanji leftover) ---
@@ -1383,6 +1401,21 @@ def build_half_glyphs() -> dict:
 HALF_GLYPHS = build_half_glyphs()
 
 
+def _capital_with_dots(base: str) -> bytes:
+    """Our capital half-glyph (body rows 3..12) with 1px umlaut dots on row 1
+    at the side columns (0xC6, like the ö dots) and a blank row 2, so the Ü
+    dots do not merge with its stems."""
+    return bytes([0x00, 0xC6, 0x00]) + HALF_GLYPHS[base][3:]
+
+
+# Half-glyphs of the 8px hankaku band: the bigram alphabet plus the 8px
+# ellipsis and the uppercase umlauts (band only: no bigram tiles for them).
+HANKAKU_HALF_GLYPHS = dict(HALF_GLYPHS)
+HANKAKU_HALF_GLYPHS.setdefault('…', _ELLIPSIS_HALF)
+HANKAKU_HALF_GLYPHS.update({up: _capital_with_dots(base)
+                            for up, base in (('Ä', 'A'), ('Ö', 'O'), ('Ü', 'U'))})
+
+
 def compose_bigram(a: str, b: str) -> bytes:
     """The 32-byte tile for the half-width pair (a, b): a's left half + b's right
     half, interleaved (the same composition the proven generator uses)."""
@@ -1474,8 +1507,7 @@ def _generate_data_driven_font(jp_font: bytes) -> bytes:
     # right half is the space before the next record (tests/test_ui_compose_messages).
     # v0.8 hankaku band: one 8px tile per char (glyph in the LEFT 8px, right half
     # blank). Composed after the preserved-copy/bigram loops so it wins its slots.
-    _hk_halves = dict(HALF_GLYPHS)
-    _hk_halves.setdefault('…', _ELLIPSIS_HALF)
+    _hk_halves = HANKAKU_HALF_GLYPHS
     for ch, t in HANKAKU_TILE_MAP.items():
         half = _hk_halves.get(ch)
         if half is not None and t < NEW_FONT_TILES:
@@ -1507,6 +1539,11 @@ def _generate_data_driven_font(jp_font: bytes) -> bytes:
     from width_class import WIDTH_CAVE_TILE, cave_blob as _wc_blob
     _wblob = _wc_blob()
     out[WIDTH_CAVE_TILE * 32:WIDTH_CAVE_TILE * 32 + len(_wblob)] = _wblob
+    # 16-letter name: save PACK (1417-1419) and load UNPACK (1432-1434).
+    from a0lang_save_name_pack import (PACK_TILE, UNPACK_TILE, pack_blob,
+                                       unpack_blob)
+    for _tile, _nblob in ((PACK_TILE, pack_blob()), (UNPACK_TILE, unpack_blob())):
+        out[_tile * 32:_tile * 32 + len(_nblob)] = _nblob
     return bytes(out)
 
 

@@ -27,7 +27,7 @@ NARROW_LO = 1265          # font_tools.HANKAKU_BASE
 NARROW_HI = 1349          # declared band top (content ends 1344)
 NARROW_GLUE_TILE = 43     # blank, mov-#imm reachable 8px space
 
-WIDTH_CAVE_TILE = 1431    # free V08_RESERVED slot (1431..1434 free)
+WIDTH_CAVE_TILE = 1469    # font_tools.CAVE_BLOCK (1431 until 2026-10-12)
 WIDTH_CAVE_TILES = 1
 WIDTH_CAVE_ADDR = FONT_LWRAM_BASE + WIDTH_CAVE_TILE * 32
 

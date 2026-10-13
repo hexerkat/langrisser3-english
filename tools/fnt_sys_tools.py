@@ -408,6 +408,16 @@ def encode_fntsys(jp_baseline: bytes, scripts_dir: Path,
         # when the scripts are still the JP-text dump.
         fs.pairs[pair_idx].edited = True
 
+    # 16-letter name: the default name (fntsys11 record 0) is copied into the
+    # name buffer by the name screen, so it is written in 8px band letters
+    # like everything the keyboard types (tools/fntsys11_default_name.py).
+    from fntsys11_default_name import (DEFAULT_NAME_PAIR, DEFAULT_NAME_RECORD,
+                                       default_name_record)
+    script_path = scripts_dir / script_pattern.format(n=DEFAULT_NAME_PAIR + 1)
+    if script_path.exists():
+        line = _parse_script_records(script_path)[DEFAULT_NAME_RECORD]
+        fs.pairs[DEFAULT_NAME_PAIR].records[DEFAULT_NAME_RECORD] = default_name_record(line)
+
     # v0.8 hankaku name-entry keyboard: swap the fntsys14 grid (pair 13,
     # records 0-18) to hankaku band tiles; button records 19-20 (positional
     # actions, our arrow/END art) pass through from the script.
@@ -417,7 +427,13 @@ def encode_fntsys(jp_baseline: bytes, scripts_dir: Path,
         fs.pairs[13].records = hankaku_keyboard_records(fs.pairs[13].records[19:21])
         fs.pairs[13].edited = True
 
-    return build_fnt_sys(fs)
+    out = build_fnt_sys(fs)
+    # The name check list rides the end of the file at a fixed offset
+    # (tools/name_check.py; the PROG_4 check reads it there).
+    if is_enabled('name_check'):
+        from name_check import with_list
+        out = with_list(out, scripts_dir)
+    return out
 
 
 def main():
