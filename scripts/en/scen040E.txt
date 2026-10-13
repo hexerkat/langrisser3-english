@@ -133,7 +133,7 @@ Shout at it <$FFFE>
 Listen carefully<$FFFE>
 When you strike it, a<$FFFC>hole opens in the floor.<$FFFC>Inside lurks a creepy,<$FFFC>grinning blue creature.<$FFFD>Then it suddenly asks,<$FFFC>"This stage's name?"<$FFFE>
 What do you reply?<$FFFE>
-Aniki <$FFFE>
+Bröther <$FFFE>
 Uminin<$FFFE>
 Ramen <$FFFE>
 "And here I was, the<$FFFC>star…<$FFFC>I hate you…"<$FFFD>The strange creature had<$FFFC>vanished from sight.<$FFFE>
@@ -195,7 +195,7 @@ I've been slacking off<$FFFC>lately…<$FFFC>So I'll accept my fate…<$FFFE>
 Look at me!<$FFFE>
 Senorita!<$FFFE>
 N-no… I can't go on!<$FFFE>
-ANIKI!<$FFFE>
+BRÖTHER!<$FFFE>
 I-I am so beautiful…<$FFFE>
 This can't beeee!<$FFFE>
 Don't open it, please…<$FFFE>

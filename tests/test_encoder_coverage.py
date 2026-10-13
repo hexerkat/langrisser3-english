@@ -74,7 +74,7 @@ def _find_dropped_chars():
 
     Returns dict of char -> {'count': int, 'words': set of words containing char}.
     """
-    from font_tools import CHAR_TILE_MAP, BIGRAM_TILE_MAP
+    from font_tools import CHAR_TILE_MAP, BIGRAM_TILE_MAP, HANKAKU_TILE_MAP
     from d00_tools import parse_script_file
 
     dropped = {}  # char -> {'count': int, 'words': set}
@@ -94,8 +94,10 @@ def _find_dropped_chars():
                         j += 2
                         continue
 
-                # Try single char
-                if text[j] in CHAR_TILE_MAP:
+                # Try single char: the 8px band first, then the 16px single
+                # (tools/hybrid_encoder.py; e.g. the capital Ö of BRÖTHER has
+                # no bigram and takes its band tile).
+                if text[j] in HANKAKU_TILE_MAP or text[j] in CHAR_TILE_MAP:
                     j += 1
                     continue
 

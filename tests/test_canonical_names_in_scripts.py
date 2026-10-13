@@ -109,6 +109,19 @@ def test_jp_anchored_names_use_canonical_spelling():
     assert not violations, violations
 
 
+
+def test_cho_aniki_gym_calls_him_broether():
+    """scen040 (the Cho Aniki gym): every 兄貴 / アニキ is the unit Bröther,
+    the Langrisser I&II remake name (Ralf 2026-10-13). Only this scene:
+    scen107's アニキ is a plain word (Dios is called "big bro").
+    Red state: 'Aniki ' (the stage name 兄貴面) and 'ANIKI!'."""
+    jp = _entries(JP / 'scen040J.txt')
+    en = _entries(EN / 'scen040E.txt')
+    bad = [(i, en[i].raw) for i in range(len(jp))
+           if ('兄貴' in jp[i].raw or 'アニキ' in jp[i].raw)
+           and 'BRÖTHER' not in en[i].raw.upper()]
+    assert not bad, bad
+
 _CODE = re.compile(r'<\$[0-9A-Fa-f]+>')
 
 
