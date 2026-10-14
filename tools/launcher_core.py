@@ -23,12 +23,17 @@ WALLPAPER_ARCHIVE = "LANG/OMAKE/GRAPHIC.LZH"
 WALLPAPER_MEMBER = "TIALISU.JPG"
 WALLPAPER_SHA256 = "1cb3d55d62eb1532a0fd1c2e8a012ec8af652c757289e26158b177cd5d41c79e"
 # The window background, picked at random once the disc is verified (Ralf,
-# 2026-10-14): Tiaris, Diehärte or Altemüller from the same gallery, each
-# pinned so only the game's own verified art is shown.
+# 2026-10-14): Tiaris, Diehärte, Altemüller, Luna, Sophia, Liffany or Freya
+# from the same gallery, each pinned so only the game's own verified art is
+# shown. FUREA.JPG is 1024x768, the others 1152x870; all go to WINDOW_SIZE.
 WALLPAPERS = {
     "TIALISU.JPG": WALLPAPER_SHA256,
     "DHIHALUT.JPG": "aed22a3f6d61097a6313b8f0bf85e7f0e0332a1afc6da86e73c188ca40a0b78d",
     "ALUTEMU.JPG": "af6d2b51191b4acd93fa2777feb11d8f3b1acea22566aa568e39071bb427d8f7",
+    "LUNA.JPG": "d697534c009a999618e13047d6fa7db4b75e94a444440ca4c5f1b442d6fabc5a",
+    "SOFIA.JPG": "f518263de2c1014ed7aaff9c34fcdd6120bf306d39044063ea5117ffaca90408",
+    "LIFANIY.JPG": "8e5742c535d5614457f7238aa7e8c790bc9867ef7d93821b694824bf253c8827",
+    "FUREA.JPG": "e3c8b8cc7218a84fdb722aac2e41ff6df9540d649eed4c3c46199638ff67ccf2",
 }
 WINDOW_SIZE = (768, 580)     # the 1152x870 gallery picture at 2/3
 

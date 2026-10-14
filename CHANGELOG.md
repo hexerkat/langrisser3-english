@@ -12,8 +12,7 @@ follows [Keep a Changelog](https://keepachangelog.com/); dates are `YYYY-MM-DD`.
 - A ready-to-run patcher for Windows and Linux. Download it, choose your Japanese disc
   folder, and press Build. No Python and no terminal needed.
 - The patcher checks that the folder really holds the Langrisser III disc before it
-  builds, and shows Tiaris, Diehärte or Altemüller from the disc's own art gallery once
-  it does.
+  builds, and shows a character from the disc's own art gallery once it does.
 - Your name can now be up to 16 letters long, and it stays intact when you save and load.
 - The name entry keyboard has Ä, Ö, Ü, ä, ö, ü and a hyphen.
 - The name entry screen again refuses the name of a character from the story, in any mix

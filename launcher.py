@@ -4,8 +4,8 @@
 A small window around build.py for people who would rather not use a
 terminal: pick the Japanese disc folder, choose whether to build the English
 opening movie, press Build, then open the folder with the patched game.
-Once a disc is picked, the background shows Tiaris, Diehärte or Altemüller
-(picked at random) from that disc's own gallery (LANG/OMAKE/GRAPHIC.LZH);
+Once a disc is picked, the background shows a character picked at random
+(launcher_core.WALLPAPERS) from that disc's own gallery (LANG/OMAKE/GRAPHIC.LZH);
 nothing from the game ships with the patcher.
 
 Run:  python3 launcher.py   (Windows: double-click, or `py launcher.py`)
