@@ -125,6 +125,19 @@ class TestBuiltStaffRoll(unittest.TestCase):
                     self.assertEqual(en[y * 320 + x], self.overlay[x, y], (x, y))
         self.assertTrue(all(en[i] == jp[i] for i in range(len(en)) if i not in inside))
 
+    def test_no_glyph_straddles_a_band_boundary(self):
+        """PROG_2 FUN_06054c00 draws the roll as 55 bands (tops at 0x06057AB0)
+        and shows band i 12*i px lower (y = 12*i + top + base): a glyph cut by
+        a band boundary shows split on screen. Red state (overlay of
+        2026-10-14 07:42): the descenders of "/ Raymond & Sieghart" crossed 328."""
+        import struct
+        (prog2,) = _jp('LANG/PROG_2.BIN')
+        tops = struct.unpack_from('>56H', prog2, 0x06057AB0 - 0x06052800)
+        en = _nibbles(self.roll[38:])
+        for b in tops[1:-1]:
+            cut = [x for x in range(320) if en[(b - 1) * 320 + x] and en[b * 320 + x]]
+            self.assertEqual(cut, [], f'boundary {b}')
+
     def test_english_text_is_there(self):
         self.assertNotEqual(self.roll, self.jp_roll)
 
