@@ -36,7 +36,9 @@ jobs:
       - run: python -c "import tkinter"
       - name: Mark the build channel (release, rc or test)
         shell: bash
-        run: python tools/build_version.py > BUILD_CHANNEL && echo "channel: $(cat BUILD_CHANNEL)"
+        run: |
+          python tools/build_version.py > BUILD_CHANNEL
+          echo "channel: $(cat BUILD_CHANNEL)"
       - run: pyinstaller --noconfirm launcher.spec
       - name: Package
         shell: bash
