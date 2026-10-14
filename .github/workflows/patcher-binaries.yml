@@ -2,9 +2,13 @@
 # attaches both to the GitHub release that triggered it.
 name: patcher-binaries
 
+# A push to an rc/** branch builds a release candidate (or a test build): the
+# executables stay as artifacts of the run, nothing is attached or published.
 on:
   release:
     types: [published]
+  push:
+    branches: ['rc/**']
   workflow_dispatch:
 
 permissions:
