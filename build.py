@@ -86,6 +86,7 @@ from prog4_name_trim_space import PROG4_NAME_TRIM_SPACE
 from name_check import NAME_CHECK
 from prog6_battle_cmd_width import PROG6_BATTLE_CMD_WIDTH
 from prog4_spell_name_table import PROG4_SPELL_NAME_TABLE
+from prog2_sound_test import PROG2_SOUND_TEST
 from prog5_menu_geometry import PROG5_MENU_GEOMETRY
 from prog4_menu_geometry import PROG4_MENU_GEOMETRY
 from patch_registry import is_enabled, disabled_modules, validate as validate_disabled
@@ -254,6 +255,7 @@ ENGINE_MODULE_DICTS = {
     "prog4_spell_name_table": PROG4_SPELL_NAME_TABLE,
     "prog5_menu_geometry": PROG5_MENU_GEOMETRY,
     "prog4_menu_geometry": PROG4_MENU_GEOMETRY,
+    "prog2_sound_test": PROG2_SOUND_TEST,
 }
 
 

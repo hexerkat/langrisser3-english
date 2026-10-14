@@ -17,6 +17,8 @@ follows [Keep a Changelog](https://keepachangelog.com/); dates are `YYYY-MM-DD`.
 - The name entry keyboard has Ä, Ö, Ü, ä, ö, ü and a hyphen.
 - The name entry screen again refuses the name of a character from the story, in any mix
   of upper and lower case.
+- The hidden sound test on the title screen lists its sounds, war cries and screams in
+  English.
 
 ### Changed
 - Text is drawn with a new mix of wide and narrow letters. Letters still pair up as
