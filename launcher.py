@@ -48,7 +48,11 @@ except ImportError:
 import host_env  # noqa: E402
 import launcher_core as lc  # noqa: E402
 
-VERSION = (PROJECT / "VERSION").read_text(encoding="utf-8").strip()
+import build_version  # noqa: E402
+
+# The release number plus the CI channel of a candidate or test patcher
+# (e.g. 0.8.0-rc.4cde827), so a test build never passes for the release.
+VERSION = build_version.label(PROJECT) or "?"
 
 
 class _QueueWriter:
