@@ -116,10 +116,10 @@ PATCHES_DIR = SCRIPT_DIR / 'patches'  # Menu/UI translation patches
 MOVIE_DIR = SCRIPT_DIR / 'assets' / 'movie'
 MOVIE_CPK = Path(os.environ.get('LANG3_MOVIE_CPK', MOVIE_DIR / 'LANG.CPK'))
 
-# Title-screen credit. assets/title_credit/title_credit_indexed.png is an indexed
-# (mode 'P') canvas whose footer rows carry the patch-author credit; the build
-# tiles them into LANG/TITLE.DG2 (tools/title_dg2.py). Absent -> JP title.
-TITLE_CREDIT_ASSET = SCRIPT_DIR / 'assets' / 'title_credit' / 'title_credit_indexed.png'
+# Title-screen credit: one line the build writes into the empty footer of the
+# JP title logo (tools/title_dg2.apply_credit_line, glyphs in
+# data/fonts/title_credit_atlas.json). {version} = the VERSION file.
+TITLE_CREDIT_TEXT = 'English patch {version} / Hexerkat & RalfGuth \u2022 2026'
 
 # English staff roll. An overlay of the English text and the rectangles it
 # replaces, pasted over the player's own LANG/STAFF.DAT (tools/staff_roll.py).
@@ -657,32 +657,28 @@ def main(argv=None):
         print('  LANG.CPK: [disabled] shipping JP opening')
 
     # TITLE.DG2 — MANDATORY patch-author credit. This is intentionally NOT a
-    # toggleable module: the credit is hardwired into every build. We tile the
-    # credit from assets/title_credit/title_credit_indexed.png into res0 (the title
-    # logo map res1 has empty footer rows) and write the map cells
-    # (tools/title_dg2.py). If the title file or the credit asset is missing, or the
-    # credit ends up empty, the build ABORTS — there is no path that ships a build
-    # without the credit printed into the game binary.
+    # toggleable module: the credit is hardwired into every build. The line is
+    # written from TITLE_CREDIT_TEXT and the VERSION file into the empty footer
+    # of the JP logo (tools/title_dg2.py). If the title file or the version is
+    # missing, or the credit ends up empty, the build ABORTS — there is no path
+    # that ships a build without the credit printed into the game binary.
     title_entry = file_index.get('LANG/TITLE.DG2')
     if not title_entry:
         raise RuntimeError('LANG/TITLE.DG2 not found in ISO — required for the '
                            'mandatory title-screen credit')
-    if not TITLE_CREDIT_ASSET.exists():
-        raise RuntimeError(
-            f'mandatory title credit asset missing: {TITLE_CREDIT_ASSET} — the '
-            'patch-author credit cannot be skipped; restore the asset to build')
+    version = _read_version_artifact()
+    if not version:
+        raise RuntimeError('VERSION is missing — the title credit names the version')
+    credit = TITLE_CREDIT_TEXT.format(version=version)
     jp_title = extract_file_data(image, title_entry.extent, title_entry.size)
-    new_title = title_dg2.apply_full_logo(jp_title, str(TITLE_CREDIT_ASSET))
+    new_title = title_dg2.apply_credit_line(jp_title, credit)
     credit_cells = title_dg2.footer_cell_count(new_title)
     if credit_cells == 0:
         raise RuntimeError('title credit produced an empty footer — refusing to '
                            'build without the credit printed into TITLE.DG2')
     grown_patches.append(('LANG/TITLE.DG2', new_title))
-    print(f'  TITLE.DG2 (MANDATORY credit): {title_entry.size:,} -> '
-          f'{len(new_title):,} bytes, {credit_cells} footer cells embedded')
-
-    # (The credit's grayscale palette ramp is written into TITLE.DG2's own
-    # embedded palette by apply_footer_indexed — no separate palette file.)
+    print(f'  TITLE.DG2 (MANDATORY credit "{credit}"): {title_entry.size:,} -> '
+          f'{len(new_title):,} bytes, {credit_cells} footer cells')
 
     # STAFF.DAT: the English staff roll (grows, so it rides the batch).
     staff_entry = file_index.get('LANG/STAFF.DAT')
