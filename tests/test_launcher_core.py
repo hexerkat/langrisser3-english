@@ -126,12 +126,15 @@ class TestSettings:
 
 
 class TestOpenFolder:
+    """The folder goes to the opener as the host's own path text. Red state
+    (CI 2026-10-14, windows-latest): the Linux and macOS cases expected the
+    literal "/o", which a Windows host writes as "\\o"."""
 
     def test_linux(self):
-        assert lc.open_folder_command(Path("/o"), "linux") == ["xdg-open", "/o"]
+        assert lc.open_folder_command(Path("/o"), "linux") == ["xdg-open", str(Path("/o"))]
 
     def test_macos(self):
-        assert lc.open_folder_command(Path("/o"), "darwin") == ["open", "/o"]
+        assert lc.open_folder_command(Path("/o"), "darwin") == ["open", str(Path("/o"))]
 
     def test_windows(self):
         assert lc.open_folder_command(Path("C:/o"), "win32") == ["explorer", str(Path("C:/o"))]
