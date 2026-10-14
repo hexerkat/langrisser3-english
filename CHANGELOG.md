@@ -21,6 +21,8 @@ follows [Keep a Changelog](https://keepachangelog.com/); dates are `YYYY-MM-DD`.
   with the cast and staff names in romaji.
 - The title screen credit now shows the exact patch version and credits Hexerkat and
   RalfGuth.
+- The hidden sound test on the title screen lists its sounds, war cries and screams in
+  English.
 
 ### Changed
 - Text is drawn with a new mix of wide and narrow letters. Letters still pair up as

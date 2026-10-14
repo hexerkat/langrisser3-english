@@ -69,6 +69,7 @@ ENGINE_PATCH_MODULES = (
     "a0lang_save_name_pack",
     "name_check",
     "prog3_text_tables",
+    "prog2_sound_test",
 )
 
 TEXT_ENCODER_MODULES = (
