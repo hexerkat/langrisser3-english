@@ -30,6 +30,11 @@ import struct
 import subprocess
 from pathlib import Path
 
+try:                                  # imported both as `movie_tools` and `tools.movie_tools`
+    from .host_env import external_env
+except ImportError:
+    from host_env import external_env
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
 # --- engine-fixed facts (do not change without re-checking the Saturn player) --
@@ -307,6 +312,19 @@ def _srt_to_pixel_ass(srt: Path) -> str:
     return head + body + "\n"
 
 
+def _run_ffmpeg(cmd, cwd, quiet: bool) -> None:
+    """Run ffmpeg with the user's own environment (tools/host_env.py). With
+    quiet, its messages are captured and a failure carries them, so the
+    patcher window's log says why it stopped."""
+    try:
+        subprocess.run(cmd, cwd=cwd, check=True, env=external_env(),
+                       **({'stderr': subprocess.PIPE, 'text': True} if quiet else {}))
+    except subprocess.CalledProcessError as exc:
+        detail = (exc.stderr or '').strip()
+        raise RuntimeError('ffmpeg could not encode the opening movie'
+                           + (':\n' + detail[-2000:] if detail else '')) from exc
+
+
 def build_movie_cpk(
     source: Path,
     srt: Path,
@@ -370,7 +388,7 @@ def build_movie_cpk(
         "-f", "film_cpk",
         str(ffmpeg_out.resolve()),
     ]
-    subprocess.run(cmd, cwd=cwd, check=True)
+    _run_ffmpeg(cmd, cwd=cwd, quiet=quiet)
 
     # Re-wrap into the JP-exact container. Only the native 15fps cadence maps
     # onto the JP sample table; other framerates keep ffmpeg's layout (which is

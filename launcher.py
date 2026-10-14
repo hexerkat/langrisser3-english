@@ -45,6 +45,7 @@ except ImportError:
           "Or build from the terminal: python3 build.py --jp-iso <disc folder>")
     sys.exit(1)
 
+import host_env  # noqa: E402
 import launcher_core as lc  # noqa: E402
 
 VERSION = (PROJECT / "VERSION").read_text(encoding="utf-8").strip()
@@ -376,7 +377,7 @@ class Launcher(tk.Tk):
 
     def _open_output(self):
         if self.result is not None:
-            subprocess.Popen(lc.open_folder_command(self.result))
+            subprocess.Popen(lc.open_folder_command(self.result), env=host_env.external_env())
 
     def _on_close(self):
         if self.running:
