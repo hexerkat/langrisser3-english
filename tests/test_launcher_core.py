@@ -171,7 +171,7 @@ class TestVerifyDisc:
         assert check.ok, check.message
         assert hashlib.sha256(check.jpeg).hexdigest() == self.TIALISU_SHA256
         w, h, rgb = lc.wallpaper(check.jpeg)
-        assert (w, h) == (576, 435) and len(rgb) == w * h * 3
+        assert (w, h) == lc.WINDOW_SIZE and len(rgb) == w * h * 3
 
     def test_damaged_picture_on_a_real_track_fails(self, tmp_path):
         import lzh
@@ -200,3 +200,21 @@ class TestPicture:
         px = lambda x, y: out[(y * 4 + x) * 3]
         assert [px(x, 0) for x in range(4)] == [200, 100, 100, 200]
         assert [px(x, 1) for x in range(4)] == [200] * 4
+
+    def test_resize_to_two_thirds(self):
+        """The window shows the 1152x870 gallery picture at 768x580 (2/3), so the
+        controls get the lower half with room to spare. Red state: no lc.resize."""
+        w, h = 6, 3
+        rgb = bytearray()
+        for y in range(h):
+            for x in range(w):
+                rgb += bytes([x * 40, y * 100, 7])
+        out = lc.resize(rgb, w, h, 4, 2)
+        assert len(out) == 4 * 2 * 3
+        px = lambda x, y: tuple(out[(y * 4 + x) * 3:(y * 4 + x) * 3 + 3])
+        assert px(0, 0)[2] == 7 and px(3, 1)[2] == 7       # flat channel stays flat
+        assert px(0, 0)[0] < px(3, 0)[0]                   # left to right gradient kept
+        assert px(0, 0)[1] < px(0, 1)[1]                   # top to bottom gradient kept
+
+    def test_wallpaper_size(self):
+        assert lc.WINDOW_SIZE == (768, 580)

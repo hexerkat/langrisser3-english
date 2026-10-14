@@ -22,7 +22,7 @@ FOLDER_PREFIX = "Folder:"
 WALLPAPER_ARCHIVE = "LANG/OMAKE/GRAPHIC.LZH"
 WALLPAPER_MEMBER = "TIALISU.JPG"
 WALLPAPER_SHA256 = "1cb3d55d62eb1532a0fd1c2e8a012ec8af652c757289e26158b177cd5d41c79e"
-WALLPAPER_SCALE = 2          # 1152x870 on disc, 576x435 in the window
+WINDOW_SIZE = (768, 580)     # the 1152x870 gallery picture at 2/3
 
 VERIFYING = "Verifying disc…"
 VERIFIED = "Langrisser III (Japan) disc verified."
@@ -125,7 +125,27 @@ def verify_disc(disc_dir: Path) -> DiscCheck:
 def wallpaper(jpeg: bytes):
     """(width, height, rgb) of the verified picture at window size."""
     import jpeg_baseline
-    return jpeg_baseline.decode(jpeg, scale=WALLPAPER_SCALE)
+    w, h, rgb = jpeg_baseline.decode(jpeg)
+    return WINDOW_SIZE + (resize(rgb, w, h, *WINDOW_SIZE),)
+
+
+def resize(rgb, width: int, height: int, new_w: int, new_h: int) -> bytearray:
+    """Box-filter resize of packed RGB (each output pixel averages the source
+    pixels it covers, whole pixels only)."""
+    out = bytearray(new_w * new_h * 3)
+    xs = [(x * width // new_w, max(x * width // new_w + 1, (x + 1) * width // new_w))
+          for x in range(new_w)]
+    for y in range(new_h):
+        y0 = y * height // new_h
+        y1 = max(y0 + 1, (y + 1) * height // new_h)
+        rows = [rgb[r * width * 3:(r + 1) * width * 3] for r in range(y0, y1)]
+        o = y * new_w * 3
+        for x0, x1 in xs:
+            n = (x1 - x0) * len(rows)
+            for c in range(3):
+                out[o + c] = sum(sum(row[i * 3 + c] for i in range(x0, x1)) for row in rows) // n
+            o += 3
+    return out
 
 
 def ppm(width: int, height: int, rgb: bytes) -> bytes:

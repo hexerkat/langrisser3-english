@@ -66,13 +66,15 @@ class _QueueWriter:
 
 class Launcher(tk.Tk):
 
-    W, H = 576, 435                 # the wallpaper at half size
-    PANEL = (0, 0, 300, 226)        # controls, top left (over sky, clear of Tiaris)
-    BAND = (0, 345, 576, 435)       # last log lines, bottom
-    LOG_LINES = 5
+    W, H = lc.WINDOW_SIZE            # the gallery picture at 2/3
+    TOP = 300                        # the picture is clear above this row
+    PANEL = (0, TOP, W, H)           # the controls, lower part, full width
+    PAD = 24
+    LOG_LINES = 2
     BG = "#1b2130"
     TEXT, DIM = "#ffffff", "#c9d1e0"
     OK, BAD = "#7ee08a", "#ff8a80"
+    ACCENT, ACCENT_HOVER = "#c8562a", "#e0703a"
 
     def __init__(self):
         super().__init__()
@@ -115,40 +117,54 @@ class Launcher(tk.Tk):
             style.theme_use("clam")
         edge, face, hover, field = "#4a5670", "#2b3446", "#3b4760", "#10141d"
         style.configure("TButton", background=face, foreground=self.TEXT, bordercolor=edge,
-                        lightcolor=face, darkcolor=face, focuscolor=face, padding=(8, 3))
+                        lightcolor=face, darkcolor=face, focuscolor=face, padding=(12, 6))
         style.map("TButton", background=[("disabled", "#20273a"), ("active", hover)],
                   foreground=[("disabled", "#76809a")])
+        style.configure("Build.TButton", background=self.ACCENT, bordercolor=self.ACCENT,
+                        lightcolor=self.ACCENT, darkcolor=self.ACCENT, focuscolor=self.ACCENT,
+                        padding=(22, 10), font=("TkDefaultFont", 11, "bold"))
+        style.map("Build.TButton",
+                  background=[("disabled", "#3a2a24"), ("active", self.ACCENT_HOVER)],
+                  foreground=[("disabled", "#8a7a74")])
         style.configure("TEntry", fieldbackground=field, foreground=self.TEXT,
                         insertcolor=self.TEXT, bordercolor=edge, lightcolor=field,
-                        darkcolor=field)
-        style.configure("Horizontal.TProgressbar", troughcolor=field, background="#e0703a",
-                        bordercolor=edge, lightcolor="#e0703a", darkcolor="#e0703a")
+                        darkcolor=field, padding=(6, 5))
+        style.configure("Horizontal.TProgressbar", troughcolor=field, background=self.ACCENT_HOVER,
+                        bordercolor=edge, lightcolor=self.ACCENT_HOVER, darkcolor=self.ACCENT_HOVER)
 
     def _layout(self):
         self._style()
-        c = self.canvas = tk.Canvas(self, width=self.W, height=self.H,
-                                    highlightthickness=0, bg=self.BG)
+        W, H, P, top = self.W, self.H, self.PAD, self.TOP
+        c = self.canvas = tk.Canvas(self, width=W, height=H, highlightthickness=0, bg=self.BG)
         c.pack()
         self.bg_item = c.create_image(0, 0, anchor="nw")
-        self.band_rect = c.create_rectangle(*self.BAND, fill="#10141d", width=0)
 
-        self._text(12, 10, f"Langrisser III English Patch  v{VERSION}",
-                   font=("TkDefaultFont", 11, "bold"))
-        self._text(12, 36, "Japanese disc folder (.cue + Track .bin files)", fill=self.DIM)
-        entry = ttk.Entry(c, textvariable=self.disc_var, width=20)
-        c.create_window(12, 56, window=entry, anchor="nw")
-        c.create_window(288, 55, window=ttk.Button(c, text="Browse…", command=self._browse),
-                        anchor="ne")
-        self._text(12, 88, tag="status", width=280)
+        # Title, top left, with a soft shadow so it reads over the sky.
+        for dx, color in ((2, "#000000"), (0, self.TEXT)):
+            self._text(P + dx, 18 + dx, "Langrisser III", fill=color,
+                       font=("TkDefaultFont", 24, "bold"))
+            self._text(P + 2 + dx, 60 + dx, f"English Patch  v{VERSION}", fill=color,
+                       font=("TkDefaultFont", 12))
+
+        # Disc folder: label, a wide field and Browse on one row, status below.
+        self._text(P, top + 18, "Japanese disc folder (.cue + Track .bin files)", fill=self.DIM)
+        browse = ttk.Button(c, text="Browse…", command=self._browse)
+        c.create_window(W - P, top + 42, window=browse, anchor="ne")
+        entry = ttk.Entry(c, textvariable=self.disc_var)
+        c.create_window(P, top + 42, window=entry, anchor="nw", width=W - 2 * P - 120,
+                        height=34)
+        self._text(P, top + 86, tag="status", width=W - 2 * P)
 
         # Movie option drawn on the canvas: a ttk checkbox is an opaque box.
         on = self.has_ffmpeg
         color = self.TEXT if on else "#76809a"
-        c.create_rectangle(13, 135, 27, 149, outline=color, width=1, tags="movie")
-        self._text(14, 132, "", fill=self.OK, tag="movie_mark", font=("TkDefaultFont", 10, "bold"))
-        label = "Build the English opening movie\n" + ("(needs ffmpeg, takes longer)" if on
-                                                      else "(ffmpeg not found)")
-        self._text(36, 130, label, tag="movie", fill=self.DIM if on else color)
+        y = top + 122
+        c.create_rectangle(P + 1, y + 3, P + 17, y + 19, outline=color, width=1, tags="movie")
+        self._text(P + 3, y, "", fill=self.OK, tag="movie_mark",
+                   font=("TkDefaultFont", 11, "bold"))
+        label = ("Also build the English opening movie (needs ffmpeg, takes longer)" if on
+                 else "English opening movie: ffmpeg not found, the opening stays Japanese")
+        self._text(P + 28, y + 2, label, tag="movie", fill=self.DIM if on else color)
         if on:
             for t in ("movie", "movie_mark"):
                 c.tag_bind(t, "<Button-1>", lambda e: self.movie_var.set(not self.movie_var.get()))
@@ -157,19 +173,23 @@ class Launcher(tk.Tk):
         self.movie_var.trace_add("write", lambda *_: self._draw_movie())
         self._draw_movie()
 
-        self.build_btn = ttk.Button(c, text="Build patched game", command=self._build)
-        c.create_window(12, 172, window=self.build_btn, anchor="nw")
-        self.open_btn = ttk.Button(c, text="Open folder",
-                                   command=self._open_output, state="disabled")
-        c.create_window(288, 172, window=self.open_btn, anchor="ne")
-        self.progress = ttk.Progressbar(c, mode="indeterminate", length=276)
-        self.progress_item = c.create_window(12, 206, window=self.progress, anchor="nw",
+        # Build, with the progress bar beside it.
+        self.build_btn = ttk.Button(c, text="Build patched game", command=self._build,
+                                    style="Build.TButton")
+        c.create_window(P, top + 166, window=self.build_btn, anchor="nw")
+        self.progress = ttk.Progressbar(c, mode="indeterminate")
+        self.progress_item = c.create_window(P + 230, top + 180, window=self.progress,
+                                             anchor="nw", width=W - 2 * P - 230,
                                              state="hidden")
 
-        self._text(12, self.BAND[1] + 6, tag="log", fill=self.DIM,
-                   font=("TkFixedFont", 8), width=self.W - 110)
+        # Last log lines, and the folder / log buttons, along the bottom.
+        self._text(P, H - 50, tag="log", fill=self.DIM, font=("TkFixedFont", 9),
+                   width=W - 2 * P - 260)
         self.log_btn = ttk.Button(c, text="View log", command=self._show_log)
-        c.create_window(self.W - 12, self.H - 12, window=self.log_btn, anchor="se")
+        c.create_window(W - P, H - P, window=self.log_btn, anchor="se")
+        self.open_btn = ttk.Button(c, text="Open folder",
+                                   command=self._open_output, state="disabled")
+        c.create_window(W - P - 132, H - P, window=self.open_btn, anchor="se")
         self.log_win = None
 
     def _draw_movie(self):
@@ -193,8 +213,7 @@ class Launcher(tk.Tk):
             if check.ok:
                 try:
                     w, h, rgb = lc.wallpaper(check.jpeg)
-                    rgb = lc.shade(rgb, w, h, self.PANEL, 0.42)
-                    rgb = lc.shade(rgb, w, h, self.BAND, 0.35)
+                    rgb = lc.shade(rgb, w, h, self.PANEL, 0.38)
                     data = lc.ppm(w, h, rgb)
                 except Exception:  # noqa: BLE001 - verified disc, just no picture
                     data = None
@@ -216,11 +235,9 @@ class Launcher(tk.Tk):
         if data is None:
             self.photo = None
             self.canvas.itemconfigure(self.bg_item, image="")
-            self.canvas.itemconfigure(self.band_rect, state="normal")
             return
         self.photo = tk.PhotoImage(data=data, format="PPM")
         self.canvas.itemconfigure(self.bg_item, image=self.photo)
-        self.canvas.itemconfigure(self.band_rect, state="hidden")
 
     # --- disc folder -------------------------------------------------------
 
@@ -320,7 +337,7 @@ class Launcher(tk.Tk):
     def _refresh_log(self):
         text = "".join(self.log_lines)
         tail = [ln.rstrip() for ln in text.splitlines() if ln.strip()][-self.LOG_LINES:]
-        self._set_text("log", "\n".join(ln[:80] for ln in tail))
+        self._set_text("log", "\n".join(ln[:60] for ln in tail))
         if self.log_win is not None and self.log_win.winfo_exists():
             box = self.log_win.box
             box.config(state="normal")
