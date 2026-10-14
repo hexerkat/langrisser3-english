@@ -50,7 +50,7 @@ Nothing to install, no Python, no terminal.
    - **Windows**: `Langrisser3-Patcher-windows.exe`
    - **Linux**: `Langrisser3-Patcher-linux.tar.gz` (extract it first)
 2. **Open it.** Windows may say it protected your PC, because the patcher is not signed. Click **More info**, then **Run anyway**.
-3. **Choose your Japanese disc folder** with **Browse…**. The patcher checks that it really is the Langrisser III disc. When it is, Tiaris shows up behind the window.
+3. **Choose your Japanese disc folder** with **Browse…**. The patcher checks that it really is the Langrisser III disc. When it is, Tiaris, Diehärte or Altemüller shows up behind the window.
 4. **Press Build patched game.** It takes a few minutes. When it finishes, **Open folder** shows the patched game, in a `build/` folder next to the patcher.
 5. **Load the `.cue`** from that folder in your emulator and play.
 

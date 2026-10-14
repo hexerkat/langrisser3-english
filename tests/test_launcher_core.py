@@ -167,11 +167,28 @@ class TestVerifyDisc:
 
     def test_real_disc_is_verified_and_gives_tiaris(self):
         import hashlib
-        check = lc.verify_disc(self._jp())
+        check = lc.verify_disc(self._jp(), choose=lambda names: "TIALISU.JPG")
         assert check.ok, check.message
         assert hashlib.sha256(check.jpeg).hexdigest() == self.TIALISU_SHA256
         w, h, rgb = lc.wallpaper(check.jpeg)
         assert (w, h) == lc.WINDOW_SIZE and len(rgb) == w * h * 3
+
+    def test_background_is_one_of_three_pinned_pictures(self):
+        """Ralf (2026-10-14): the background is picked at random among Tiaris,
+        Diehärte and Altemüller. Each is pinned, so only the game's own
+        verified art shows. Red state: verify_disc always gave Tiaris."""
+        import hashlib
+        assert set(lc.WALLPAPERS) == {"TIALISU.JPG", "DHIHALUT.JPG", "ALUTEMU.JPG"}
+        for name, sha in lc.WALLPAPERS.items():
+            check = lc.verify_disc(self._jp(), choose=lambda names, n=name: n)
+            assert check.ok and hashlib.sha256(check.jpeg).hexdigest() == sha, name
+        w, h, rgb = lc.wallpaper(check.jpeg)
+        assert (w, h) == lc.WINDOW_SIZE
+
+    def test_default_choice_is_random_among_the_three(self):
+        import hashlib
+        seen = {hashlib.sha256(lc.verify_disc(self._jp()).jpeg).hexdigest() for _ in range(12)}
+        assert seen <= set(lc.WALLPAPERS.values()) and len(seen) > 1
 
     def test_damaged_picture_on_a_real_track_fails(self, tmp_path):
         import lzh

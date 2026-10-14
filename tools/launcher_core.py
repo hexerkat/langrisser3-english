@@ -22,6 +22,14 @@ FOLDER_PREFIX = "Folder:"
 WALLPAPER_ARCHIVE = "LANG/OMAKE/GRAPHIC.LZH"
 WALLPAPER_MEMBER = "TIALISU.JPG"
 WALLPAPER_SHA256 = "1cb3d55d62eb1532a0fd1c2e8a012ec8af652c757289e26158b177cd5d41c79e"
+# The window background, picked at random once the disc is verified (Ralf,
+# 2026-10-14): Tiaris, Diehärte or Altemüller from the same gallery, each
+# pinned so only the game's own verified art is shown.
+WALLPAPERS = {
+    "TIALISU.JPG": WALLPAPER_SHA256,
+    "DHIHALUT.JPG": "aed22a3f6d61097a6313b8f0bf85e7f0e0332a1afc6da86e73c188ca40a0b78d",
+    "ALUTEMU.JPG": "af6d2b51191b4acd93fa2777feb11d8f3b1acea22566aa568e39071bb427d8f7",
+}
 WINDOW_SIZE = (768, 580)     # the 1152x870 gallery picture at 2/3
 
 VERIFYING = "Verifying disc…"
@@ -101,9 +109,12 @@ class DiscCheck:
     jpeg: bytes | None = None      # TIALISU.JPG when verified
 
 
-def verify_disc(disc_dir: Path) -> DiscCheck:
+def verify_disc(disc_dir: Path, choose=None) -> DiscCheck:
     """File names first (fast), then the content: the gallery picture must
-    come out of Track 01 intact and be the one this game ships."""
+    come out of Track 01 intact and be the one this game ships. The returned
+    picture is the background, `choose`n among WALLPAPERS (random by default);
+    a chosen picture that does not match its pin falls back to Tiaris."""
+    import random
     import lzh
     ok, msg = check_disc_dir(Path(disc_dir))
     if not ok:
@@ -119,6 +130,14 @@ def verify_disc(disc_dir: Path) -> DiscCheck:
         return DiscCheck(False, NOT_VERIFIED)
     if hashlib.sha256(jpg).hexdigest() != WALLPAPER_SHA256:
         return DiscCheck(False, NOT_VERIFIED)
+    name = (choose or random.choice)(list(WALLPAPERS))
+    if name != WALLPAPER_MEMBER:
+        try:
+            other = lzh.extract(archive, name)
+            if hashlib.sha256(other).hexdigest() == WALLPAPERS[name]:
+                jpg = other
+        except Exception:  # noqa: BLE001 - keep Tiaris
+            pass
     return DiscCheck(True, VERIFIED, jpg)
 
 

@@ -4,8 +4,9 @@
 A small window around build.py for people who would rather not use a
 terminal: pick the Japanese disc folder, choose whether to build the English
 opening movie, press Build, then open the folder with the patched game.
-Once a disc is picked, the background shows Tiaris from that disc's own
-gallery (LANG/OMAKE/GRAPHIC.LZH); nothing from the game ships with the patcher.
+Once a disc is picked, the background shows Tiaris, Diehärte or Altemüller
+(picked at random) from that disc's own gallery (LANG/OMAKE/GRAPHIC.LZH);
+nothing from the game ships with the patcher.
 
 Run:  python3 launcher.py   (Windows: double-click, or `py launcher.py`)
 With arguments it is the command-line build: launcher.py --jp-iso <folder>.
@@ -86,7 +87,7 @@ class Launcher(tk.Tk):
         self.log_lines = []
         self.result = None
         self.checks = {}            # disc folder -> lc.DiscCheck
-        self.pictures = {}          # disc folder -> PPM bytes of its Tiaris
+        self.pictures = {}          # disc folder -> PPM bytes of its background
         self.verifying = set()      # folders being verified right now
         self.photo = None
 
