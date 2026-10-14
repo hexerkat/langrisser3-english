@@ -64,6 +64,16 @@ class TestNewOpcodes(unittest.TestCase):
         vm = _run([0x212B], {1: 0xF0, 2: 0x0F})          # or r2,r1
         self.assertEqual(vm.R[1], 0xFF)
 
+    # 2026-10-14, the STAFF.DAT decompressor (A0LANG FUN_0600FA88).
+    # Red state: `unimplemented 2199` / `unimplemented 4109`.
+    def test_and(self):
+        vm = _run([0x2129], {1: 0xF3, 2: 0x3F})          # and r2,r1
+        self.assertEqual(vm.R[1], 0x33)
+
+    def test_shlr2(self):
+        vm = _run([0x4109], {1: 0x800000F3})             # shlr2 r1
+        self.assertEqual(vm.R[1], 0x2000003C)
+
 
 if __name__ == '__main__':
     unittest.main()

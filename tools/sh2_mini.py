@@ -182,6 +182,8 @@ class Sh2:
                 self.T = int((R[n] & R[m]) == 0)                 # tst Rm,Rn
             elif low == 0xB:
                 R[n] = R[n] | R[m]                               # or Rm,Rn
+            elif low == 0x9:
+                R[n] = R[n] & R[m]                               # and Rm,Rn
             else:
                 raise AssertionError(f'unimplemented {w:04X} @0x{at:X}')
         elif top == 0x3:
@@ -211,6 +213,8 @@ class Sh2:
                 R[n] = (R[n] << 8) & M32                         # shll8
             elif lo8 == 0x01:
                 self.T, R[n] = R[n] & 1, R[n] >> 1               # shlr
+            elif lo8 == 0x09:
+                R[n] = R[n] >> 2                                 # shlr2
             elif lo8 == 0x10:
                 R[n] = (R[n] - 1) & M32                          # dt
                 self.T = int(R[n] == 0)

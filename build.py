@@ -84,6 +84,7 @@ from prog4_name_cap16 import PROG4_NAME_CAP16
 from a0lang_save_name_pack import A0LANG_SAVE_NAME_PACK
 from prog4_name_trim_space import PROG4_NAME_TRIM_SPACE
 from name_check import NAME_CHECK
+import staff_roll
 from prog6_battle_cmd_width import PROG6_BATTLE_CMD_WIDTH
 from prog4_spell_name_table import PROG4_SPELL_NAME_TABLE
 from prog5_menu_geometry import PROG5_MENU_GEOMETRY
@@ -119,6 +120,13 @@ MOVIE_CPK = Path(os.environ.get('LANG3_MOVIE_CPK', MOVIE_DIR / 'LANG.CPK'))
 # (mode 'P') canvas whose footer rows carry the patch-author credit; the build
 # tiles them into LANG/TITLE.DG2 (tools/title_dg2.py). Absent -> JP title.
 TITLE_CREDIT_ASSET = SCRIPT_DIR / 'assets' / 'title_credit' / 'title_credit_indexed.png'
+
+# English staff roll. An overlay of the English text and the rectangles it
+# replaces, pasted over the player's own LANG/STAFF.DAT (tools/staff_roll.py).
+# Made by the separate langrisser3-graphics-extractor repo. Absent -> JP roll.
+STAFF_ROLL_DIR = SCRIPT_DIR / 'assets' / 'staff_roll'
+STAFF_ROLL_OVERLAY = STAFF_ROLL_DIR / 'staff_roll_en.png'
+STAFF_ROLL_RECTS = STAFF_ROLL_DIR / 'staff_roll_en_rects.json'
 
 # Language metadata. The repo is dual-purpose: an English translation patch
 # AND a framework for producing Langrisser III patches in any language.
@@ -675,6 +683,18 @@ def main(argv=None):
 
     # (The credit's grayscale palette ramp is written into TITLE.DG2's own
     # embedded palette by apply_footer_indexed — no separate palette file.)
+
+    # STAFF.DAT: the English staff roll (grows, so it rides the batch).
+    staff_entry = file_index.get('LANG/STAFF.DAT')
+    if staff_entry and is_enabled('staff_roll') and STAFF_ROLL_OVERLAY.exists():
+        jp_staff = extract_file_data(image, staff_entry.extent, staff_entry.size)
+        new_staff = staff_roll.apply_overlay(jp_staff, str(STAFF_ROLL_OVERLAY),
+                                             str(STAFF_ROLL_RECTS))
+        grown_patches.append(('LANG/STAFF.DAT', new_staff))
+        print(f'  STAFF.DAT (English staff roll): {staff_entry.size:,} -> '
+              f'{len(new_staff):,} bytes')
+    elif staff_entry:
+        print('  STAFF.DAT: [disabled or no asset] shipping JP staff roll')
 
     # Batch: apply all grown patches (D00.DAT, the movie, any grown MENU_PATCHES)
     # in ascending extent order. Shifts downstream sectors and updates dir records.

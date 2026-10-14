@@ -83,12 +83,14 @@ TEXT_ENCODER_MODULES = (
 # text at build time). Each is optional: if its asset file is absent the build
 # falls back to the JP original.
 #   movie = LANG/LANG.CPK opening FMV (English-subtitled, see tools/movie_tools.py)
+#   staff_roll = LANG/STAFF.DAT English staff roll (assets/staff_roll, tools/staff_roll.py)
 # NOTE: the title-screen patch-author credit (LANG/TITLE.DG2, tools/title_dg2.py)
 # is deliberately NOT a module here. It is MANDATORY and hardwired into build.py:
 # every build embeds the credit and the build aborts if it cannot, so there is no
 # toggle that could disable it.
 ASSET_MODULES = (
     "movie",
+    "staff_roll",
 )
 
 ALL_MODULES = ENGINE_PATCH_MODULES + TEXT_ENCODER_MODULES + ASSET_MODULES
