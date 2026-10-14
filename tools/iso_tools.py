@@ -10,6 +10,11 @@ import math
 import struct
 from pathlib import Path
 
+try:                                  # imported both as `iso_tools` and `tools.iso_tools`
+    from . import build_progress
+except ImportError:
+    import build_progress
+
 SECTOR_SIZE = 2352
 USER_OFFSET = 16
 USER_SIZE = 2048
@@ -366,6 +371,17 @@ def rebuild_iso_batch(image: bytearray, file_index: dict,
     total_delta = 0
     shifted_total = 0
 
+    # Progress (tools/build_progress.py): sectors to move over all shifts.
+    # Earlier shifts move a later target and the image end alike, so each
+    # shift moves the same count it would on the original image.
+    image_sectors = len(image) // SECTOR_SIZE
+    work = sum(image_sectors - (work_index[p].extent
+                                + math.ceil(work_index[p].size / USER_SIZE))
+               for p, d in pending
+               if math.ceil(len(d) / USER_SIZE) > math.ceil(work_index[p].size / USER_SIZE))
+    step = max(64, work // 100)
+    moved = 0
+
     for target_path, new_data in pending:
         target = work_index[target_path]
         old_sectors = math.ceil(target.size / USER_SIZE)
@@ -406,6 +422,9 @@ def rebuild_iso_batch(image: bytearray, file_index: dict,
             sector[14] = (f // 10) * 16 + (f % 10)
             rewrite_sector_edc_ecc(sector)
             new_result.extend(sector)
+            moved += 1
+            if moved % step == 0:
+                build_progress.report('shift', moved / work)
 
         # Update target dir record: size only (extent unchanged)
         update_dir_record_size(new_result, target.record_offset, len(new_data))
@@ -427,6 +446,8 @@ def rebuild_iso_batch(image: bytearray, file_index: dict,
         print(f'  +{delta}s shift for {target_path}: '
               f'{shifted} entries repointed')
 
+    if work:
+        build_progress.report('shift', 1.0)
     if total_delta:
         print(f'  ISO rebuild batch: +{total_delta} total sectors, '
               f'{shifted_total} cumulative entry updates')

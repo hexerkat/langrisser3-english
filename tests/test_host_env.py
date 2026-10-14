@@ -10,7 +10,6 @@ libcrypto and stopped before encoding the opening:
 and the window log showed only "returned non-zero exit status 1", without
 ffmpeg's own message.
 """
-import subprocess
 import sys
 from pathlib import Path
 
@@ -50,14 +49,23 @@ def test_not_frozen_is_untouched():
     assert host_env.external_env(MEI, frozen=False) == MEI
 
 
+class _FakeProc:
+    def __init__(self, lines, code):
+        self.stdout = iter(lines)
+        self._code = code
+
+    def wait(self):
+        return self._code
+
+
 def test_ffmpeg_runs_with_the_clean_environment(monkeypatch):
     seen = {}
 
-    def fake_run(cmd, **kw):
+    def fake_popen(cmd, **kw):
         seen.update(kw)
-        return subprocess.CompletedProcess(cmd, 0, '', '')
+        return _FakeProc([], 0)
 
-    monkeypatch.setattr(movie_tools.subprocess, 'run', fake_run)
+    monkeypatch.setattr(movie_tools.subprocess, 'Popen', fake_popen)
     monkeypatch.setattr(sys, 'frozen', True, raising=False)
     monkeypatch.setenv('LD_LIBRARY_PATH', '/tmp/_MEI12345')
     monkeypatch.delenv('LD_LIBRARY_PATH_ORIG', raising=False)
@@ -67,10 +75,7 @@ def test_ffmpeg_runs_with_the_clean_environment(monkeypatch):
 
 def test_ffmpeg_failure_carries_its_message(monkeypatch):
     err = "/usr/bin/ffmpeg: libcrypto.so.3: version `OPENSSL_3.3.0' not found\n"
-
-    def fake_run(cmd, **kw):
-        raise subprocess.CalledProcessError(1, cmd, output='', stderr=err)
-
-    monkeypatch.setattr(movie_tools.subprocess, 'run', fake_run)
+    monkeypatch.setattr(movie_tools.subprocess, 'Popen',
+                        lambda cmd, **kw: _FakeProc([err], 1))
     with pytest.raises(RuntimeError, match='OPENSSL_3.3.0'):
         movie_tools._run_ffmpeg(['ffmpeg'], cwd='.', quiet=True)

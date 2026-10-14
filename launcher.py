@@ -45,6 +45,7 @@ except ImportError:
           "Or build from the terminal: python3 build.py --jp-iso <disc folder>")
     sys.exit(1)
 
+import build_progress  # noqa: E402
 import host_env  # noqa: E402
 import launcher_core as lc  # noqa: E402
 
@@ -91,6 +92,7 @@ class Launcher(tk.Tk):
         self.lines = queue.Queue()
         self.log_lines = []
         self.result = None
+        self.fraction = 0.0         # build progress, 0..1 (tools/build_progress.py)
         self.checks = {}            # disc folder -> lc.DiscCheck
         self.pictures = {}          # disc folder -> PPM bytes of its background
         self.verifying = set()      # folders being verified right now
@@ -204,8 +206,15 @@ class Launcher(tk.Tk):
     # --- disc verification + wallpaper ---------------------------------------
 
     def _busy(self, on):
+        """Show the bar: how far the build is while one runs, a bouncing
+        bar while a disc is only being checked."""
         self.canvas.itemconfigure(self.progress_item, state="normal" if on else "hidden")
-        (self.progress.start if on else self.progress.stop)(*((12,) if on else ()))
+        self.progress.stop()
+        if on and self.running:
+            self.progress.configure(mode="determinate", maximum=1.0, value=self.fraction)
+        elif on:
+            self.progress.configure(mode="indeterminate")
+            self.progress.start(12)
 
     def _verify(self, disc):
         """Check the disc content off the main thread; the verified picture
@@ -298,10 +307,18 @@ class Launcher(tk.Tk):
         self._refresh_log()
         self.build_btn.state(["disabled"])
         self.open_btn.state(["disabled"])
-        self._busy(True)
+        movie = self.movie_var.get()
+        self.fraction = 0.0
 
+        def advance(stage, done):   # runs on the build thread; the poll shows it
+            value = build_progress.overall(stage, done, movie)
+            if value is not None and value > self.fraction:
+                self.fraction = value
+
+        build_progress.set_sink(advance)
         self.running = True
-        args = lc.build_args(disc, self.movie_var.get())
+        self._busy(True)
+        args = lc.build_args(disc, movie)
         threading.Thread(target=self._run_build, args=(args,), daemon=True).start()
         self.after(100, self._poll)
 
@@ -335,6 +352,7 @@ class Launcher(tk.Tk):
             pass
         if got:
             self._refresh_log()
+        self.progress.configure(value=self.fraction)
         if done:
             self._finish()
         else:
@@ -365,6 +383,7 @@ class Launcher(tk.Tk):
 
     def _finish(self):
         code = self.code
+        build_progress.set_sink(None)
         self.running = False
         if not self.verifying:
             self._busy(False)

@@ -58,6 +58,7 @@ from byte_overlays import BYTE_OVERLAYS
 # fallback). Validated by the LANG3_NEW_FONT=1 playtest before the swap.
 import new_encoder as _new_encoder
 import d00_tools as _d00_tools
+import build_progress
 _d00_tools.TRAILING_BIGRAM_DEFAULT = True
 _D00_BIGRAM = BIGRAM_TILE_MAP
 _FNTSYS_OVERRIDE = _new_encoder.relocated_fntsys_bigram_map()
@@ -435,11 +436,13 @@ def _main(argv, cache):
 
     # -- Step 1: Read Japanese ISO --
     print('[1/7] Reading Japanese ISO...')
+    build_progress.report('prepare', 0)
     image = bytearray(jp_track01.read_bytes())
     print(f'  Track 01: {len(image):,} bytes ({len(image) // SECTOR_SIZE} sectors)')
 
     # -- Step 2: Extract key files --
     print('[2/7] Extracting game files...')
+    build_progress.report('prepare', 0.2)
     file_index = build_file_index(image)
 
     font_entry = file_index.get('LANG/FONT.BIN')
@@ -488,6 +491,7 @@ def _main(argv, cache):
 
     # -- Step 3: Generate English font (toggleable: 'font') --
     print('[3/7] Generating English font...')
+    build_progress.report('prepare', 0.4)
     if is_enabled('font'):
         new_font = generate_english_font(font_data)
         print(f'  English font: {len(new_font):,} bytes ({len(new_font) // 32} tiles)')
@@ -497,12 +501,14 @@ def _main(argv, cache):
 
     # -- Step 4: Parse D00.DAT --
     print('[4/7] Parsing D00.DAT...')
+    build_progress.report('prepare', 0.6)
     sections = parse_d00(d00_data)
     total_entries = sum(s.entry_count for s in sections)
     print(f'  {len(sections)} sections, {total_entries:,} entries total')
 
     # -- Step 5: Insert English translations (toggleable: 'scen_d00') --
     print('[5/7] Encoding English translations...')
+    build_progress.report('prepare', 0.8)
     scen_enabled = is_enabled('scen_d00')
     new_text_areas = None
     if scen_enabled:
@@ -521,6 +527,7 @@ def _main(argv, cache):
 
     # -- Step 6: Rebuild D00.DAT and patch ISO --
     print('[6/7] Rebuilding and patching ISO...')
+    build_progress.report('prepare', 1)
 
     # Collect all files to patch. Same-size patches are applied in-place
     # via patch_file_in_iso. Files that grow are deferred to rebuild_iso_batch
@@ -740,6 +747,7 @@ def _main(argv, cache):
 
     # -- Step 7: Assemble CD image --
     print('[7/7] Assembling CD image...')
+    build_progress.report('assemble', 0)
     assemble_cd_image(track01_path, jp_dir, output_cue)
 
     tracks = list(output_dir.glob('track*.bin'))

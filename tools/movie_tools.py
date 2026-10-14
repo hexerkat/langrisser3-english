@@ -31,8 +31,10 @@ import subprocess
 from pathlib import Path
 
 try:                                  # imported both as `movie_tools` and `tools.movie_tools`
+    from . import build_progress
     from .host_env import external_env
 except ImportError:
+    import build_progress
     from host_env import external_env
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -314,15 +316,28 @@ def _srt_to_pixel_ass(srt: Path) -> str:
 
 def _run_ffmpeg(cmd, cwd, quiet: bool) -> None:
     """Run ffmpeg with the user's own environment (tools/host_env.py). With
-    quiet, its messages are captured and a failure carries them, so the
-    patcher window's log says why it stopped."""
-    try:
-        subprocess.run(cmd, cwd=cwd, check=True, env=external_env(),
-                       **({'stderr': subprocess.PIPE, 'text': True} if quiet else {}))
-    except subprocess.CalledProcessError as exc:
-        detail = (exc.stderr or '').strip()
+    quiet, it reports its progress (tools/build_progress.py) and its messages
+    are kept, so a failure tells the patcher window's log why it stopped."""
+    if not quiet:
+        try:
+            subprocess.run(cmd, cwd=cwd, check=True, env=external_env())
+        except subprocess.CalledProcessError as exc:
+            raise RuntimeError('ffmpeg could not encode the opening movie') from exc
+        return
+    cmd = cmd[:-1] + ['-progress', 'pipe:1', '-nostats', cmd[-1]]
+    proc = subprocess.Popen(cmd, cwd=cwd, env=external_env(), text=True,
+                            stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    messages = []
+    for line in proc.stdout:
+        done = build_progress.ffmpeg_fraction(line, DURATION)
+        if done is not None:
+            build_progress.report('movie', done)
+        elif '=' not in line.split(' ', 1)[0]:
+            messages.append(line)
+    if proc.wait() != 0:
+        detail = ''.join(messages).strip()
         raise RuntimeError('ffmpeg could not encode the opening movie'
-                           + (':\n' + detail[-2000:] if detail else '')) from exc
+                           + (':\n' + detail[-2000:] if detail else ''))
 
 
 def build_movie_cpk(
