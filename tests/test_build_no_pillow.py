@@ -8,7 +8,9 @@ six clean build steps and then a hard crash in step 6:
 
 ...with a half-built ISO and no patch. v0.6.1 had no such step and worked, so
 the regression was ours. These tests block PIL at import time and pin that the
-title path still decodes the indexed PNG byte-identically.
+title credit is still written, and that the indexed PNG the build reads (the
+staff roll overlay, since 2026-10-14 the title credit is drawn from a JSON
+atlas instead of a PNG) decodes byte-identically.
 
 The goldens below were produced by Pillow 11 on the shipping asset, so a
 future stdlib decoder can never silently drift from what Pillow saw.
@@ -24,11 +26,11 @@ REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
 sys.path.insert(0, str(REPO / "tools"))
 
-ASSET = REPO / "assets" / "title_credit" / "title_credit_indexed.png"
+ASSET = REPO / "assets" / "staff_roll" / "staff_roll_en.png"
 
-# Pillow-produced goldens for assets/title_credit/title_credit_indexed.png.
-PIX_SHA256 = "5c563eb3b7cf330a282f3c5e8612297b0fc05787a46633dd162cf5186df4f911"
-PAL_SHA256 = "b6fd5950cc0d668984529763d67f49dd95c791596b9e1a35b7026d1bda55b980"
+# Pillow-produced goldens for assets/staff_roll/staff_roll_en.png.
+PIX_SHA256 = "d50a0540bb5dc044b38874f9e68977e20e35c0629e5eadb9a94ba821e8e5e439"
+PAL_SHA256 = "28a54ac398af84e68bb0928b6c1c87eaa15f41815fd85617549bf3158731184f"
 
 
 class _BlockPIL:
@@ -67,18 +69,23 @@ def _pix_bytes(px, w, h):
     return bytes(px[x, y] for y in range(h) for x in range(w))
 
 
-def test_indexed_png_pixels_decode_without_pillow(no_pillow):
-    """The exact call that crashed the user's build: _read_indexed_png on the
-    mandatory credit asset."""
+def test_title_credit_is_written_without_pillow(no_pillow):
+    """The step that crashed the user's build: the mandatory title credit."""
     title_dg2 = importlib.import_module("title_dg2")
-    w, h, px = title_dg2._read_indexed_png(str(ASSET))
-    assert (w, h) == (320, 224)
+    ink = title_dg2.render_credit_line("English patch 0.7.2 / Hexerkat & RalfGuth \u2022 2026")
+    assert ink
+
+
+def test_indexed_png_pixels_decode_without_pillow(no_pillow):
+    png_indexed = importlib.import_module("png_indexed")
+    w, h, px = png_indexed.read_indexed_png(str(ASSET))
+    assert (w, h) == (320, 1536)
     assert hashlib.sha256(_pix_bytes(px, w, h)).hexdigest() == PIX_SHA256
 
 
 def test_indexed_png_palette_decodes_without_pillow(no_pillow):
-    title_dg2 = importlib.import_module("title_dg2")
-    pal = title_dg2._indexed_png_palette(str(ASSET))
+    png_indexed = importlib.import_module("png_indexed")
+    pal = png_indexed.read_indexed_palette(str(ASSET))
     assert len(pal) == 256
     flat = bytes(c for rgb in pal for c in rgb)
     assert hashlib.sha256(flat).hexdigest() == PAL_SHA256

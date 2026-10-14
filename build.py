@@ -84,6 +84,7 @@ from prog4_name_cap16 import PROG4_NAME_CAP16
 from a0lang_save_name_pack import A0LANG_SAVE_NAME_PACK
 from prog4_name_trim_space import PROG4_NAME_TRIM_SPACE
 from name_check import NAME_CHECK
+import staff_roll
 from prog6_battle_cmd_width import PROG6_BATTLE_CMD_WIDTH
 from prog4_spell_name_table import PROG4_SPELL_NAME_TABLE
 from prog5_menu_geometry import PROG5_MENU_GEOMETRY
@@ -115,10 +116,17 @@ PATCHES_DIR = SCRIPT_DIR / 'patches'  # Menu/UI translation patches
 MOVIE_DIR = SCRIPT_DIR / 'assets' / 'movie'
 MOVIE_CPK = Path(os.environ.get('LANG3_MOVIE_CPK', MOVIE_DIR / 'LANG.CPK'))
 
-# Title-screen credit. assets/title_credit/title_credit_indexed.png is an indexed
-# (mode 'P') canvas whose footer rows carry the patch-author credit; the build
-# tiles them into LANG/TITLE.DG2 (tools/title_dg2.py). Absent -> JP title.
-TITLE_CREDIT_ASSET = SCRIPT_DIR / 'assets' / 'title_credit' / 'title_credit_indexed.png'
+# Title-screen credit: one line the build writes into the empty footer of the
+# JP title logo (tools/title_dg2.apply_credit_line, glyphs in
+# data/fonts/title_credit_atlas.json). {version} = the VERSION file.
+TITLE_CREDIT_TEXT = 'English patch {version} / Hexerkat & RalfGuth \u2022 2026'
+
+# English staff roll. An overlay of the English text and the rectangles it
+# replaces, pasted over the player's own LANG/STAFF.DAT (tools/staff_roll.py).
+# Made by the separate langrisser3-graphics-extractor repo. Absent -> JP roll.
+STAFF_ROLL_DIR = SCRIPT_DIR / 'assets' / 'staff_roll'
+STAFF_ROLL_OVERLAY = STAFF_ROLL_DIR / 'staff_roll_en.png'
+STAFF_ROLL_RECTS = STAFF_ROLL_DIR / 'staff_roll_en_rects.json'
 
 # Language metadata. The repo is dual-purpose: an English translation patch
 # AND a framework for producing Langrisser III patches in any language.
@@ -649,32 +657,40 @@ def main(argv=None):
         print('  LANG.CPK: [disabled] shipping JP opening')
 
     # TITLE.DG2 — MANDATORY patch-author credit. This is intentionally NOT a
-    # toggleable module: the credit is hardwired into every build. We tile the
-    # credit from assets/title_credit/title_credit_indexed.png into res0 (the title
-    # logo map res1 has empty footer rows) and write the map cells
-    # (tools/title_dg2.py). If the title file or the credit asset is missing, or the
-    # credit ends up empty, the build ABORTS — there is no path that ships a build
-    # without the credit printed into the game binary.
+    # toggleable module: the credit is hardwired into every build. The line is
+    # written from TITLE_CREDIT_TEXT and the VERSION file into the empty footer
+    # of the JP logo (tools/title_dg2.py). If the title file or the version is
+    # missing, or the credit ends up empty, the build ABORTS — there is no path
+    # that ships a build without the credit printed into the game binary.
     title_entry = file_index.get('LANG/TITLE.DG2')
     if not title_entry:
         raise RuntimeError('LANG/TITLE.DG2 not found in ISO — required for the '
                            'mandatory title-screen credit')
-    if not TITLE_CREDIT_ASSET.exists():
-        raise RuntimeError(
-            f'mandatory title credit asset missing: {TITLE_CREDIT_ASSET} — the '
-            'patch-author credit cannot be skipped; restore the asset to build')
+    version = _read_version_artifact()
+    if not version:
+        raise RuntimeError('VERSION is missing — the title credit names the version')
+    credit = TITLE_CREDIT_TEXT.format(version=version)
     jp_title = extract_file_data(image, title_entry.extent, title_entry.size)
-    new_title = title_dg2.apply_full_logo(jp_title, str(TITLE_CREDIT_ASSET))
+    new_title = title_dg2.apply_credit_line(jp_title, credit)
     credit_cells = title_dg2.footer_cell_count(new_title)
     if credit_cells == 0:
         raise RuntimeError('title credit produced an empty footer — refusing to '
                            'build without the credit printed into TITLE.DG2')
     grown_patches.append(('LANG/TITLE.DG2', new_title))
-    print(f'  TITLE.DG2 (MANDATORY credit): {title_entry.size:,} -> '
-          f'{len(new_title):,} bytes, {credit_cells} footer cells embedded')
+    print(f'  TITLE.DG2 (MANDATORY credit "{credit}"): {title_entry.size:,} -> '
+          f'{len(new_title):,} bytes, {credit_cells} footer cells')
 
-    # (The credit's grayscale palette ramp is written into TITLE.DG2's own
-    # embedded palette by apply_footer_indexed — no separate palette file.)
+    # STAFF.DAT: the English staff roll (grows, so it rides the batch).
+    staff_entry = file_index.get('LANG/STAFF.DAT')
+    if staff_entry and is_enabled('staff_roll') and STAFF_ROLL_OVERLAY.exists():
+        jp_staff = extract_file_data(image, staff_entry.extent, staff_entry.size)
+        new_staff = staff_roll.apply_overlay(jp_staff, str(STAFF_ROLL_OVERLAY),
+                                             str(STAFF_ROLL_RECTS))
+        grown_patches.append(('LANG/STAFF.DAT', new_staff))
+        print(f'  STAFF.DAT (English staff roll): {staff_entry.size:,} -> '
+              f'{len(new_staff):,} bytes')
+    elif staff_entry:
+        print('  STAFF.DAT: [disabled or no asset] shipping JP staff roll')
 
     # Batch: apply all grown patches (D00.DAT, the movie, any grown MENU_PATCHES)
     # in ascending extent order. Shifts downstream sectors and updates dir records.

@@ -37,3 +37,20 @@ of the regeneration step.
 python3 tools/font_jbm_generate.py > /tmp/eagle3_glyphs.py
 # Hand-paste the dict literals into tools/font_tools.py.
 ```
+
+## title_credit_atlas.json
+
+- **Family**: DejaVu Sans Bold (`/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf`),
+  8 px, +0.25 px tracking, white fill with a 1 px dark brown outline.
+- **License**: Bitstream Vera / DejaVu license (free to use, modify and
+  redistribute, including as bitmaps). Attribution: DejaVu fonts team.
+- **Made by**: `scripts/build_credit_atlas.py` in the separate
+  `langrisser3-graphics-extractor` repo (needs Pillow). Each glyph is stored as
+  ramp levels 0 (transparent) .. 15 (fill); level 1 is the outline color.
+
+### How it is used
+
+`tools/title_dg2.apply_credit_line` draws `build.TITLE_CREDIT_TEXT` (with the
+VERSION number) from this JSON into the empty footer of the JP title logo, and
+writes the 15 ramp colors into title palette slots 17..31. The build needs no
+Pillow and no TTF.
