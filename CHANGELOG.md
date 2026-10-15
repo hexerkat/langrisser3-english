@@ -19,6 +19,8 @@ follows [Keep a Changelog](https://keepachangelog.com/); dates are `YYYY-MM-DD`.
   of upper and lower case.
 - The staff roll after the ending is in English, drawn in a font close to the original,
   with the cast and staff names in romaji.
+- The opening that plays at the start of scenario 3 credits its staff and voice cast in
+  English, in a slanted font close to the original.
 - The title screen credit now shows the exact patch version and credits Hexerkat and
   RalfGuth.
 - The hidden sound test on the title screen lists its sounds, war cries and screams in
