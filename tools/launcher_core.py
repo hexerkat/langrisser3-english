@@ -11,14 +11,15 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
+import disc_identity
 from iso_tools import _find_jp_track, build_file_index, extract_file_data
 
 FOLDER_PREFIX = "Folder:"
 
-# Disc identity and window background in one: Tiaris from the gallery the
-# game itself ships on disc (CD-ROM extras, LANG/OMAKE). Pulling her out with
-# a good LZH CRC and this exact SHA-256 proves the folder holds the real
-# Langrisser III (Japan) data track. Read from the player's disc, never bundled.
+# The disc is identified by the SHA-256 of its whole Track 01
+# (tools/disc_identity.py). The window background comes from the gallery the
+# game itself ships on disc (CD-ROM extras, LANG/OMAKE), each picture pinned.
+# Read from the player's disc, never bundled.
 WALLPAPER_ARCHIVE = "LANG/OMAKE/GRAPHIC.LZH"
 WALLPAPER_MEMBER = "TIALISU.JPG"
 WALLPAPER_SHA256 = "1cb3d55d62eb1532a0fd1c2e8a012ec8af652c757289e26158b177cd5d41c79e"
@@ -115,17 +116,20 @@ class DiscCheck:
 
 
 def verify_disc(disc_dir: Path, choose=None) -> DiscCheck:
-    """File names first (fast), then the content: the gallery picture must
-    come out of Track 01 intact and be the one this game ships. The returned
-    picture is the background, `choose`n among WALLPAPERS (random by default);
-    a chosen picture that does not match its pin falls back to Tiaris."""
+    """File names first (fast), then the content: Track 01 must be the exact
+    disc the patch is made for (its SHA-256). The gallery picture is the
+    background, `choose`n among WALLPAPERS (random by default); a chosen
+    picture that does not match its pin falls back to Tiaris."""
     import random
     import lzh
     ok, msg = check_disc_dir(Path(disc_dir))
     if not ok:
         return DiscCheck(False, msg)
+    track = _find_jp_track(Path(disc_dir), 1)
     try:
-        img = bytearray(_find_jp_track(Path(disc_dir), 1).read_bytes())
+        if not disc_identity.is_supported(track):
+            return DiscCheck(False, disc_identity.WRONG_DISC)
+        img = bytearray(track.read_bytes())
         entry = build_file_index(img).get(WALLPAPER_ARCHIVE)
         if entry is None:
             return DiscCheck(False, NOT_VERIFIED)

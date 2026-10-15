@@ -59,6 +59,7 @@ from byte_overlays import BYTE_OVERLAYS
 import new_encoder as _new_encoder
 import d00_tools as _d00_tools
 import build_progress
+import disc_identity
 _d00_tools.TRAILING_BIGRAM_DEFAULT = True
 _D00_BIGRAM = BIGRAM_TILE_MAP
 _FNTSYS_OVERRIDE = _new_encoder.relocated_fntsys_bigram_map()
@@ -415,6 +416,12 @@ def _main(argv, cache):
     if not jp_track01 or not jp_track01.exists():
         print(f'ERROR: No Track 01 .bin found in: {jp_dir}')
         print(f'  Expected a .bin file like "Langrisser III (Japan) (Track 01).bin"')
+        return 1
+
+    if not disc_identity.is_supported(jp_track01):
+        print(f'ERROR: {disc_identity.WRONG_DISC}')
+        print(f'  Track 01: {jp_track01.name}')
+        print(f'  SHA-256 expected: {disc_identity.TRACK01_SHA256}')
         return 1
 
     if not SCRIPTS_DIR.exists():
