@@ -51,9 +51,10 @@ def test_overall_runs_from_zero_to_one_in_stage_order(movie):
     assert values == sorted(values)
 
 
-def test_shift_owns_most_of_the_bar_without_a_movie():
-    lo, hi = bp.overall('shift', 0, False), bp.overall('shift', 1, False)
-    assert hi - lo > .9
+def test_the_movie_owns_most_of_the_bar():
+    """The encode takes minutes; everything else, seconds."""
+    lo, hi = bp.overall('movie', 0, True), bp.overall('movie', 1, True)
+    assert hi - lo > .95
 
 
 def test_movie_report_without_a_movie_build_is_ignored():

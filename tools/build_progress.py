@@ -5,18 +5,19 @@ the patcher installs a sink with `set_sink` and turns each report into one
 0..1 value with `overall`. With no sink (command-line builds) reports cost
 nothing.
 
-Stages, in order: prepare (steps 1-6 start, seconds), movie (the ffmpeg
-encode, only with --encode-movie), shift (the sector shifts of
-`iso_tools.rebuild_iso_batch`, minutes), assemble (step 7). The spans are
-measured shares of a build's time, rounded.
+Stages, in order: prepare (steps 1-6 start), movie (the ffmpeg encode,
+only with --encode-movie), shift (the sector shifts of
+`iso_tools.rebuild_iso_batch`), assemble (step 7). The spans are measured
+shares of a build's time, rounded (2026-10-15: about 300 s of movie, and
+3 s for everything else).
 """
 from __future__ import annotations
 
 SPANS = {
-    True: {'prepare': (0.0, 0.02), 'movie': (0.02, 0.60),
-           'shift': (0.60, 0.98), 'assemble': (0.98, 1.0)},
-    False: {'prepare': (0.0, 0.02), 'shift': (0.02, 0.98),
-            'assemble': (0.98, 1.0)},
+    True: {'prepare': (0.0, 0.005), 'movie': (0.005, 0.99),
+           'shift': (0.99, 0.995), 'assemble': (0.995, 1.0)},
+    False: {'prepare': (0.0, 0.4), 'shift': (0.4, 0.75),
+            'assemble': (0.75, 1.0)},
 }
 
 _sink = None
