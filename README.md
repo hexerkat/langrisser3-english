@@ -51,7 +51,7 @@ Nothing to install, no Python, no terminal.
    - **Linux**: `Langrisser3-Patcher-linux.tar.gz` (extract it first)
 2. **Open it.** Windows may say it protected your PC, because the patcher is not signed. Click **More info**, then **Run anyway**.
 3. **Choose your Japanese disc folder** with **Browse…**. The patcher checks that it really is the Langrisser III disc. When it is, a character from the disc's own art gallery shows up behind the window.
-4. **Press Build patched game.** It takes a few minutes. When it finishes, **Open folder** shows the patched game, in a `build/` folder next to the patcher.
+4. **Press Build patched game.** It takes a few seconds, or about five minutes with the English opening movie. When it finishes, **Open folder** shows the patched game, in a `build/` folder next to the patcher.
 5. **Load the `.cue`** from that folder in your emulator and play.
 
 The English opening movie option needs [ffmpeg](https://ffmpeg.org/download.html) installed. Without it the game keeps the Japanese opening.

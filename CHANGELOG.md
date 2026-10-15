@@ -33,6 +33,8 @@ follows [Keep a Changelog](https://keepachangelog.com/); dates are `YYYY-MM-DD`.
 - Labels on the field screens sit in boxes sized to their text.
 - Messages the game builds from a name and an item or a stat now put an arrow after the
   name ("Diehärte→Healing Herb was used!") instead of an "'s" glued to the next word.
+- Building the patched game takes a few seconds instead of about three minutes. The
+  English opening movie still takes about five minutes to encode, at full quality.
 
 ### Fixed
 - Spaces at the end of a typed name are dropped, and a name made only of spaces counts as
@@ -42,6 +44,9 @@ follows [Keep a Changelog](https://keepachangelog.com/); dates are `YYYY-MM-DD`.
   words together.
 - A line from Tiaris in scenario 5 now warns that the citizens will be caught, as in the
   Japanese.
+- The disc image now carries the standard error correction data on every sector the
+  patch writes. Before, those sectors had wrong correction data, which emulators ignore
+  but a real Saturn reading a burned disc may not.
 
 ## [0.7.2] - 2026-08-24
 
