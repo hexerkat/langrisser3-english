@@ -44,6 +44,9 @@ follows [Keep a Changelog](https://keepachangelog.com/); dates are `YYYY-MM-DD`.
   words together.
 - A line from Tiaris in scenario 5 now warns that the citizens will be caught, as in the
   Japanese.
+- The patcher and the build now check the whole data track of your disc and refuse any
+  version but the one the patch is made for (Redump 3M or 1M). The 7M disc is a later
+  revision of the game, and a patched 7M disc froze on the first button press.
 - The disc image now carries the standard error correction data on every sector the
   patch writes. Before, those sectors had wrong correction data, which emulators ignore
   but a real Saturn reading a burned disc may not.
