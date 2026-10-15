@@ -84,6 +84,7 @@ from prog4_name_cap16 import PROG4_NAME_CAP16
 from a0lang_save_name_pack import A0LANG_SAVE_NAME_PACK
 from prog4_name_trim_space import PROG4_NAME_TRIM_SPACE
 from name_check import NAME_CHECK
+import ops_captions
 import staff_roll
 from prog6_battle_cmd_width import PROG6_BATTLE_CMD_WIDTH
 from prog4_spell_name_table import PROG4_SPELL_NAME_TABLE
@@ -128,6 +129,11 @@ TITLE_CREDIT_TEXT = 'English patch {version} / Hexerkat & RalfGuth \u2022 2026'
 STAFF_ROLL_DIR = SCRIPT_DIR / 'assets' / 'staff_roll'
 STAFF_ROLL_OVERLAY = STAFF_ROLL_DIR / 'staff_roll_en.png'
 STAFF_ROLL_RECTS = STAFF_ROLL_DIR / 'staff_roll_en_rects.json'
+
+# English opening captions (staff and cast over the portraits): both caption
+# blocks of LANG/OPS.DAT plus their widths in PROG_2 (tools/ops_captions.py).
+# Made by the separate langrisser3-graphics-extractor repo. Absent -> JP.
+OPS_CAPTIONS_DIR = SCRIPT_DIR / 'assets' / 'ops_captions'
 
 # Language metadata. The repo is dual-purpose: an English translation patch
 # AND a framework for producing Langrisser III patches in any language.
@@ -539,6 +545,11 @@ def main(argv=None):
     # Our own engine byte-patches over JP — one module per patched concern, each
     # independently toggleable by name via patch_registry (see ENGINE_MODULE_DICTS).
     engine = engine_overlays()
+    # The opening captions' widths ride with their OPS.DAT blocks (one toggle).
+    ops_on = is_enabled('ops_captions') and (OPS_CAPTIONS_DIR / 'ops_captions_en.json').exists()
+    if ops_on:
+        for path, edits in ops_captions.prog2_edits(OPS_CAPTIONS_DIR).items():
+            engine.setdefault(path, []).extend(edits)
     overlay_paths = list(BYTE_OVERLAYS.keys())
     for src in (encoded, engine):
         for p in src:
@@ -693,6 +704,17 @@ def main(argv=None):
               f'{len(new_staff):,} bytes')
     elif staff_entry:
         print('  STAFF.DAT: [disabled or no asset] shipping JP staff roll')
+
+    # OPS.DAT: the English opening captions (never larger than the JP file).
+    ops_entry = file_index.get('LANG/OPS.DAT')
+    if ops_entry and ops_on:
+        jp_ops = extract_file_data(image, ops_entry.extent, ops_entry.size)
+        new_ops = ops_captions.apply(jp_ops, OPS_CAPTIONS_DIR)
+        grown_patches.append(('LANG/OPS.DAT', new_ops))
+        print(f'  OPS.DAT (English opening captions): {ops_entry.size:,} -> '
+              f'{len(new_ops):,} bytes')
+    elif ops_entry:
+        print('  OPS.DAT: [disabled or no asset] shipping JP opening captions')
 
     # Batch: apply all grown patches (D00.DAT, the movie, any grown MENU_PATCHES)
     # in ascending extent order. Shifts downstream sectors and updates dir records.
