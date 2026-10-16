@@ -2,9 +2,13 @@
 # attaches both to the GitHub release that triggered it.
 name: patcher-binaries
 
+# A push to an rc/** branch builds a release candidate (or a test build): the
+# executables stay as artifacts of the run, nothing is attached or published.
 on:
   release:
     types: [published]
+  push:
+    branches: ['rc/**']
   workflow_dispatch:
 
 permissions:
@@ -30,6 +34,11 @@ jobs:
       - run: pip install pyinstaller==6.22.3 pytest
       - run: python -m pytest -q tests/test_launcher_core.py tests/test_lzh.py tests/test_jpeg_baseline.py
       - run: python -c "import tkinter"
+      - name: Mark the build channel (release, rc or test)
+        shell: bash
+        run: |
+          python tools/build_version.py > BUILD_CHANNEL
+          echo "channel: $(cat BUILD_CHANNEL)"
       - run: pyinstaller --noconfirm launcher.spec
       - name: Package
         shell: bash

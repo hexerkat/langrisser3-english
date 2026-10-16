@@ -10,13 +10,26 @@ import math
 import struct
 from pathlib import Path
 
+try:                                  # imported both as `iso_tools` and `tools.iso_tools`
+    from . import build_progress
+except ImportError:
+    import build_progress
+
 SECTOR_SIZE = 2352
 USER_OFFSET = 16
 USER_SIZE = 2048
 
 
 # ---------------------------------------------------------------------------
-# EDC / ECC calculation for Mode 2 Form 1 sectors
+# EDC / ECC of a Mode 1/2352 sector (ECMA-130 annex A and B)
+#
+#   0-11 sync, 12-15 header (BCD min, sec, frame, mode), 16-2063 user data,
+#   2064-2067 EDC, 2068-2075 zero, 2076-2247 P parity, 2248-2351 Q parity.
+#
+# Checked against the JP disc's own sectors (tests/test_iso_sector_checksums.py).
+# Both codes are linear, which makes them fast in plain Python: the EDC of a
+# moved sector is updated from the three header bytes that change, and each
+# parity is a few whole-row byte maps (bytes.translate) XORed together.
 # ---------------------------------------------------------------------------
 
 def _build_edc_table():
@@ -34,88 +47,160 @@ def _build_edc_table():
 _EDC_TABLE = _build_edc_table()
 
 
+
+def _build_edc_table16(t8):
+    """Two bytes per step: entry x = the EDC step for the 16-bit value x."""
+    out = []
+    for x in range(65536):
+        c = t8[x & 0xFF]
+        out.append((c >> 8) ^ t8[(c ^ (x >> 8)) & 0xFF])
+    return out
+
+
+_EDC_TABLE16 = None
+
+
 def compute_edc(data: bytes) -> int:
+    global _EDC_TABLE16
+    if _EDC_TABLE16 is None:
+        _EDC_TABLE16 = _build_edc_table16(_EDC_TABLE)
+    t16 = _EDC_TABLE16
     edc = 0
-    for b in data:
+    n = len(data) & ~1
+    for w in struct.unpack_from(f'<{n // 2}H', data):
+        edc = (edc >> 16) ^ t16[(edc ^ w) & 0xFFFF]
+    for b in data[n:]:
         edc = (edc >> 8) ^ _EDC_TABLE[(edc ^ b) & 0xFF]
     return edc
 
 
-def compute_ecc_block(data: bytes, major_count: int, minor_count: int,
-                      major_mult: int, minor_inc: int) -> bytes:
-    result = bytearray(major_count * 2)
-    for j in range(2):
-        for i in range(major_count):
-            a = 0
-            b = 0
-            for k in range(minor_count):
-                idx = (i * major_mult + k * minor_inc) % (minor_count * major_mult)
-                if idx < len(data):
-                    val = data[idx]
-                else:
-                    val = 0
-                a ^= val
-                b ^= val
-                a = ((a << 1) ^ (0x11D if a & 0x80 else 0)) & 0xFF
-            result[i * 2 + j] = a ^ b
-            # Shift to odd bytes on second pass
-        data = bytes([data[k] if k < len(data) else 0 for k in range(1, len(data) + 1)])
-    return bytes(result)
+def _gf_mul(a: int, b: int) -> int:
+    """Multiply in GF(2^8) with the CD polynomial x^8+x^4+x^3+x^2+1."""
+    r = 0
+    while b:
+        if b & 1:
+            r ^= a
+        a = ((a << 1) ^ (0x11D if a & 0x80 else 0)) & 0xFF
+        b >>= 1
+    return r
+
+
+_GF_MUL = [bytes(_gf_mul(c, x) for x in range(256)) for c in range(256)]
+_GF_POW2 = [1]
+for _ in range(64):
+    _GF_POW2.append(_gf_mul(_GF_POW2[-1], 2))
+_GF_INV3 = next(x for x in range(256) if _gf_mul(x, 3) == 1)
+
+
+def _parity_plan(major_count, minor_count, major_mult, minor_inc):
+    """For each minor step k: a gather of one byte per parity vector (the
+    k-th byte of every vector), and the weight 2^(minor_count+1-k)."""
+    from operator import itemgetter
+    size = major_count * minor_count
+    starts = [(m >> 1) * major_mult + (m & 1) for m in range(major_count)]
+    plan = []
+    for k in range(minor_count):
+        idx = [(st + k * minor_inc) % size for st in starts]
+        plan.append((itemgetter(*idx), _GF_MUL[_GF_POW2[minor_count + 1 - k]]))
+    return plan
+
+
+_P_PLAN = _parity_plan(86, 24, 2, 86)
+_Q_PLAN = _parity_plan(52, 43, 86, 88)
+
+
+def _parity(src: bytes, plan) -> bytes:
+    """ECMA-130 parity of `src` (from the header byte on): for vector m with
+    bytes t_k, a = sum t_k 2^(n+1-k), b = xor t_k, p = (a ^ b) / 3; the
+    vector's two parity bytes are p and p ^ b."""
+    n = len(plan[0][0](src))
+    a = b = 0
+    for gather, weight in plan:
+        row = bytes(gather(src))
+        b ^= int.from_bytes(row, 'big')
+        a ^= int.from_bytes(row.translate(weight), 'big')
+    p = (a ^ b).to_bytes(n, 'big').translate(_GF_MUL[_GF_INV3])
+    return p + (int.from_bytes(p, 'big') ^ b).to_bytes(n, 'big')
+
+
+def _write_ecc(sector: bytearray) -> None:
+    sector[2068:2076] = bytes(8)
+    sector[2076:2248] = _parity(bytes(sector[12:2076]), _P_PLAN)
+    sector[2248:2352] = _parity(bytes(sector[12:2248]), _Q_PLAN)
 
 
 def rewrite_sector_edc_ecc(sector: bytearray) -> None:
     """Recalculate EDC and ECC for a Mode 1/2352 sector in-place."""
-    # Mode 1 layout:
-    #   0-11: sync pattern
-    #   12-15: header (min, sec, frac, mode)
-    #   16-2063: user data (2048 bytes)
-    #   2064-2067: EDC
-    #   2068-2075: reserved (zeros)
-    #   2076-2247: P parity (172 bytes)
-    #   2248-2351: Q parity (104 bytes)
+    struct.pack_into('<I', sector, 2064, compute_edc(bytes(sector[:2064])))
+    _write_ecc(sector)
 
-    # EDC over bytes 0..2063
-    edc = compute_edc(bytes(sector[:2064]))
-    struct.pack_into('<I', sector, 2064, edc)
 
-    # Reserved zeros
-    sector[2068:2076] = b'\x00' * 8
+def _edc_of_one_byte(pos: int, value: int) -> int:
+    """EDC of a sector-long run of zeros with `value` at `pos`."""
+    edc = _EDC_TABLE[value]
+    for _ in range(2064 - pos - 1):
+        edc = (edc >> 8) ^ _EDC_TABLE[edc & 0xFF]
+    return edc
 
-    # P parity: 86 vectors of 24 bytes
-    p_data = bytes(sector[12:2076])
-    p_result = bytearray(172)
-    for i in range(86):
-        a0, a1 = 0, 0
-        for j in range(24):
-            idx = i + j * 86
-            if idx < len(p_data):
-                val = p_data[idx]
-            else:
-                val = 0
-            a0 ^= val
-            a1 ^= val
-            a0 = ((a0 << 1) ^ (0x11D if a0 & 0x80 else 0)) & 0xFF
-        p_result[2 * i] = a0 ^ a1
-        p_result[2 * i + 1] = a0
-    sector[2076:2248] = p_result
 
-    # Q parity: 52 vectors of 43 bytes
-    q_data = bytes(sector[12:2248])
-    q_result = bytearray(104)
-    for i in range(52):
-        a0, a1 = 0, 0
-        for j in range(43):
-            idx = (i + j * 52) % (43 * 52)
-            if idx < len(q_data):
-                val = q_data[idx]
-            else:
-                val = 0
-            a0 ^= val
-            a1 ^= val
-            a0 = ((a0 << 1) ^ (0x11D if a0 & 0x80 else 0)) & 0xFF
-        q_result[2 * i] = a0 ^ a1
-        q_result[2 * i + 1] = a0
-    sector[2248:2352] = q_result
+def _edc_header_tables():
+    """EDC contribution of each value of header bytes 12, 13 and 14 (the
+    EDC is linear: one bit at a time, then every byte value)."""
+    tables = []
+    for pos in (12, 13, 14):
+        bits = [_edc_of_one_byte(pos, 1 << i) for i in range(8)]
+        row = [0] * 256
+        for v in range(1, 256):
+            low = v & -v
+            row[v] = row[v ^ low] ^ bits[low.bit_length() - 1]
+        tables.append(row)
+    return tables
+
+
+_EDC_HEADER = None
+_ECC_BASIS = None
+
+
+def _ecc_basis():
+    """P and Q parity (bytes 2076-2351) of a zero sector holding 1 at each
+    byte a move changes: header 12-14 and EDC 2064-2067. The parity is
+    linear over GF(2^8), so value v there adds this basis times v."""
+    basis = {}
+    for pos in (12, 13, 14, 2064, 2065, 2066, 2067):
+        unit = bytearray(SECTOR_SIZE)
+        unit[pos] = 1
+        _write_ecc(unit)
+        basis[pos] = bytes(unit[2076:])
+    return basis
+
+
+def _msf(lba: int) -> bytes:
+    """BCD minute, second, frame of a Track 01 sector (2 s lead-in)."""
+    a = lba + 150
+    m, s, f = a // 4500, (a // 75) % 60, a % 75
+    return bytes(((m // 10) << 4 | m % 10, (s // 10) << 4 | s % 10,
+                  (f // 10) << 4 | f % 10))
+
+
+def move_sector(raw: bytes, new_lba: int) -> bytes:
+    """`raw` (a Mode 1 sector with a valid EDC) re-addressed to `new_lba`:
+    the same bytes `_make_sector` writes for its user data there."""
+    global _EDC_HEADER, _ECC_BASIS
+    if _EDC_HEADER is None:
+        _EDC_HEADER, _ECC_BASIS = _edc_header_tables(), _ecc_basis()
+    msf = _msf(new_lba)
+    old_edc = raw[2064:2068]
+    edc = int.from_bytes(old_edc, 'little')
+    for t, old, new in zip(_EDC_HEADER, raw[12:15], msf):
+        edc ^= t[old ^ new]
+    new_edc = edc.to_bytes(4, 'little')
+    parity = int.from_bytes(raw[2076:], 'big')
+    for pos, old, new in zip((12, 13, 14, 2064, 2065, 2066, 2067),
+                             raw[12:15] + old_edc, msf + new_edc):
+        if old != new:
+            parity ^= int.from_bytes(_ECC_BASIS[pos].translate(_GF_MUL[old ^ new]), 'big')
+    return (raw[:12] + msf + raw[15:2064] + new_edc + raw[2068:2076]
+            + parity.to_bytes(SECTOR_SIZE - 2076, 'big'))
 
 
 # ---------------------------------------------------------------------------
@@ -333,19 +418,29 @@ def rebuild_iso_inorder(image: bytearray, file_index: dict,
     return rebuild_iso_batch(image, file_index, [(target_path, new_data)])
 
 
+def _write_record(image: bytearray, record_offset: int, extent: int, size: int) -> None:
+    """Extent and size fields of a directory record, without the checksum
+    (the caller rewrites each touched sector once)."""
+    image[record_offset + 2:record_offset + 18] = (
+        struct.pack('<I', extent) + struct.pack('>I', extent)
+        + struct.pack('<I', size) + struct.pack('>I', size))
+
+
 def rebuild_iso_batch(image: bytearray, file_index: dict,
                       patches: list) -> bytearray:
     """Rebuild ISO applying multiple patches, shifting subsequent files as
     needed per grown file.
 
-    patches: list of (path, new_data) tuples. Processed in ascending extent
-    order; after each grown file, downstream extents are recomputed and the
-    in-memory file_index is updated.
+    patches: list of (path, new_data) tuples.
 
     For each target:
       - if new_data <= old sectors: patched in place, no shift
-      - if new_data > old sectors: inserted at original extent, all sectors
-        beyond it shifted +delta, MSF headers rewritten, dir records updated
+      - if new_data > old sectors: inserted at its extent, and every sector
+        beyond it moves +delta (MSF header and checksum rewritten), dir
+        records updated
+
+    One pass: each sector moves once, by the sum of the deltas of the grown
+    files before it, however many files grow.
 
     This works because (per audit): no SH-2 binary in Langrisser 3 has
     hardcoded file LBAs. All file access is via ISO9660 directory lookup,
@@ -353,84 +448,86 @@ def rebuild_iso_batch(image: bytearray, file_index: dict,
 
     Returns a new image bytearray.
     """
-    result = bytearray(image)
-    # Working copy of file_index we mutate as shifts accumulate
-    work_index = {p: ISOEntry(e.path, e.extent, e.size, e.is_dir, e.record_offset)
-                  for p, e in file_index.items()}
+    src = bytearray(image)
+    index = {p: ISOEntry(e.path, e.extent, e.size, e.is_dir, e.record_offset)
+             for p, e in file_index.items()}
 
-    # Sort targets by current (possibly-shifted) extent ascending
-    def current_extent(path):
-        return work_index[path].extent
+    def sectors(n):
+        return math.ceil(n / USER_SIZE)
 
-    pending = sorted(patches, key=lambda p: current_extent(p[0]))
-    total_delta = 0
-    shifted_total = 0
+    # In-place patches go into the source first; they move with the rest.
+    grown = []          # (extent, old sectors, path, data), by extent
+    for path, data in patches:
+        e = index[path]
+        if sectors(len(data)) <= sectors(e.size):
+            write_file_data(src, e.extent, data, e.size)
+            e.size = len(data)
+        else:
+            grown.append((e.extent, sectors(e.size), path, data))
+    grown.sort()
 
-    for target_path, new_data in pending:
-        target = work_index[target_path]
-        old_sectors = math.ceil(target.size / USER_SIZE)
-        new_sectors = math.ceil(len(new_data) / USER_SIZE)
-        delta = new_sectors - old_sectors
+    total = len(src) // SECTOR_SIZE
+    starts = [ext + old for ext, old, _, _ in grown]   # first sector that moves
 
-        if delta <= 0:
-            # Fits in place
-            write_file_data(result, target.extent, new_data, target.size)
-            update_dir_record_size(result, target.record_offset, len(new_data))
-            target.size = len(new_data)
-            continue
+    def moved_by(lba):
+        """Shift of the original sector `lba` (sum of deltas before it)."""
+        return sum(sectors(len(d)) - old
+                   for (_, old, _, d), st in zip(grown, starts) if lba >= st)
 
-        shift_start = target.extent + old_sectors
-        total_old_sectors = len(result) // SECTOR_SIZE
+    # Progress (tools/build_progress.py): every sector after the first grown
+    # file moves once, except the old sectors of the later grown files.
+    work = (total - starts[0] - sum(old for _, old, _, _ in grown[1:])) if grown else 0
+    step = max(64, work // 100)
+    moved = 0
 
-        # Rebuild: keep sectors [0..target.extent-1], write new data at
-        # target.extent, then shift sectors [shift_start..end] by +delta
-        prefix = bytes(result[:target.extent * SECTOR_SIZE])
-        new_result = bytearray(prefix)
+    out = bytearray()
+    pos = shift = 0
+    for (extent, old, path, data), start in zip(grown + [(total, 0, None, b'')],
+                                                starts + [total]):
+        for lba in range(pos, extent):
+            raw = bytes(src[lba * SECTOR_SIZE:(lba + 1) * SECTOR_SIZE])
+            if shift:
+                out += move_sector(raw, lba + shift)
+                moved += 1
+                if moved % step == 0:
+                    build_progress.report('shift', moved / work)
+            else:
+                out += raw
+        if path is None:
+            break
+        for s in range(sectors(len(data))):
+            out += _make_sector(extent + shift + s,
+                                data[s * USER_SIZE:(s + 1) * USER_SIZE])
+        index[path].size = len(data)
+        pos = start
+        shift += sectors(len(data)) - old
 
-        for s in range(new_sectors):
-            chunk_start = s * USER_SIZE
-            chunk_end = min(chunk_start + USER_SIZE, len(new_data))
-            new_result.extend(_make_sector(
-                target.extent + s, new_data[chunk_start:chunk_end]))
+    # Directory records: final extent and size, one checksum per sector.
+    touched = set()
+    for path, e in index.items():
+        new_extent = e.extent + moved_by(e.extent)
+        if (new_extent, e.size) != (file_index[path].extent, file_index[path].size):
+            rec_lba = e.record_offset // SECTOR_SIZE
+            rec = e.record_offset + moved_by(rec_lba) * SECTOR_SIZE
+            _write_record(out, rec, new_extent, e.size)
+            touched.add(rec // SECTOR_SIZE)
+    for lba in touched:
+        sector = out[lba * SECTOR_SIZE:(lba + 1) * SECTOR_SIZE]
+        rewrite_sector_edc_ecc(sector)
+        out[lba * SECTOR_SIZE:(lba + 1) * SECTOR_SIZE] = sector
 
-        for old_idx in range(shift_start, total_old_sectors):
-            old_start = old_idx * SECTOR_SIZE
-            sector = bytearray(result[old_start:old_start + SECTOR_SIZE])
-            new_idx = old_idx + delta
-            abs_sector = new_idx + 150
-            m = abs_sector // (75 * 60)
-            s = (abs_sector // 75) % 60
-            f = abs_sector % 75
-            sector[12] = (m // 10) * 16 + (m % 10)
-            sector[13] = (s // 10) * 16 + (s % 10)
-            sector[14] = (f // 10) * 16 + (f % 10)
-            rewrite_sector_edc_ecc(sector)
-            new_result.extend(sector)
-
-        # Update target dir record: size only (extent unchanged)
-        update_dir_record_size(new_result, target.record_offset, len(new_data))
-        target.size = len(new_data)
-
-        # All entries with extent >= shift_start: shift +delta.
-        # Includes Track 2 ADPCM dir records (Track 1/2 LBA coupling).
-        shifted = 0
-        for path, entry in work_index.items():
-            if entry.extent >= shift_start:
-                entry.extent += delta
-                update_dir_record_extent(
-                    new_result, entry.record_offset, entry.extent, entry.size)
-                shifted += 1
-
-        result = new_result
-        total_delta += delta
-        shifted_total += shifted
-        print(f'  +{delta}s shift for {target_path}: '
-              f'{shifted} entries repointed')
-
-    if total_delta:
-        print(f'  ISO rebuild batch: +{total_delta} total sectors, '
-              f'{shifted_total} cumulative entry updates')
-    return result
+    cumulative = 0
+    for (_, old, path, data), start in zip(grown, starts):
+        repointed = sum(1 for e in file_index.values() if e.extent >= start)
+        cumulative += repointed
+        print(f'  +{sectors(len(data)) - old}s shift for {path}: '
+              f'{repointed} entries repointed')
+    if work:
+        build_progress.report('shift', 1.0)
+    if shift:
+        print(f'  ISO rebuild batch: +{shift} total sectors, '
+              f'{cumulative} cumulative entry updates')
+    return out
 
 
 JP_TRACK01_SECTORS = 32780  # Original JP Track 1 size; Track 2 starts here.

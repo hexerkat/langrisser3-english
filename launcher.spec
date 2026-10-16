@@ -14,6 +14,10 @@ tracked = subprocess.run(["git", "ls-files", "-z", *DATA_DIRS, "VERSION", "build
                          capture_output=True, check=True).stdout.decode().split("\0")
 datas = [(f, str(Path(f).parent)) for f in tracked
          if f and not f.startswith("tools/research/")]
+# The CI writes BUILD_CHANNEL (tools/build_version.py) before packaging: the
+# channel of this build, shown after the version number. Absent = a release.
+if Path("BUILD_CHANNEL").exists():
+    datas.append(("BUILD_CHANNEL", "."))
 SOURCE_SHIPPED = {Path(f).resolve() for f in tracked if f.endswith(".py")}
 
 a = Analysis(

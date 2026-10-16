@@ -1,5 +1,7 @@
 # Build artifacts
 build/
+# Written by the CI before packaging the patcher (tools/build_version.py)
+BUILD_CHANNEL
 
 # JP baseline cache (extracted by build.py from the JP ISO; consumed
 # by tests + audit tools; regenerable; never committed)

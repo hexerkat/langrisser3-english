@@ -30,6 +30,13 @@ import struct
 import subprocess
 from pathlib import Path
 
+try:                                  # imported both as `movie_tools` and `tools.movie_tools`
+    from . import build_progress
+    from .host_env import external_env
+except ImportError:
+    import build_progress
+    from host_env import external_env
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
 # --- engine-fixed facts (do not change without re-checking the Saturn player) --
@@ -307,6 +314,32 @@ def _srt_to_pixel_ass(srt: Path) -> str:
     return head + body + "\n"
 
 
+def _run_ffmpeg(cmd, cwd, quiet: bool) -> None:
+    """Run ffmpeg with the user's own environment (tools/host_env.py). With
+    quiet, it reports its progress (tools/build_progress.py) and its messages
+    are kept, so a failure tells the patcher window's log why it stopped."""
+    if not quiet:
+        try:
+            subprocess.run(cmd, cwd=cwd, check=True, env=external_env())
+        except subprocess.CalledProcessError as exc:
+            raise RuntimeError('ffmpeg could not encode the opening movie') from exc
+        return
+    cmd = cmd[:-1] + ['-progress', 'pipe:1', '-nostats', cmd[-1]]
+    proc = subprocess.Popen(cmd, cwd=cwd, env=external_env(), text=True,
+                            stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    messages = []
+    for line in proc.stdout:
+        done = build_progress.ffmpeg_fraction(line, DURATION)
+        if done is not None:
+            build_progress.report('movie', done)
+        elif '=' not in line.split(' ', 1)[0]:
+            messages.append(line)
+    if proc.wait() != 0:
+        detail = ''.join(messages).strip()
+        raise RuntimeError('ffmpeg could not encode the opening movie'
+                           + (':\n' + detail[-2000:] if detail else ''))
+
+
 def build_movie_cpk(
     source: Path,
     srt: Path,
@@ -370,7 +403,7 @@ def build_movie_cpk(
         "-f", "film_cpk",
         str(ffmpeg_out.resolve()),
     ]
-    subprocess.run(cmd, cwd=cwd, check=True)
+    _run_ffmpeg(cmd, cwd=cwd, quiet=quiet)
 
     # Re-wrap into the JP-exact container. Only the native 15fps cadence maps
     # onto the JP sample table; other framerates keep ffmpeg's layout (which is

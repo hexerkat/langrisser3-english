@@ -32,15 +32,15 @@ You need **your own Japanese *Langrisser III* disc image**: a folder with a `.cu
 
 ### Source ISO
 
-The patch is built and tested against the Redump "3M" variant of the Japanese disc. Check your Track 01 (the data track, where all game files live) with `sha256sum`:
+The patch needs the Redump "3M" dump of the Japanese disc (the "1M" dump has the same data). Check your Track 01 (the data track, where all game files live) with `sha256sum`:
 
 ```
 SHA-256: 557bfaaa37dc11b6190c46dca8841bc252dfe9f1b3ba8b77ff242843b2bff4c8
 File:    Langrisser III (Japan) (3M) (Track 01).bin
-Size:    77,178,624 bytes (32,815 sectors × 2,352 bytes)
+Size:    77,098,560 bytes (32,780 sectors × 2,352 bytes)
 ```
 
-Other Redump variants of the same Japanese disc are accepted by the build, but only (3M) is regression-tested : a different hash may still work, unverified.
+The patcher and `build.py` refuse any other Track 01. The "7M" dump is Rev A, a later revision with different program files: the patch does not support it.
 
 ### Easiest: the patcher (Windows and Linux)
 
@@ -50,8 +50,8 @@ Nothing to install, no Python, no terminal.
    - **Windows**: `Langrisser3-Patcher-windows.exe`
    - **Linux**: `Langrisser3-Patcher-linux.tar.gz` (extract it first)
 2. **Open it.** Windows may say it protected your PC, because the patcher is not signed. Click **More info**, then **Run anyway**.
-3. **Choose your Japanese disc folder** with **Browse…**. The patcher checks that it really is the Langrisser III disc. When it is, Tiaris shows up behind the window.
-4. **Press Build patched game.** It takes a few minutes. When it finishes, **Open folder** shows the patched game, in a `build/` folder next to the patcher.
+3. **Choose your Japanese disc folder** with **Browse…**. The patcher checks that it really is the Langrisser III disc. When it is, a character from the disc's own art gallery shows up behind the window.
+4. **Press Build patched game.** It takes a few seconds, or about five minutes with the English opening movie. When it finishes, **Open folder** shows the patched game, in a `build/` folder next to the patcher.
 5. **Load the `.cue`** from that folder in your emulator and play.
 
 The English opening movie option needs [ffmpeg](https://ffmpeg.org/download.html) installed. Without it the game keeps the Japanese opening.

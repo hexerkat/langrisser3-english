@@ -23,6 +23,7 @@ Output (a self-contained folder named after the .cue):
         track01.bin ... track22.bin
 """
 
+import contextlib
 import os
 import shutil
 import sys
@@ -57,6 +58,8 @@ from byte_overlays import BYTE_OVERLAYS
 # fallback). Validated by the LANG3_NEW_FONT=1 playtest before the swap.
 import new_encoder as _new_encoder
 import d00_tools as _d00_tools
+import build_progress
+import disc_identity
 _d00_tools.TRAILING_BIGRAM_DEFAULT = True
 _D00_BIGRAM = BIGRAM_TILE_MAP
 _FNTSYS_OVERRIDE = _new_encoder.relocated_fntsys_bigram_map()
@@ -86,6 +89,7 @@ from prog4_name_trim_space import PROG4_NAME_TRIM_SPACE
 from name_check import NAME_CHECK
 import ops_captions
 import staff_roll
+import build_version
 from prog6_battle_cmd_width import PROG6_BATTLE_CMD_WIDTH
 from prog4_spell_name_table import PROG4_SPELL_NAME_TABLE
 from prog2_sound_test import PROG2_SOUND_TEST
@@ -107,6 +111,25 @@ def output_root(frozen: bool, executable: str, script_dir: Path) -> Path:
 OUTPUT_ROOT = output_root(getattr(sys, 'frozen', False), sys.executable, SCRIPT_DIR)
 BUILD_DIR = OUTPUT_ROOT / 'build'
 CACHE_DIR = OUTPUT_ROOT / 'cache'   # JP baseline cache (gitignored)
+
+
+@contextlib.contextmanager
+def build_cache(frozen=None):
+    """Where a build keeps its copies of disc files. A source build keeps
+    CACHE_DIR (the tests read the JP baselines from it). The packaged patcher
+    uses a temporary folder that is gone when the build ends, even on an
+    error: players are not left a 23 MB cache/ beside the executable."""
+    if frozen is None:
+        frozen = getattr(sys, 'frozen', False)
+    if not frozen:
+        yield CACHE_DIR
+        return
+    import tempfile
+    tmp = Path(tempfile.mkdtemp(prefix='lang3-cache-'))
+    try:
+        yield tmp
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
 PATCHES_DIR = SCRIPT_DIR / 'patches'  # Menu/UI translation patches
 
 # Opening FMV (LANG/LANG.CPK). Three ways to get the English opening, in order:
@@ -122,6 +145,15 @@ MOVIE_CPK = Path(os.environ.get('LANG3_MOVIE_CPK', MOVIE_DIR / 'LANG.CPK'))
 # JP title logo (tools/title_dg2.apply_credit_line, glyphs in
 # data/fonts/title_credit_atlas.json). {version} = the VERSION file.
 TITLE_CREDIT_TEXT = 'English patch {version} / Hexerkat & RalfGuth \u2022 2026'
+
+
+def title_credit_text(root=None) -> str:
+    """The title credit line, naming the build's version label
+    (tools/build_version.py: VERSION plus the CI channel, e.g. 0.8.0-rc.4cde827)."""
+    label = build_version.label(root or SCRIPT_DIR)
+    if not label:
+        raise RuntimeError('VERSION is missing — the title credit names the version')
+    return TITLE_CREDIT_TEXT.format(version=label)
 
 # English staff roll. An overlay of the English text and the rectangles it
 # replaces, pasted over the player's own LANG/STAFF.DAT (tools/staff_roll.py).
@@ -216,8 +248,9 @@ def _resolve_canonical_cue_name(lang_display: str) -> str:
         return f'Langrisser III ({lang_display} v{ver}+{_git_branch()}).cue'
     except Exception:
         pass
-    # git unavailable — use the release-stamped VERSION artifact.
-    ver = _read_version_artifact()
+    # git unavailable — use the release-stamped VERSION artifact, with the
+    # CI channel of a candidate or test patcher (tools/build_version.py).
+    ver = build_version.label(SCRIPT_DIR)
     if ver:
         return f'Langrisser III ({lang_display} v{ver}).cue'
     return f'Langrisser III ({lang_display}).cue'
@@ -336,6 +369,11 @@ def preflight(args) -> None:
 
 
 def main(argv=None):
+    with build_cache() as cache:
+        return _main(argv, cache)
+
+
+def _main(argv, cache):
     import os
     parser = build_arg_parser()
     args = parser.parse_args(argv)
@@ -386,6 +424,12 @@ def main(argv=None):
         print(f'  Expected a .bin file like "Langrisser III (Japan) (Track 01).bin"')
         return 1
 
+    if not disc_identity.is_supported(jp_track01):
+        print(f'ERROR: {disc_identity.WRONG_DISC}')
+        print(f'  Track 01: {jp_track01.name}')
+        print(f'  SHA-256 expected: {disc_identity.TRACK01_SHA256}')
+        return 1
+
     if not SCRIPTS_DIR.exists():
         print(f'ERROR: No translation scripts found in {SCRIPTS_DIR}')
         return 1
@@ -405,11 +449,13 @@ def main(argv=None):
 
     # -- Step 1: Read Japanese ISO --
     print('[1/7] Reading Japanese ISO...')
+    build_progress.report('prepare', 0)
     image = bytearray(jp_track01.read_bytes())
     print(f'  Track 01: {len(image):,} bytes ({len(image) // SECTOR_SIZE} sectors)')
 
     # -- Step 2: Extract key files --
     print('[2/7] Extracting game files...')
+    build_progress.report('prepare', 0.2)
     file_index = build_file_index(image)
 
     font_entry = file_index.get('LANG/FONT.BIN')
@@ -447,17 +493,18 @@ def main(argv=None):
     # audit tools (translation_audit, plot_audit, semantic_audit,
     # signature_compare, dump_jp_scripts). cache/ is gitignored and lives at
     # the project root — keeps build/ for release artifacts only.
-    CACHE_DIR.mkdir(parents=True, exist_ok=True)
-    (CACHE_DIR / 'd00_jp.dat').write_bytes(d00_data)
+    cache.mkdir(parents=True, exist_ok=True)
+    (cache / 'd00_jp.dat').write_bytes(d00_data)
     if plot_data is not None:
-        (CACHE_DIR / 'plot_jp.dat').write_bytes(plot_data)
+        (cache / 'plot_jp.dat').write_bytes(plot_data)
     if fnt_sys_jp_data is not None:
-        (CACHE_DIR / 'fnt_sys_jp.bin').write_bytes(fnt_sys_jp_data)
+        (cache / 'fnt_sys_jp.bin').write_bytes(fnt_sys_jp_data)
     if syswin_jp_data is not None:
-        (CACHE_DIR / 'syswin_jp.bin').write_bytes(syswin_jp_data)
+        (cache / 'syswin_jp.bin').write_bytes(syswin_jp_data)
 
     # -- Step 3: Generate English font (toggleable: 'font') --
     print('[3/7] Generating English font...')
+    build_progress.report('prepare', 0.4)
     if is_enabled('font'):
         new_font = generate_english_font(font_data)
         print(f'  English font: {len(new_font):,} bytes ({len(new_font) // 32} tiles)')
@@ -467,12 +514,14 @@ def main(argv=None):
 
     # -- Step 4: Parse D00.DAT --
     print('[4/7] Parsing D00.DAT...')
+    build_progress.report('prepare', 0.6)
     sections = parse_d00(d00_data)
     total_entries = sum(s.entry_count for s in sections)
     print(f'  {len(sections)} sections, {total_entries:,} entries total')
 
     # -- Step 5: Insert English translations (toggleable: 'scen_d00') --
     print('[5/7] Encoding English translations...')
+    build_progress.report('prepare', 0.8)
     scen_enabled = is_enabled('scen_d00')
     new_text_areas = None
     if scen_enabled:
@@ -491,6 +540,7 @@ def main(argv=None):
 
     # -- Step 6: Rebuild D00.DAT and patch ISO --
     print('[6/7] Rebuilding and patching ISO...')
+    build_progress.report('prepare', 1)
 
     # Collect all files to patch. Same-size patches are applied in-place
     # via patch_file_in_iso. Files that grow are deferred to rebuild_iso_batch
@@ -643,7 +693,7 @@ def main(argv=None):
             # owns every detail (ffmpeg check, subtitle burn-in, Saturn-exact
             # re-mux); here we only hand it the JP CPK and take the bytes back.
             import movie_tools
-            jp_cpk_path = CACHE_DIR / 'LANG_JP.CPK'
+            jp_cpk_path = cache / 'LANG_JP.CPK'
             jp_cpk_path.parent.mkdir(parents=True, exist_ok=True)
             jp_cpk_path.write_bytes(
                 extract_file_data(image, movie_entry.extent, movie_entry.size))
@@ -651,7 +701,7 @@ def main(argv=None):
                   '(ffmpeg). This can take a while — it is not stuck.')
             t_movie = time.time()
             new_movie = movie_tools.encode_from_disc(
-                jp_cpk_path, CACHE_DIR / 'LANG_EN.CPK',
+                jp_cpk_path, cache / 'LANG_EN.CPK',
                 source=args.movie_source, quiet=True).read_bytes()
             print(f'    encoded in {time.time() - t_movie:.0f}s')
         elif MOVIE_CPK.exists():
@@ -679,10 +729,7 @@ def main(argv=None):
     if not title_entry:
         raise RuntimeError('LANG/TITLE.DG2 not found in ISO — required for the '
                            'mandatory title-screen credit')
-    version = _read_version_artifact()
-    if not version:
-        raise RuntimeError('VERSION is missing — the title credit names the version')
-    credit = TITLE_CREDIT_TEXT.format(version=version)
+    credit = title_credit_text()
     jp_title = extract_file_data(image, title_entry.extent, title_entry.size)
     new_title = title_dg2.apply_credit_line(jp_title, credit)
     credit_cells = title_dg2.footer_cell_count(new_title)
@@ -729,6 +776,7 @@ def main(argv=None):
 
     # -- Step 7: Assemble CD image --
     print('[7/7] Assembling CD image...')
+    build_progress.report('assemble', 0)
     assemble_cd_image(track01_path, jp_dir, output_cue)
 
     tracks = list(output_dir.glob('track*.bin'))

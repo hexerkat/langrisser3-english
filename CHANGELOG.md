@@ -12,7 +12,7 @@ follows [Keep a Changelog](https://keepachangelog.com/); dates are `YYYY-MM-DD`.
 - A ready-to-run patcher for Windows and Linux. Download it, choose your Japanese disc
   folder, and press Build. No Python and no terminal needed.
 - The patcher checks that the folder really holds the Langrisser III disc before it
-  builds, and shows Tiaris from the disc's own art gallery once it does.
+  builds, and shows a character from the disc's own art gallery once it does.
 - Your name can now be up to 16 letters long, and it stays intact when you save and load.
 - The name entry keyboard has Ä, Ö, Ü, ä, ö, ü and a hyphen.
 - The name entry screen again refuses the name of a character from the story, in any mix
@@ -35,6 +35,8 @@ follows [Keep a Changelog](https://keepachangelog.com/); dates are `YYYY-MM-DD`.
 - Labels on the field screens sit in boxes sized to their text.
 - Messages the game builds from a name and an item or a stat now put an arrow after the
   name ("Diehärte→Healing Herb was used!") instead of an "'s" glued to the next word.
+- Building the patched game takes a few seconds instead of about three minutes. The
+  English opening movie still takes about five minutes to encode, at full quality.
 
 ### Fixed
 - Spaces at the end of a typed name are dropped, and a name made only of spaces counts as
@@ -44,6 +46,12 @@ follows [Keep a Changelog](https://keepachangelog.com/); dates are `YYYY-MM-DD`.
   words together.
 - A line from Tiaris in scenario 5 now warns that the citizens will be caught, as in the
   Japanese.
+- The patcher and the build now check the whole data track of your disc and refuse any
+  version but the one the patch is made for (Redump 3M or 1M). The 7M disc is a later
+  revision of the game, and a patched 7M disc froze on the first button press.
+- The disc image now carries the standard error correction data on every sector the
+  patch writes. Before, those sectors had wrong correction data, which emulators ignore
+  but a real Saturn reading a burned disc may not.
 
 ## [0.7.2] - 2026-08-24
 

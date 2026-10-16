@@ -126,12 +126,15 @@ class TestSettings:
 
 
 class TestOpenFolder:
+    """The folder goes to the opener as the host's own path text. Red state
+    (CI 2026-10-14, windows-latest): the Linux and macOS cases expected the
+    literal "/o", which a Windows host writes as "\\o"."""
 
     def test_linux(self):
-        assert lc.open_folder_command(Path("/o"), "linux") == ["xdg-open", "/o"]
+        assert lc.open_folder_command(Path("/o"), "linux") == ["xdg-open", str(Path("/o"))]
 
     def test_macos(self):
-        assert lc.open_folder_command(Path("/o"), "darwin") == ["open", "/o"]
+        assert lc.open_folder_command(Path("/o"), "darwin") == ["open", str(Path("/o"))]
 
     def test_windows(self):
         assert lc.open_folder_command(Path("C:/o"), "win32") == ["explorer", str(Path("C:/o"))]
@@ -167,11 +170,30 @@ class TestVerifyDisc:
 
     def test_real_disc_is_verified_and_gives_tiaris(self):
         import hashlib
-        check = lc.verify_disc(self._jp())
+        check = lc.verify_disc(self._jp(), choose=lambda names: "TIALISU.JPG")
         assert check.ok, check.message
         assert hashlib.sha256(check.jpeg).hexdigest() == self.TIALISU_SHA256
         w, h, rgb = lc.wallpaper(check.jpeg)
-        assert (w, h) == (576, 435) and len(rgb) == w * h * 3
+        assert (w, h) == lc.WINDOW_SIZE and len(rgb) == w * h * 3
+
+    def test_background_is_one_of_three_pinned_pictures(self):
+        """Ralf (2026-10-14): the background is picked at random among Tiaris,
+        Diehärte and Altemüller, then also Luna, Sophia, Liffany and Freya.
+        Each is pinned, so only the game's own verified art shows. Red state:
+        verify_disc always gave Tiaris; then only the first three."""
+        import hashlib
+        assert set(lc.WALLPAPERS) == {"TIALISU.JPG", "DHIHALUT.JPG", "ALUTEMU.JPG", "LUNA.JPG",
+                                      "SOFIA.JPG", "LIFANIY.JPG", "FUREA.JPG"}
+        for name, sha in lc.WALLPAPERS.items():
+            check = lc.verify_disc(self._jp(), choose=lambda names, n=name: n)
+            assert check.ok and hashlib.sha256(check.jpeg).hexdigest() == sha, name
+        w, h, rgb = lc.wallpaper(check.jpeg)
+        assert (w, h) == lc.WINDOW_SIZE
+
+    def test_default_choice_is_random_among_the_pictures(self):
+        import hashlib
+        seen = {hashlib.sha256(lc.verify_disc(self._jp()).jpeg).hexdigest() for _ in range(12)}
+        assert seen <= set(lc.WALLPAPERS.values()) and len(seen) > 1
 
     def test_damaged_picture_on_a_real_track_fails(self, tmp_path):
         import lzh
@@ -200,3 +222,21 @@ class TestPicture:
         px = lambda x, y: out[(y * 4 + x) * 3]
         assert [px(x, 0) for x in range(4)] == [200, 100, 100, 200]
         assert [px(x, 1) for x in range(4)] == [200] * 4
+
+    def test_resize_to_two_thirds(self):
+        """The window shows the 1152x870 gallery picture at 768x580 (2/3), so the
+        controls get the lower half with room to spare. Red state: no lc.resize."""
+        w, h = 6, 3
+        rgb = bytearray()
+        for y in range(h):
+            for x in range(w):
+                rgb += bytes([x * 40, y * 100, 7])
+        out = lc.resize(rgb, w, h, 4, 2)
+        assert len(out) == 4 * 2 * 3
+        px = lambda x, y: tuple(out[(y * 4 + x) * 3:(y * 4 + x) * 3 + 3])
+        assert px(0, 0)[2] == 7 and px(3, 1)[2] == 7       # flat channel stays flat
+        assert px(0, 0)[0] < px(3, 0)[0]                   # left to right gradient kept
+        assert px(0, 0)[1] < px(0, 1)[1]                   # top to bottom gradient kept
+
+    def test_wallpaper_size(self):
+        assert lc.WINDOW_SIZE == (768, 580)

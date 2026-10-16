@@ -11,18 +11,32 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
+import disc_identity
 from iso_tools import _find_jp_track, build_file_index, extract_file_data
 
 FOLDER_PREFIX = "Folder:"
 
-# Disc identity and window background in one: Tiaris from the gallery the
-# game itself ships on disc (CD-ROM extras, LANG/OMAKE). Pulling her out with
-# a good LZH CRC and this exact SHA-256 proves the folder holds the real
-# Langrisser III (Japan) data track. Read from the player's disc, never bundled.
+# The disc is identified by the SHA-256 of its whole Track 01
+# (tools/disc_identity.py). The window background comes from the gallery the
+# game itself ships on disc (CD-ROM extras, LANG/OMAKE), each picture pinned.
+# Read from the player's disc, never bundled.
 WALLPAPER_ARCHIVE = "LANG/OMAKE/GRAPHIC.LZH"
 WALLPAPER_MEMBER = "TIALISU.JPG"
 WALLPAPER_SHA256 = "1cb3d55d62eb1532a0fd1c2e8a012ec8af652c757289e26158b177cd5d41c79e"
-WALLPAPER_SCALE = 2          # 1152x870 on disc, 576x435 in the window
+# The window background, picked at random once the disc is verified (Ralf,
+# 2026-10-14): Tiaris, Diehärte, Altemüller, Luna, Sophia, Liffany or Freya
+# from the same gallery, each pinned so only the game's own verified art is
+# shown. FUREA.JPG is 1024x768, the others 1152x870; all go to WINDOW_SIZE.
+WALLPAPERS = {
+    "TIALISU.JPG": WALLPAPER_SHA256,
+    "DHIHALUT.JPG": "aed22a3f6d61097a6313b8f0bf85e7f0e0332a1afc6da86e73c188ca40a0b78d",
+    "ALUTEMU.JPG": "af6d2b51191b4acd93fa2777feb11d8f3b1acea22566aa568e39071bb427d8f7",
+    "LUNA.JPG": "d697534c009a999618e13047d6fa7db4b75e94a444440ca4c5f1b442d6fabc5a",
+    "SOFIA.JPG": "f518263de2c1014ed7aaff9c34fcdd6120bf306d39044063ea5117ffaca90408",
+    "LIFANIY.JPG": "8e5742c535d5614457f7238aa7e8c790bc9867ef7d93821b694824bf253c8827",
+    "FUREA.JPG": "e3c8b8cc7218a84fdb722aac2e41ff6df9540d649eed4c3c46199638ff67ccf2",
+}
+WINDOW_SIZE = (768, 580)     # the 1152x870 gallery picture at 2/3
 
 VERIFYING = "Verifying disc…"
 VERIFIED = "Langrisser III (Japan) disc verified."
@@ -101,15 +115,21 @@ class DiscCheck:
     jpeg: bytes | None = None      # TIALISU.JPG when verified
 
 
-def verify_disc(disc_dir: Path) -> DiscCheck:
-    """File names first (fast), then the content: the gallery picture must
-    come out of Track 01 intact and be the one this game ships."""
+def verify_disc(disc_dir: Path, choose=None) -> DiscCheck:
+    """File names first (fast), then the content: Track 01 must be the exact
+    disc the patch is made for (its SHA-256). The gallery picture is the
+    background, `choose`n among WALLPAPERS (random by default); a chosen
+    picture that does not match its pin falls back to Tiaris."""
+    import random
     import lzh
     ok, msg = check_disc_dir(Path(disc_dir))
     if not ok:
         return DiscCheck(False, msg)
+    track = _find_jp_track(Path(disc_dir), 1)
     try:
-        img = bytearray(_find_jp_track(Path(disc_dir), 1).read_bytes())
+        if not disc_identity.is_supported(track):
+            return DiscCheck(False, disc_identity.WRONG_DISC)
+        img = bytearray(track.read_bytes())
         entry = build_file_index(img).get(WALLPAPER_ARCHIVE)
         if entry is None:
             return DiscCheck(False, NOT_VERIFIED)
@@ -119,13 +139,41 @@ def verify_disc(disc_dir: Path) -> DiscCheck:
         return DiscCheck(False, NOT_VERIFIED)
     if hashlib.sha256(jpg).hexdigest() != WALLPAPER_SHA256:
         return DiscCheck(False, NOT_VERIFIED)
+    name = (choose or random.choice)(list(WALLPAPERS))
+    if name != WALLPAPER_MEMBER:
+        try:
+            other = lzh.extract(archive, name)
+            if hashlib.sha256(other).hexdigest() == WALLPAPERS[name]:
+                jpg = other
+        except Exception:  # noqa: BLE001 - keep Tiaris
+            pass
     return DiscCheck(True, VERIFIED, jpg)
 
 
 def wallpaper(jpeg: bytes):
     """(width, height, rgb) of the verified picture at window size."""
     import jpeg_baseline
-    return jpeg_baseline.decode(jpeg, scale=WALLPAPER_SCALE)
+    w, h, rgb = jpeg_baseline.decode(jpeg)
+    return WINDOW_SIZE + (resize(rgb, w, h, *WINDOW_SIZE),)
+
+
+def resize(rgb, width: int, height: int, new_w: int, new_h: int) -> bytearray:
+    """Box-filter resize of packed RGB (each output pixel averages the source
+    pixels it covers, whole pixels only)."""
+    out = bytearray(new_w * new_h * 3)
+    xs = [(x * width // new_w, max(x * width // new_w + 1, (x + 1) * width // new_w))
+          for x in range(new_w)]
+    for y in range(new_h):
+        y0 = y * height // new_h
+        y1 = max(y0 + 1, (y + 1) * height // new_h)
+        rows = [rgb[r * width * 3:(r + 1) * width * 3] for r in range(y0, y1)]
+        o = y * new_w * 3
+        for x0, x1 in xs:
+            n = (x1 - x0) * len(rows)
+            for c in range(3):
+                out[o + c] = sum(sum(row[i * 3 + c] for i in range(x0, x1)) for row in rows) // n
+            o += 3
+    return out
 
 
 def ppm(width: int, height: int, rgb: bytes) -> bytes:
