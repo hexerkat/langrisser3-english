@@ -109,21 +109,59 @@ class TestBuiltStaffRoll(unittest.TestCase):
         cls.roll, cls.font = staff_roll.decompress(t, r), staff_roll.decompress(t, f)
         cls.rects = json.loads((ASSET / 'staff_roll_en_rects.json').read_text())
         w, h, cls.overlay = png_indexed.read_indexed_png(str(ASSET / 'staff_roll_en.png'))
+        cls.credits = json.loads((ASSET / 'staff_credits_en.json').read_text())
 
     def test_header_palette_and_font_are_the_players(self):
-        self.assertEqual(self.roll[:38], self.jp_roll[:38])
+        """Header and name font from the player's disc; the palette keeps the
+        official ramp at every other step (indices 0-7) and adds the lighter
+        ramp of the translation credits (8-15)."""
+        import struct
+        self.assertEqual(self.roll[:6], self.jp_roll[:6])
+        jp_pal = struct.unpack_from('>16H', self.jp_roll, 6)
+        pal = struct.unpack_from('>16H', self.roll, 6)
+        self.assertEqual(list(pal), [jp_pal[round(k * 15 / 7)] for k in range(8)]
+                         + self.credits['light'])
         self.assertEqual(self.font, self.jp_font)
 
-    def test_roll_is_the_jp_roll_with_the_english_overlay(self):
+    def test_roll_is_the_jp_roll_with_the_english_overlay_and_credits(self):
+        """Red state (2026-10-16): the roll ends with Producer and the
+        copyright; no translation credits."""
         jp, en = _nibbles(self.jp_roll[38:]), _nibbles(self.roll[38:])
-        self.assertEqual(len(en), 320 * 1536)
+        meta = self.credits
+        self.assertEqual(len(en), 320 * meta['height'])
         inside = set()
         for x0, y0, x1, y1 in self.rects:
             for y in range(y0, y1):
                 for x in range(x0, x1):
                     inside.add(y * 320 + x)
-                    self.assertEqual(en[y * 320 + x], self.overlay[x, y], (x, y))
-        self.assertTrue(all(en[i] == jp[i] for i in range(len(en)) if i not in inside))
+        src = [self.overlay[i % 320, i // 320] if i in inside else jp[i] for i in range(len(jp))]
+        expect = [0] * len(en)
+        for s0, s1, d0 in meta['segments']:
+            expect[d0 * 320:(d0 + s1 - s0) * 320] = [meta['remap'][v] for v in src[s0 * 320:s1 * 320]]
+        top = meta['section_top']
+        w, h, sec = png_indexed.read_indexed_png(str(ASSET / 'staff_credits_en.png'))
+        expect[top * 320:(top + h) * 320] = [sec[x, y] for y in range(h) for x in range(320)]
+        self.assertEqual(en, expect)
+
+    def test_prog2_shows_the_new_roll(self):
+        """Band tops (0x06057AB0, 56 halfwords) and the copyright offset
+        (pool halfword 0x06054E02) as the layout says; JP values truth-locked."""
+        import struct
+        (jp_p2,) = _jp('LANG/PROG_2.BIN')
+        p2 = _built('LANG/PROG_2.BIN')
+        self.assertEqual(list(struct.unpack_from('>56H', jp_p2, 0x06057AB0 - 0x06052800)),
+                         self.credits['jp_table'])
+        self.assertEqual(struct.unpack_from('>H', jp_p2, 0x06054E02 - 0x06052800)[0],
+                         self.credits['jp_e02'])
+        self.assertEqual(list(struct.unpack_from('>56H', p2, 0x06057AB0 - 0x06052800)),
+                         self.credits['table'])
+        self.assertEqual(struct.unpack_from('>H', p2, 0x06054E02 - 0x06052800)[0],
+                         self.credits['e02'])
+
+    def test_fits_vdp1_vram(self):
+        """The roll unpacks to VDP1 VRAM 0x25C10000. The dump taken mid-roll
+        (2026-10-16) shows table-like data from 0x25C78000 on; stay below it."""
+        self.assertLessEqual(0x25C10000 + len(self.roll) - 38, 0x25C78000)
 
     def test_no_glyph_straddles_a_band_boundary(self):
         """PROG_2 FUN_06054c00 draws the roll as 55 bands (tops at 0x06057AB0)
@@ -131,8 +169,7 @@ class TestBuiltStaffRoll(unittest.TestCase):
         a band boundary shows split on screen. Red state (overlay of
         2026-10-14 07:42): the descenders of "/ Raymond & Sieghart" crossed 328."""
         import struct
-        (prog2,) = _jp('LANG/PROG_2.BIN')
-        tops = struct.unpack_from('>56H', prog2, 0x06057AB0 - 0x06052800)
+        tops = struct.unpack_from('>56H', _built('LANG/PROG_2.BIN'), 0x06057AB0 - 0x06052800)
         en = _nibbles(self.roll[38:])
         for b in tops[1:-1]:
             cut = [x for x in range(320) if en[(b - 1) * 320 + x] and en[b * 320 + x]]
