@@ -13,6 +13,7 @@ follows [Keep a Changelog](https://keepachangelog.com/); dates are `YYYY-MM-DD`.
   folder, and press Build. No Python and no terminal needed.
 - The patcher checks that the folder really holds the Langrisser III disc before it
   builds, and shows a character from the disc's own art gallery once it does.
+- The patcher window says it is for the Sega Saturn game.
 - Your name can now be up to 16 letters long, and it stays intact when you save and load.
 - The name entry keyboard has Ä, Ö, Ü, ä, ö, ü and a hyphen.
 - The name entry screen again refuses the name of a character from the story, in any mix
