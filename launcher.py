@@ -85,7 +85,7 @@ class Launcher(tk.Tk):
 
     def __init__(self):
         super().__init__()
-        self.title(f"Langrisser III English Patch v{VERSION}")
+        self.title(f"Langrisser III (Sega Saturn) English Patch v{VERSION}")
         self.resizable(False, False)
         self.settings = lc.load_settings()
         self.running = False
@@ -151,11 +151,11 @@ class Launcher(tk.Tk):
         for dx, color in ((2, "#000000"), (0, self.TEXT)):
             self._text(P + dx, 18 + dx, "Langrisser III", fill=color,
                        font=("TkDefaultFont", 24, "bold"))
-            self._text(P + 2 + dx, 60 + dx, f"English Patch  v{VERSION}", fill=color,
+            self._text(P + 2 + dx, 60 + dx, f"Sega Saturn  ·  English Patch  v{VERSION}", fill=color,
                        font=("TkDefaultFont", 12))
 
         # Disc folder: label, a wide field and Browse on one row, status below.
-        self._text(P, top + 18, "Japanese disc folder (.cue + Track .bin files)", fill=self.DIM)
+        self._text(P, top + 18, "Japanese Sega Saturn disc folder (.cue + Track .bin files)", fill=self.DIM)
         browse = ttk.Button(c, text="Browse…", command=self._browse)
         c.create_window(W - P, top + 42, window=browse, anchor="ne")
         entry = ttk.Entry(c, textvariable=self.disc_var)
