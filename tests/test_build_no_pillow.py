@@ -29,7 +29,7 @@ sys.path.insert(0, str(REPO / "tools"))
 ASSET = REPO / "assets" / "staff_roll" / "staff_roll_en.png"
 
 # Pillow-produced goldens for assets/staff_roll/staff_roll_en.png.
-PIX_SHA256 = "d50a0540bb5dc044b38874f9e68977e20e35c0629e5eadb9a94ba821e8e5e439"
+PIX_SHA256 = "3ed6b59b800375e82e0a82f330c9971048282ae6c252d7d33dd84e0b288c09b9"
 PAL_SHA256 = "28a54ac398af84e68bb0928b6c1c87eaa15f41815fd85617549bf3158731184f"
 
 

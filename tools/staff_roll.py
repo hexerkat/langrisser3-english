@@ -15,6 +15,17 @@ made by the separate langrisser3-graphics-extractor repo; they hold no
 Japanese art. The file grows (about 39 KB -> 46 KB); PROG_2 loads it at
 LWRAM 0x00217000, inside the scratch the same program uses for OPS.DAT.
 
+Translation credits (assets/staff_roll/staff_credits_en.*, same extractor):
+a section after Producer in a lighter color. PROG_2 FUN_06054c00 draws the
+roll as 55 bands (one VDP1 sprite each, tops in the table at 0x06057AB0, 56
+halfwords) at screen y 12*i + top + 224, the last band (the copyright) at
+table[55] + the pool halfword at 0x06054E02. The layout JSON gives the new
+table, that offset, the segments of the overlaid roll and where they go
+(two pairs of bands merged, 12 blank rows between each pair, so every
+official line keeps its screen place), the section's row, and the palette:
+the official ramp requantized to indices 0-7 (`remap`), the lighter ramp in
+8-15 (`light`). The roll grows to `height` rows in VDP1 VRAM from 0x25C10000.
+
 Codec: port of the JP A0LANG routine FUN_0600FA88 and its byte helper
 FUN_0600FA48 (tests/test_staff_roll.py runs both on sh2_mini).
   Tree: 2-byte nodes, root at offset 0. At an inner node the next bit b
@@ -196,8 +207,44 @@ def compress_group(plains: list) -> tuple:
 # --- the English roll ----------------------------------------------------------
 
 
-def apply_overlay(staff_dat: bytes, overlay_png: str, rects_json: str) -> bytes:
-    """The player's STAFF.DAT with the English overlay pasted in."""
+PROG2_PATH = 'LANG/PROG_2.BIN'
+PROG2_BASE = 0x06052800
+BAND_TABLE = 0x06057AB0
+COPYRIGHT_OFFSET = 0x06054E02
+
+
+def prog2_edits(credits_json: str) -> dict:
+    """{PROG_2: [(offset, bytes)]}: the band table and the copyright offset."""
+    meta = json.loads(open(credits_json).read())
+    return {PROG2_PATH: [
+        (BAND_TABLE - PROG2_BASE, struct.pack('>56H', *meta['table'])),
+        (COPYRIGHT_OFFSET - PROG2_BASE, struct.pack('>H', meta['e02'])),
+    ]}
+
+
+def _add_credits(roll: bytes, credits_png: str, credits_json: str) -> bytes:
+    """The overlaid roll laid out again with the credits section."""
+    meta = json.loads(open(credits_json).read())
+    src = [v for b in roll[ROLL_HEADER:] for v in (b >> 4, b & 15)]
+    out = [0] * (ROLL_WIDTH * meta['height'])
+    remap = meta['remap']
+    for s0, s1, d0 in meta['segments']:
+        out[d0 * ROLL_WIDTH:(d0 + s1 - s0) * ROLL_WIDTH] = [
+            remap[v] for v in src[s0 * ROLL_WIDTH:s1 * ROLL_WIDTH]]
+    w, h, px = png_indexed.read_indexed_png(credits_png)
+    top = meta['section_top']
+    out[top * ROLL_WIDTH:(top + h) * ROLL_WIDTH] = [
+        px[x, y] & 15 for y in range(h) for x in range(w)]
+    jp_pal = struct.unpack_from('>16H', roll, 6)
+    pal = [jp_pal[round(k * 15 / 7)] for k in range(8)] + meta['light']
+    return (roll[:6] + struct.pack('>16H', *pal)
+            + bytes((out[i] << 4) | out[i + 1] for i in range(0, len(out), 2)))
+
+
+def apply_overlay(staff_dat: bytes, overlay_png: str, rects_json: str,
+                  credits_png: str = None, credits_json: str = None) -> bytes:
+    """The player's STAFF.DAT with the English overlay pasted in, and the
+    translation credits when their files are given."""
     table, roll_blob, font_blob = parse_container(staff_dat)
     roll = bytearray(decompress(table, roll_blob))
     font = decompress(table, font_blob)
@@ -212,5 +259,7 @@ def apply_overlay(staff_dat: bytes, overlay_png: str, rects_json: str) -> bytes:
                 i = ROLL_HEADER + (y * ROLL_WIDTH + x) // 2
                 v = px[x, y] & 15
                 roll[i] = (roll[i] & 0x0F) | (v << 4) if x % 2 == 0 else (roll[i] & 0xF0) | v
+    if credits_png:
+        roll = _add_credits(bytes(roll), credits_png, credits_json)
     new_table, blobs = compress_group([bytes(roll), font])
     return pack_container([new_table] + blobs)

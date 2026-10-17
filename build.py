@@ -161,6 +161,9 @@ def title_credit_text(root=None) -> str:
 STAFF_ROLL_DIR = SCRIPT_DIR / 'assets' / 'staff_roll'
 STAFF_ROLL_OVERLAY = STAFF_ROLL_DIR / 'staff_roll_en.png'
 STAFF_ROLL_RECTS = STAFF_ROLL_DIR / 'staff_roll_en_rects.json'
+# The translation credits section at its end, with PROG_2's band table.
+STAFF_CREDITS_PNG = STAFF_ROLL_DIR / 'staff_credits_en.png'
+STAFF_CREDITS_JSON = STAFF_ROLL_DIR / 'staff_credits_en.json'
 
 # English opening captions (staff and cast over the portraits): both caption
 # blocks of LANG/OPS.DAT plus their widths in PROG_2 (tools/ops_captions.py).
@@ -600,6 +603,12 @@ def _main(argv, cache):
     if ops_on:
         for path, edits in ops_captions.prog2_edits(OPS_CAPTIONS_DIR).items():
             engine.setdefault(path, []).extend(edits)
+    # The translation credits' band table rides with the staff roll (one toggle).
+    credits_on = (is_enabled('staff_roll') and STAFF_ROLL_OVERLAY.exists()
+                  and STAFF_CREDITS_JSON.exists())
+    if credits_on:
+        for path, edits in staff_roll.prog2_edits(str(STAFF_CREDITS_JSON)).items():
+            engine.setdefault(path, []).extend(edits)
     overlay_paths = list(BYTE_OVERLAYS.keys())
     for src in (encoded, engine):
         for p in src:
@@ -744,8 +753,9 @@ def _main(argv, cache):
     staff_entry = file_index.get('LANG/STAFF.DAT')
     if staff_entry and is_enabled('staff_roll') and STAFF_ROLL_OVERLAY.exists():
         jp_staff = extract_file_data(image, staff_entry.extent, staff_entry.size)
-        new_staff = staff_roll.apply_overlay(jp_staff, str(STAFF_ROLL_OVERLAY),
-                                             str(STAFF_ROLL_RECTS))
+        new_staff = staff_roll.apply_overlay(
+            jp_staff, str(STAFF_ROLL_OVERLAY), str(STAFF_ROLL_RECTS),
+            *((str(STAFF_CREDITS_PNG), str(STAFF_CREDITS_JSON)) if credits_on else ()))
         grown_patches.append(('LANG/STAFF.DAT', new_staff))
         print(f'  STAFF.DAT (English staff roll): {staff_entry.size:,} -> '
               f'{len(new_staff):,} bytes')

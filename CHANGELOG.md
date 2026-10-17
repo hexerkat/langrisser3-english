@@ -18,7 +18,8 @@ follows [Keep a Changelog](https://keepachangelog.com/); dates are `YYYY-MM-DD`.
 - The name entry screen again refuses the name of a character from the story, in any mix
   of upper and lower case.
 - The staff roll after the ending is in English, drawn in a font close to the original,
-  with the cast and staff names in romaji.
+  with the cast and staff names in romaji. It ends with the credits of the English
+  translation, in a lighter color.
 - The opening that plays at the start of scenario 3 credits its staff and voice cast in
   English, in a slanted font close to the original.
 - The title screen credit now shows the exact patch version and credits Hexerkat and
