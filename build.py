@@ -235,6 +235,10 @@ def _resolve_canonical_cue_name(lang_display: str) -> str:
     """
     import subprocess
     try:
+        # The packaged patcher has no repository, and on Windows every git
+        # call would open a prompt window.
+        if getattr(sys, 'frozen', False):
+            raise RuntimeError('packaged patcher')
         latest_tag = subprocess.check_output(
             ['git', 'describe', '--tags', '--abbrev=0'],
             cwd=str(SCRIPT_DIR), stderr=subprocess.DEVNULL,
