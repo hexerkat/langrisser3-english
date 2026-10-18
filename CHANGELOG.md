@@ -6,7 +6,7 @@ The repository ships only source: you build the patched game from your own Japan
 (see the [README](README.md)). No copyrighted game data is included. Format loosely
 follows [Keep a Changelog](https://keepachangelog.com/); dates are `YYYY-MM-DD`.
 
-## [Unreleased]
+## [0.8.0] - 2026-10-17
 
 ### A patcher you just run
 - A ready-to-run patcher for Windows and Linux. Download it, choose the folder of your

@@ -8,7 +8,7 @@ A work-in-progress English translation patch for *Langrisser III* (Sega Saturn, 
 
 **Version 0.7 made the patch 100% this project's own work.** Every change on the disc is generated from this repository against the original Japanese game: no third-party binaries in the pipeline, nothing carried over from CyberWarriorX's earlier v0.2 patch (credited below as groundwork, not as shipped code or data). The English script was reworked line by line against the Japanese, correcting mistranslations and trimming a few additions that weren't in the original, so each character's voice and the tone of every line follow the source.
 
-## Status : v0.7.2 (playable start to finish)
+## Status : v0.8.0 (playable start to finish)
 
 **Working**
 
@@ -68,7 +68,7 @@ For developers, or if the patcher does not run on your system. You need **Python
 python3 build.py --jp-iso "/path/to/Langrisser III (Japan)"
 ```
 
-This produces a self-contained folder under `build/` named after the `.cue` (e.g. `build/Langrisser III (English v0.7.2)/`) holding the `.cue` and all track `.bin` files, ready to play.
+This produces a self-contained folder under `build/` named after the `.cue` (e.g. `build/Langrisser III (English v0.8.0)/`) holding the `.cue` and all track `.bin` files, ready to play.
 
 3. **Load in your emulator**: open the `.cue` inside that folder and play.
 
