@@ -24,7 +24,8 @@ verified against the LIVE JP A0LANG.BIN (LANG3_JP_DIR), and guards that we are
 editing the low byte of a `mov #imm,r1` (0xE1) opcode, not arbitrary data.
 
 Path B (the no-save START/OPTIONS layout near PC 0x06015D5E) shares one
-immediate for parent Y AND width and is intentionally left to a follow-up.
+immediate for parent Y AND width; its edits live in the same module and are
+guarded by test_a0lang_title_menu_no_save.py. This file covers Path A.
 """
 
 import os
@@ -53,6 +54,8 @@ MENU_PARENT_X_OPCODE = MENU_PARENT_X - 1
 MENU_WIDTH_OPCODE = MENU_WIDTH - 1
 
 EXPECTED_GEOMETRY = {MENU_PARENT_X: 0x0E, MENU_WIDTH: 0x0C}
+PATH_A = [(off, chunk) for off, chunk in GEO[A0LANG_PATH] if off < 0x7D00]
+PATH_A_BASE = {off: v for off, v in JP_BASE.items() if off < 0x7D00}
 
 
 class TestPatchDeclaration(unittest.TestCase):
@@ -62,7 +65,7 @@ class TestPatchDeclaration(unittest.TestCase):
         self.assertEqual(list(GEO), [A0LANG_PATH])
 
     def test_two_single_byte_edits(self):
-        edits = GEO[A0LANG_PATH]
+        edits = PATH_A
         self.assertEqual(len(edits), 2)
         for off, chunk in edits:
             self.assertEqual(len(chunk), 1, f"edit at 0x{off:X} not a single byte")
@@ -70,14 +73,14 @@ class TestPatchDeclaration(unittest.TestCase):
     def test_patches_the_code_immediates_not_the_dead_struct(self):
         """The effective site is the setup-code immediate, never the static
         struct (0x253C8/0x253CC = dead default that the code overwrites)."""
-        offs = {off for off, _ in GEO[A0LANG_PATH]}
+        offs = {off for off, _ in PATH_A}
         self.assertEqual(offs, {MENU_PARENT_X, MENU_WIDTH})
         self.assertNotIn(0x000253C8, offs)
         self.assertNotIn(0x000253CC, offs)
 
     def test_baseline_and_value_tables_agree(self):
-        offs = {off for off, _ in GEO[A0LANG_PATH]}
-        self.assertEqual(offs, set(JP_BASE))
+        offs = {off for off, _ in PATH_A}
+        self.assertEqual(offs, set(PATH_A_BASE))
         self.assertEqual(offs, set(EXPECTED_GEOMETRY))
 
     def test_box_extent_eye_tuned(self):
