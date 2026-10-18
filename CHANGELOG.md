@@ -6,7 +6,7 @@ The repository ships only source: you build the patched game from your own Japan
 (see the [README](README.md)). No copyrighted game data is included. Format loosely
 follows [Keep a Changelog](https://keepachangelog.com/); dates are `YYYY-MM-DD`.
 
-## [0.8.0] - 2026-10-17
+## [0.8.0] - 2026-10-18
 
 ### A patcher you just run
 - A ready-to-run patcher for Windows and Linux. Download it, choose the folder of your
@@ -52,6 +52,11 @@ follows [Keep a Changelog](https://keepachangelog.com/); dates are `YYYY-MM-DD`.
   RalfGuth. The title menu box has the same size and place with or without a save.
 - The hidden sound test on the title screen lists its sounds, war cries and screams in
   English.
+
+### Strategy guide
+- The strategy guide moved online at https://hexerkat.github.io/langrisser3-strategy-guide/
+  and was reviewed against the game and the Japanese guides. Every scenario chapter now
+  shows its battle map.
 
 ## [0.7.2] - 2026-08-24
 
