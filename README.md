@@ -55,10 +55,16 @@ The patcher and `build.py` refuse any other Track 01. The "7M" dump is Rev A, a 
 
 Nothing to install, no Python, no terminal.
 
+> **The patcher is not signed.** It is a free fan project, so it has no paid code signing certificate, and your system will ask you to allow it the first time:
+> - **Windows**: a blue window says "Windows protected your PC". Click **More info**, then **Run anyway**. Some antivirus programs may also ask before letting it run.
+> - **Linux**: if it does not open with a double click, allow it to run as a program (file properties, or `chmod +x Langrisser3-Patcher` in a terminal).
+>
+> Only download the patcher from this repository's releases.
+
 1. **Download the patcher** for your system from the [latest release](https://github.com/hexerkat/langrisser3-english/releases/latest):
    - **Windows**: `Langrisser3-Patcher-windows.exe`
    - **Linux**: `Langrisser3-Patcher-linux.tar.gz` (extract it first)
-2. **Open it.** Windows may say it protected your PC, because the patcher is not signed. Click **More info**, then **Run anyway**.
+2. **Open it.** Allow it to run if your system asks (see the note above).
 3. **Choose your Japanese disc folder** with **Browse…**. The patcher checks that it really is the Langrisser III disc. When it is, a character from the disc's own art gallery shows up behind the window.
 4. **Press Build patched game.** It takes a few seconds, or about five minutes with the English opening movie. When it finishes, **Open folder** shows the patched game, in a `build/` folder next to the patcher.
 5. **Load the `.cue`** from that folder in your emulator and play. On real hardware, burn the `.cue` image or copy it to your optical drive emulator (tested on Saroo).
