@@ -137,6 +137,8 @@ class Launcher(tk.Tk):
         style.configure("TEntry", fieldbackground=field, foreground=self.TEXT,
                         insertcolor=self.TEXT, bordercolor=edge, lightcolor=field,
                         darkcolor=field, padding=(6, 5))
+        style.map("TEntry", foreground=[("disabled", "#76809a")],
+                  fieldbackground=[("disabled", field)])
         style.configure("Horizontal.TProgressbar", troughcolor=field, background=self.ACCENT_HOVER,
                         bordercolor=edge, lightcolor=self.ACCENT_HOVER, darkcolor=self.ACCENT_HOVER)
 
@@ -156,11 +158,11 @@ class Launcher(tk.Tk):
 
         # Disc folder: label, a wide field and Browse on one row, status below.
         self._text(P, top + 18, "Japanese Sega Saturn disc folder (.cue + Track .bin files)", fill=self.DIM)
-        browse = ttk.Button(c, text="Browse…", command=self._browse)
-        c.create_window(W - P, top + 42, window=browse, anchor="ne")
-        entry = ttk.Entry(c, textvariable=self.disc_var)
-        c.create_window(P, top + 42, window=entry, anchor="nw", width=W - 2 * P - 120,
-                        height=34)
+        self.browse_btn = ttk.Button(c, text="Browse…", command=self._browse)
+        c.create_window(W - P, top + 42, window=self.browse_btn, anchor="ne")
+        self.disc_entry = ttk.Entry(c, textvariable=self.disc_var)
+        c.create_window(P, top + 42, window=self.disc_entry, anchor="nw",
+                        width=W - 2 * P - 120, height=34)
         self._text(P, top + 86, tag="status", width=W - 2 * P)
 
         # Movie option drawn on the canvas: a ttk checkbox is an opaque box.
@@ -175,8 +177,9 @@ class Launcher(tk.Tk):
         self._text(P + 28, y + 2, label, tag="movie", fill=self.DIM if on else color)
         if on:
             for t in ("movie", "movie_mark"):
-                c.tag_bind(t, "<Button-1>", lambda e: self.movie_var.set(not self.movie_var.get()))
-                c.tag_bind(t, "<Enter>", lambda e: c.config(cursor="hand2"))
+                c.tag_bind(t, "<Button-1>", lambda e: self._toggle_movie())
+                c.tag_bind(t, "<Enter>",
+                           lambda e: c.config(cursor="" if self.running else "hand2"))
                 c.tag_bind(t, "<Leave>", lambda e: c.config(cursor=""))
         self.movie_var.trace_add("write", lambda *_: self._draw_movie())
         self._draw_movie()
@@ -202,6 +205,22 @@ class Launcher(tk.Tk):
 
     def _draw_movie(self):
         self._set_text("movie_mark", "✓" if self.movie_var.get() else "")
+
+    def _toggle_movie(self):
+        if self.has_ffmpeg and not self.running:
+            self.movie_var.set(not self.movie_var.get())
+
+    def _lock(self, on):
+        """While a build runs, the folder and the movie option stay as built."""
+        for widget in (self.browse_btn, self.disc_entry):
+            widget.state(["disabled"] if on else ["!disabled"])
+        if self.has_ffmpeg:
+            c, gray = self.canvas, "#76809a"
+            for item in c.find_withtag("movie"):
+                key = "outline" if c.type(item) == "rectangle" else "fill"
+                c.itemconfigure(item, **{key: gray if on else
+                                         (self.TEXT if key == "outline" else self.DIM)})
+            c.itemconfigure("movie_mark", fill=gray if on else self.OK)
 
     # --- disc verification + wallpaper ---------------------------------------
 
@@ -317,6 +336,7 @@ class Launcher(tk.Tk):
 
         build_progress.set_sink(advance)
         self.running = True
+        self._lock(True)
         self._busy(True)
         args = lc.build_args(disc, movie)
         threading.Thread(target=self._run_build, args=(args,), daemon=True).start()
@@ -385,6 +405,7 @@ class Launcher(tk.Tk):
         code = self.code
         build_progress.set_sink(None)
         self.running = False
+        self._lock(False)
         if not self.verifying:
             self._busy(False)
         self._check_disc()
