@@ -222,3 +222,24 @@ def test_version_file_matches_the_release_the_repo_claims():
               .splitlines() if l.startswith('## Status')]
     assert status, 'README lost its "## Status" line'
     assert f'v{version}' in status[0], (status[0], version)
+
+
+def test_packaged_patcher_never_starts_git(tmp_path, monkeypatch):
+    """The packaged patcher names the game from VERSION and starts no git.
+
+    Red state (2026-10-17, Windows patcher from CI, user report): every console
+    program the windowed patcher starts gets its own black prompt window. The
+    patcher has no repository, so git only cost a window per call.
+    """
+    (tmp_path / 'VERSION').write_text('0.8.0\n', encoding='utf-8')
+    calls = []
+
+    def spy(cmd, **kw):
+        calls.append(cmd)
+        return b'v0.7.2\n'
+    monkeypatch.setattr(sys, 'frozen', True, raising=False)
+    with patch('subprocess.check_output', side_effect=spy), \
+            patch.object(build, 'SCRIPT_DIR', tmp_path):
+        name = build._resolve_canonical_cue_name('English')
+    assert calls == []
+    assert name.startswith('Langrisser III (English v0.8.0')
