@@ -9,6 +9,11 @@ libcrypto and stopped before encoding the opening:
 
 and the window log showed only "returned non-zero exit status 1", without
 ffmpeg's own message.
+
+Red state (2026-10-17, Windows patcher built by CI, user report): with the
+opening movie on, Build opened a black prompt window for ffmpeg. Closing it
+killed ffmpeg and the build failed. A console program started from the
+windowed patcher needs CREATE_NO_WINDOW.
 """
 import sys
 from pathlib import Path
@@ -79,3 +84,28 @@ def test_ffmpeg_failure_carries_its_message(monkeypatch):
                         lambda cmd, **kw: _FakeProc([err], 1))
     with pytest.raises(RuntimeError, match='OPENSSL_3.3.0'):
         movie_tools._run_ffmpeg(['ffmpeg'], cwd='.', quiet=True)
+
+
+CREATE_NO_WINDOW = 0x08000000
+
+
+@pytest.mark.parametrize('quiet', [True, False])
+def test_ffmpeg_opens_no_prompt_window_on_windows(monkeypatch, quiet):
+    seen = {}
+
+    def fake_popen(cmd, **kw):
+        seen.update(kw)
+        return _FakeProc([], 0)
+
+    def fake_run(cmd, **kw):
+        seen.update(kw)
+    monkeypatch.setattr(movie_tools.subprocess, 'Popen', fake_popen)
+    monkeypatch.setattr(movie_tools.subprocess, 'run', fake_run)
+    monkeypatch.setattr(sys, 'platform', 'win32')
+    movie_tools._run_ffmpeg(['ffmpeg', '-version'], cwd='.', quiet=quiet)
+    assert seen.get('creationflags', 0) & CREATE_NO_WINDOW
+
+
+def test_no_window_flag_only_on_windows():
+    assert host_env.no_window('win32') == {'creationflags': CREATE_NO_WINDOW}
+    assert host_env.no_window('linux') == {}

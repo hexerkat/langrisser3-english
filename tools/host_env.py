@@ -7,6 +7,10 @@ program started from it (ffmpeg, the file manager) inherits the variable,
 loads the bundled libraries instead of its own and can die on a version
 mismatch: on 2026-10-14 ffmpeg stopped with "libcrypto.so.3: version
 `OPENSSL_3.3.0' not found". Every external program gets external_env().
+
+On Windows a console program (ffmpeg) started from the windowed patcher opens
+its own black prompt window, and closing it kills the program (2026-10-17).
+Every external console program also gets no_window().
 """
 from __future__ import annotations
 
@@ -29,3 +33,13 @@ def external_env(environ=None, frozen=None) -> dict:
             else:
                 env[var] = orig
     return env
+
+
+CREATE_NO_WINDOW = 0x08000000
+
+
+def no_window(platform=None) -> dict:
+    """subprocess keyword arguments that keep a console program windowless."""
+    if (sys.platform if platform is None else platform) == 'win32':
+        return {'creationflags': CREATE_NO_WINDOW}
+    return {}

@@ -32,10 +32,10 @@ from pathlib import Path
 
 try:                                  # imported both as `movie_tools` and `tools.movie_tools`
     from . import build_progress
-    from .host_env import external_env
+    from .host_env import external_env, no_window
 except ImportError:
     import build_progress
-    from host_env import external_env
+    from host_env import external_env, no_window
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
@@ -320,13 +320,14 @@ def _run_ffmpeg(cmd, cwd, quiet: bool) -> None:
     are kept, so a failure tells the patcher window's log why it stopped."""
     if not quiet:
         try:
-            subprocess.run(cmd, cwd=cwd, check=True, env=external_env())
+            subprocess.run(cmd, cwd=cwd, check=True, env=external_env(), **no_window())
         except subprocess.CalledProcessError as exc:
             raise RuntimeError('ffmpeg could not encode the opening movie') from exc
         return
     cmd = cmd[:-1] + ['-progress', 'pipe:1', '-nostats', cmd[-1]]
     proc = subprocess.Popen(cmd, cwd=cwd, env=external_env(), text=True,
-                            stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                            stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                            **no_window())
     messages = []
     for line in proc.stdout:
         done = build_progress.ffmpeg_fraction(line, DURATION)
