@@ -49,7 +49,7 @@ follows [Keep a Changelog](https://keepachangelog.com/); dates are `YYYY-MM-DD`.
 - The opening that plays at the start of scenario 3 credits its staff and voice cast in
   English, in a slanted font close to the original.
 - The title screen credit shows the exact patch version and credits Hexerkat and
-  RalfGuth.
+  RalfGuth. The title menu box has the same size and place with or without a save.
 - The hidden sound test on the title screen lists its sounds, war cries and screams in
   English.
 
