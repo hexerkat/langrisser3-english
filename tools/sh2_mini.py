@@ -123,6 +123,10 @@ class Sh2:
             R[n] = _sx(self.rw(at + 4 + (w & 0xFF) * 2), 16) & M32
         elif top == 0xD:                                         # mov.l @(d,PC)
             R[n] = self.rl(((at + 4) & ~3) + (w & 0xFF) * 4)
+        elif (w & 0xFF00) == 0xC700:                             # mova @(d,PC),r0
+            R[0] = (((at + 4) & ~3) + (w & 0xFF) * 4) & M32
+        elif top == 0x0 and (w & 0xFF) == 0x29:                  # movt Rn
+            R[n] = self.T
         elif (w & 0xFF00) == 0x8800:                             # cmp/eq #imm,r0
             self.T = int(R[0] == (_sx(w & 0xFF, 8) & M32))
         elif top == 0x0 and low == 0x7:                         # mul.l Rm,Rn
@@ -162,6 +166,10 @@ class Sh2:
                 R[n] = R[m] & 0xFF                               # extu.b
             elif low == 0xF:
                 R[n] = _sx(R[m] & 0xFFFF, 16) & M32              # exts.w
+            elif low == 0x7:
+                R[n] = ~R[m] & M32                               # not
+            elif low == 0xB:
+                R[n] = -R[m] & M32                               # neg
             else:
                 raise AssertionError(f'unimplemented {w:04X} @0x{at:X}')
         elif top == 0x1:                                         # mov.l Rm,@(d,Rn)
