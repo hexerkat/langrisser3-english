@@ -95,6 +95,7 @@ from prog4_spell_name_table import PROG4_SPELL_NAME_TABLE
 from prog2_sound_test import PROG2_SOUND_TEST
 from prog5_menu_geometry import PROG5_MENU_GEOMETRY
 from prog5_terrain_hud_ascii import PROG5_TERRAIN_HUD_ASCII
+from prog5_orientation_toggle_refresh import PROG5_ORIENTATION_TOGGLE_REFRESH
 from prog4_menu_geometry import PROG4_MENU_GEOMETRY
 from patch_registry import is_enabled, disabled_modules, validate as validate_disabled
 import title_dg2
@@ -310,6 +311,7 @@ ENGINE_MODULE_DICTS = {
     "prog4_spell_name_table": PROG4_SPELL_NAME_TABLE,
     "prog5_menu_geometry": PROG5_MENU_GEOMETRY,
     "prog5_terrain_hud_ascii": PROG5_TERRAIN_HUD_ASCII,
+    "prog5_orientation_toggle_refresh": PROG5_ORIENTATION_TOGGLE_REFRESH,
     "prog4_menu_geometry": PROG4_MENU_GEOMETRY,
     "prog2_sound_test": PROG2_SOUND_TEST,
 }

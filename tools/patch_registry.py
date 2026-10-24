@@ -53,6 +53,7 @@ ENGINE_PATCH_MODULES = (
     "prog4_menu_geometry",
     "prog5_menu_geometry",
     "prog5_terrain_hud_ascii",
+    "prog5_orientation_toggle_refresh",
     "prog6_battle_cmd_width",
     "a0lang_options_menu_geometry",
     "a0lang_title_menu_geometry",
