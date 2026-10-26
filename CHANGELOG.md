@@ -6,6 +6,14 @@ The repository ships only source: you build the patched game from your own Japan
 (see the [README](README.md)). No copyrighted game data is included. Format loosely
 follows [Keep a Changelog](https://keepachangelog.com/); dates are `YYYY-MM-DD`.
 
+## [0.8.1] - 2026-10-26
+
+### Fixes
+- The terrain info in the bottom right corner of the battle map shows the whole
+  terrain name again, instead of broken graphics. Reported by @badspott (#10).
+- The Unit Orientation menu no longer mixes up "Allies" and "Enemies" when you
+  switch between them. Reported by @badspott (#10).
+
 ## [0.8.0] - 2026-10-18
 
 ### A patcher you just run
