@@ -25,7 +25,7 @@ a = Analysis(
     pathex=[".", "tools"],
     datas=datas,
     hiddenimports=["build"],
-    excludes=["pytest"],
+    excludes=["pytest", "PIL"],   # PIL: only tools/font_style_generate.py (dev)
 )
 # The analysis still walks tools/ to collect the stdlib modules they need;
 # the tools modules themselves are dropped here and load from the sources.

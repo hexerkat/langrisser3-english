@@ -198,134 +198,73 @@ _GRID_SPACED_RANGE = set(range(1500, 1621))
 
 # ---------------------------------------------------------------------------
 # Embedded glyph bitmaps (8px wide, 16 rows, 1 byte/row = 16 bytes each)
-# OUR glyph art (Eagle III re-rasterization, shipped since v0.6). Feeds
-# HALF_GLYPHS -> bigram composition + the v0.8 hankaku band.
+# The Latin art comes from the active FONT STYLE (patcher font selector, v0.9):
+# tools/font_style_dosv.py (default, DOS/V ANK16, closest to the JP Latin) or
+# tools/font_style_eagle.py (Eagle III, the v0.6..v0.8 art). apply_style()
+# refills the dicts below IN PLACE, so every module holding a reference sees
+# the switch. Both styles have the same keys, so the tile layout never changes.
+# Feeds HALF_GLYPHS -> bigram composition + the v0.8 hankaku band.
 # ---------------------------------------------------------------------------
 
-_LETTER_GLYPHS = {
-    'a': bytes.fromhex('000000000000780c7ccccccc76000000'),
-    'b': bytes.fromhex('000000e060607c6666666676dc000000'),
-    'c': bytes.fromhex('0000000000007cc6c0c0c0c67c000000'),
-    'd': bytes.fromhex('0000001c0c0c7cccccccccdc76000000'),
-    'e': bytes.fromhex('0000000000007cc6c6fec0c67c000000'),
-    'f': bytes.fromhex('0000001c363230783030303078000000'),
-    'g': bytes.fromhex('00000000000076cccccccccc7c0ccc78'),
-    'h': bytes.fromhex('000000e060607c6666666666e6000000'),
-    'i': bytes.fromhex('0000001818003818181818183c000000'),
-    'j': bytes.fromhex('0000000606000e06060606060666663c'),
-    'k': bytes.fromhex('000000e0606066666c786c66e6000000'),
-    'l': bytes.fromhex('0000003818181818181818183c000000'),
-    'm': bytes.fromhex('000000000000ecfed6d6d6c6c6000000'),
-    'n': bytes.fromhex('000000000000dc666666666666000000'),
-    'o': bytes.fromhex('0000000000007cc6c6c6c6c67c000000'),
-    'p': bytes.fromhex('000000000000dc66666666667c6060f0'),
-    'q': bytes.fromhex('00000000000076cccccccccc7c0c0c1e'),
-    'r': bytes.fromhex('000000000000dc7666606060f0000000'),
-    's': bytes.fromhex('0000000000007cc6c07c06c67c000000'),
-    't': bytes.fromhex('000000103030fc30303030361c000000'),
-    'u': bytes.fromhex('000000000000cccccccccccc76000000'),
-    'v': bytes.fromhex('000000000000c6c6c6c66c3810000000'),
-    'w': bytes.fromhex('000000000000c6c6d6d6d6fe6c000000'),
-    'x': bytes.fromhex('000000000000c6ee7c387ceec6000000'),
-    'y': bytes.fromhex('000000000000c6c6c6c6c6c67e0c1870'),
-    'z': bytes.fromhex('000000000000fe8c183060c2fe000000'),
-    'A': bytes.fromhex('00000010387ceec6c6c6fec6c6000000'),
-    'B': bytes.fromhex('000000fc6666667c66666666fc000000'),
-    'C': bytes.fromhex('0000003c66c2c0c0c0c0c2663c000000'),
-    'D': bytes.fromhex('000000f86c6666666666666cf8000000'),
-    'E': bytes.fromhex('000000fe6662687868606266fe000000'),
-    'F': bytes.fromhex('000000fe6662687868606060f0000000'),
-    'G': bytes.fromhex('0000003c66c2c0c0cec6c66e3a000000'),
-    'H': bytes.fromhex('000000c6c6c6c6fec6c6c6c6c6000000'),
-    'I': bytes.fromhex('0000003c18181818181818183c000000'),
-    'J': bytes.fromhex('0000001e0c0c0c0c0ccccccc78000000'),
-    'K': bytes.fromhex('000000e6666c6c786c6c6666e6000000'),
-    'L': bytes.fromhex('000000f06060606060606266fe000000'),
-    'M': bytes.fromhex('000000c6eefefed6d6d6c6c6c6000000'),
-    'N': bytes.fromhex('000000c6e6e6f6f6dedececec6000000'),
-    'O': bytes.fromhex('0000007cc6c6c6c6c6c6c6c67c000000'),
-    'P': bytes.fromhex('000000fc666666667c606060f0000000'),
-    'Q': bytes.fromhex('000000386cc6c6c6c6c6de7e3c0c0e00'),
-    'R': bytes.fromhex('000000fc666666667c6c6666f6000000'),
-    'S': bytes.fromhex('0000007cc6c6c0701c06c6c67c000000'),
-    'T': bytes.fromhex('0000007e7e5a1818181818183c000000'),
-    'U': bytes.fromhex('000000c6c6c6c6c6c6c6c6c67c000000'),
-    'V': bytes.fromhex('000000c6c6c6c6c6c6c67c3810000000'),
-    'W': bytes.fromhex('000000c6c6c6d6d6d6d6fe6c6c000000'),
-    'X': bytes.fromhex('000000c6c66c6c38386c6cc6c6000000'),
-    'Y': bytes.fromhex('000000666666667e3c1818183c000000'),
-    'Z': bytes.fromhex('000000fec6860c183060c2c6fe000000'),
-}
+import font_style_dosv
+import font_style_eagle
 
-# Full 32-byte tiles for digits (they span the full 16px width)
-_DIGIT_TILES = {
-    '0': bytes.fromhex('000000000000038006c00c600ce00de00f600e600c6006c00380000000000000'),
-    '1': bytes.fromhex('00000000000001800380078001800180018001800180018003c0000000000000'),
-    '2': bytes.fromhex('00000000000007c00c60006000c00180030006000c600c600fe0000000000000'),
-    '3': bytes.fromhex('00000000000007e0046000c0018003c0006000600060066003c0000000000000'),
-    '4': bytes.fromhex('00000000000001c001c003c003c006c006c00cc00fe000c001e0000000000000'),
-    '5': bytes.fromhex('0000000000000fc00c000c000f800cc00060006008600cc00780000000000000'),
-    '6': bytes.fromhex('00000000000003c006000c000f800ec00c600c600c6006c00380000000000000'),
-    '7': bytes.fromhex('0000000000000fe00c60006000c000c001800180030003000300000000000000'),
-    '8': bytes.fromhex('00000000000007c00c600c600c6007c00c600c600c600c6007c0000000000000'),
-    '9': bytes.fromhex('000000000000038006c00c600c600c6006e003e0006000c00780000000000000'),
-}
+FONT_STYLES = {'dosv': font_style_dosv, 'eagle': font_style_eagle}
+DEFAULT_FONT_STYLE = 'dosv'
+ACTIVE_FONT_STYLE = DEFAULT_FONT_STYLE
+
+_LETTER_GLYPHS: dict = {}
+
+# Full 32-byte tiles for digits 7-16 and uppercase 17-42 (they span the full
+# 16px width): the style's half-glyph centered in cols 4-11.
+_DIGIT_TILES: dict = {}
+_UC_STANDALONE_TILES: dict = {}
 
 # 8w half-glyphs of digits — used by grid-range bigram overrides for tiles
 # like (' ', '2'), ('+', '8'), ('1', '5'), etc. that pair a digit with
 # another half-glyph in a 16x16 cell.
-_DIGIT_HALF_GLYPHS = {
-    '0': bytes.fromhex('000000386cc6cedef6e6c66c38000000'),
-    '1': bytes.fromhex('0000001838781818181818183c000000'),
-    '2': bytes.fromhex('0000007cc6060c183060c6c6fe000000'),
-    '3': bytes.fromhex('0000007e460c183c060606663c000000'),
-    '4': bytes.fromhex('0000001c1c3c3c6c6cccfe0c1e000000'),
-    '5': bytes.fromhex('000000fcc0c0f8cc060686cc78000000'),
-    '6': bytes.fromhex('0000003c60c0f8ecc6c6c66c38000000'),
-    '7': bytes.fromhex('000000fec6060c0c1818303030000000'),
-    '8': bytes.fromhex('0000007cc6c6c67cc6c6c6c67c000000'),
-    '9': bytes.fromhex('000000386cc6c6c66e3e060c78000000'),
-}
+_DIGIT_HALF_GLYPHS: dict = {}
 
 # Lowercase umlauts (a/o/u-diaeresis) — appear in grid-range bigrams.
-_UMLAUT_HALF_GLYPHS = {
-    'ä': bytes.fromhex('000000cccc00780c7ccccccc76000000'),
-    'ö': bytes.fromhex('000000c6c6007cc6c6c6c6c67c000000'),
-    'ü': bytes.fromhex('000000cccc00cccccccccccc76000000'),
-}
+_UMLAUT_HALF_GLYPHS: dict = {}
 
-_PUNCT_GLYPHS = {
-    ':': bytes.fromhex('00000000000018180000001818000000'),
-    ';': bytes.fromhex('00000000000018180000001818300000'),
-    ',': bytes.fromhex('00000000000000000000001818300000'),
-    '.': bytes.fromhex('00000000000000000000001818000000'),
-    '?': bytes.fromhex('0000007cc6c60c0c1818001818000000'),
-    '!': bytes.fromhex('000000183c3c3c181818001818000000'),
-}
+_PUNCT_GLYPHS: dict = {}
 
 # Extended half-width punctuation glyphs (8px left, blank right).
 # Script coverage audit showed these chars appear in scripts but had no tile.
 # Installed at tile slots 1627+ (kanji area, previously JP glyphs).
-_EXTRA_PUNCT_GLYPHS = {
-    '-': bytes.fromhex('00000000000000007e7e000000000000'),
-    '+': bytes.fromhex('00000000000018187e7e181800000000'),
-    '(': bytes.fromhex('00000c181830303030303018180c0000'),
-    ')': bytes.fromhex('00003018180c0c0c0c0c0c1818300000'),
-    '/': bytes.fromhex('00000006060c0c181830306060000000'),
-    # Half-width asterisk. No longer used as a STANDALONE tile (the '*' char
-    # maps to the JP full-width star at tile 489 — see build_char_tile_map),
-    # but still needed as a half-glyph for the grid-area UI bigrams "**"/"n*"/"* "
-    # (tiles 1570-1572, e.g. "****Caution****").
-    '*': bytes.fromhex('00001092543854921000000000000000'),
-    '%': bytes.fromhex('000000e6a6ec0c181830376567000000'),
-    '[': bytes.fromhex('0000003c30303030303030303c000000'),
-    ']': bytes.fromhex('0000003c0c0c0c0c0c0c0c0c3c000000'),
-    "'": bytes.fromhex('00000018183000000000000000000000'),
-    '&': bytes.fromhex('000000386c6c3876dcdccccc76000000'),
-    # Bullet for ・-style bullet points. Glyph mirrors the right-half
-    # bullet used in the (" ", "•") bigram at tile 1656.
-    '•': bytes.fromhex('00000000000000183c3c180000000000'),
-}
+# '*' is no longer a STANDALONE tile (the '*' char maps to the JP full-width
+# star at tile 489, see build_char_tile_map) but stays a half-glyph for the
+# grid-area UI bigrams "**"/"n*"/"* " (tiles 1570-1572, "****Caution****").
+_EXTRA_PUNCT_GLYPHS: dict = {}
+
+# Bullet for ・-style bullet points, shared by every style. Mirrors the
+# right-half bullet used in the (" ", "•") bigram at tile 1656.
+_BULLET_GLYPH = bytes.fromhex('00000000000000183c3c180000000000')
+
+
+def _center_half(glyph: bytes) -> bytes:
+    """An 8x16 half-glyph in cols 4-11 of a 16x16 tile."""
+    return b''.join(((b << 4) & 0xFFFF).to_bytes(2, 'big') for b in glyph)
+
+
+def _fill_style_art(style) -> None:
+    for target, source in ((_LETTER_GLYPHS, style.LETTERS),
+                           (_DIGIT_HALF_GLYPHS, style.DIGITS),
+                           (_UMLAUT_HALF_GLYPHS, style.UMLAUTS),
+                           (_PUNCT_GLYPHS, style.PUNCT),
+                           (_EXTRA_PUNCT_GLYPHS,
+                            {**style.EXTRA_PUNCT, '•': _BULLET_GLYPH})):
+        target.clear()
+        target.update(source)
+    _DIGIT_TILES.clear()
+    _DIGIT_TILES.update({d: _center_half(g) for d, g in style.DIGITS.items()})
+    _UC_STANDALONE_TILES.clear()
+    _UC_STANDALONE_TILES.update({chr(65 + i): _center_half(style.LETTERS[chr(65 + i)])
+                                 for i in range(26)})
+
+
+_fill_style_art(FONT_STYLES[DEFAULT_FONT_STYLE])
 
 # Full-width punctuation glyphs (32 bytes = full 16x16 tile, not interleaved
 # with a blank half). Used when a char must span the entire tile cell to
@@ -520,42 +459,8 @@ _STAT_FRAGMENT_MAPS = {
     ('0', '%'): 1568,
 }
 
-# Comma glyph used in bigram right-halves (same shape as standalone)
-_COMMA_GLYPH_BIGRAM = bytes.fromhex('00000000000000000000001818300000')
-
-_APOSTROPHE_GLYPH = bytes.fromhex('00000018183000000000000000000000')
-
 _BLANK_GLYPH = b'\x00' * 16
 
-# Full 32-byte standalone uppercase tiles (tiles 17-42)
-_UC_STANDALONE_TILES = {
-    'A': bytes.fromhex('0000000000000100038007c00ee00c600c600c600fe00c600c60000000000000'),
-    'B': bytes.fromhex('0000000000000fc006600660066007c006600660066006600fc0000000000000'),
-    'C': bytes.fromhex('00000000000003c006600c200c000c000c000c000c20066003c0000000000000'),
-    'D': bytes.fromhex('0000000000000f8006c006600660066006600660066006c00f80000000000000'),
-    'E': bytes.fromhex('0000000000000fe0066006200680078006800600062006600fe0000000000000'),
-    'F': bytes.fromhex('0000000000000fe0066006200680078006800600060006000f00000000000000'),
-    'G': bytes.fromhex('00000000000003c006600c200c000c000ce00c600c6006e003a0000000000000'),
-    'H': bytes.fromhex('0000000000000c600c600c600c600fe00c600c600c600c600c60000000000000'),
-    'I': bytes.fromhex('00000000000003c00180018001800180018001800180018003c0000000000000'),
-    'J': bytes.fromhex('00000000000001e000c000c000c000c000c00cc00cc00cc00780000000000000'),
-    'K': bytes.fromhex('0000000000000e60066006c006c0078006c006c0066006600e60000000000000'),
-    'L': bytes.fromhex('0000000000000f00060006000600060006000600062006600fe0000000000000'),
-    'M': bytes.fromhex('0000000000000c600ee00fe00fe00d600d600d600c600c600c60000000000000'),
-    'N': bytes.fromhex('0000000000000c600e600e600f600f600de00de00ce00ce00c60000000000000'),
-    'O': bytes.fromhex('00000000000007c00c600c600c600c600c600c600c600c6007c0000000000000'),
-    'P': bytes.fromhex('0000000000000fc0066006600660066007c00600060006000f00000000000000'),
-    'Q': bytes.fromhex('000000000000038006c00c600c600c600c600c600de007e003c000c000e00000'),
-    'R': bytes.fromhex('0000000000000fc0066006600660066007c006c0066006600f60000000000000'),
-    'S': bytes.fromhex('00000000000007c00c600c600c00070001c000600c600c6007c0000000000000'),
-    'T': bytes.fromhex('00000000000007e007e005a001800180018001800180018003c0000000000000'),
-    'U': bytes.fromhex('0000000000000c600c600c600c600c600c600c600c600c6007c0000000000000'),
-    'V': bytes.fromhex('0000000000000c600c600c600c600c600c600c6007c003800100000000000000'),
-    'W': bytes.fromhex('0000000000000c600c600c600d600d600d600d600fe006c006c0000000000000'),
-    'X': bytes.fromhex('0000000000000c600c6006c006c00380038006c006c00c600c60000000000000'),
-    'Y': bytes.fromhex('000000000000066006600660066007e003c001800180018003c0000000000000'),
-    'Z': bytes.fromhex('0000000000000fe00c60086000c00180030006000c200c600fe0000000000000'),
-}
 
 _ELLIPSIS_TILE_DATA = bytes.fromhex(
     # Three dots at rows 11-12 to align with period glyph baseline.
@@ -1116,11 +1021,9 @@ def generate_english_font(jp_font: bytes) -> bytes:
     half_glyphs.update({ch: g for ch, g in _EXTRA_PUNCT_GLYPHS.items()})
     half_glyphs.update({ch: g for ch, g in _DIGIT_HALF_GLYPHS.items()})
     half_glyphs.update({ch: g for ch, g in _UMLAUT_HALF_GLYPHS.items()})
-    half_glyphs["'"] = _APOSTROPHE_GLYPH
 
-    # Bigram comma uses a shifted-up variant
+    # Bigram right halves: the same glyphs (the comma once had its own copy)
     bigram_right_glyphs = dict(half_glyphs)
-    bigram_right_glyphs[','] = _COMMA_GLYPH_BIGRAM
 
     # --- Tile 0: blank (space) ---
     write_tile(0, b'\x00' * TILE_SIZE)
@@ -1393,7 +1296,6 @@ def build_half_glyphs() -> dict:
     hg.update(_EXTRA_PUNCT_GLYPHS)
     hg.update(_DIGIT_HALF_GLYPHS)
     hg.update(_UMLAUT_HALF_GLYPHS)
-    hg["'"] = _APOSTROPHE_GLYPH
     hg['"'] = _DQUOTE_GLYPH
     return hg
 
@@ -1408,12 +1310,35 @@ def _capital_with_dots(base: str) -> bytes:
     return bytes([0x00, 0xC6, 0x00]) + HALF_GLYPHS[base][3:]
 
 
-# Half-glyphs of the 8px hankaku band: the bigram alphabet plus the 8px
-# ellipsis and the uppercase umlauts (band only: no bigram tiles for them).
-HANKAKU_HALF_GLYPHS = dict(HALF_GLYPHS)
-HANKAKU_HALF_GLYPHS.setdefault('…', _ELLIPSIS_HALF)
-HANKAKU_HALF_GLYPHS.update({up: _capital_with_dots(base)
-                            for up, base in (('Ä', 'A'), ('Ö', 'O'), ('Ü', 'U'))})
+def _build_hankaku_half_glyphs(style) -> dict:
+    """Half-glyphs of the 8px hankaku band: the bigram alphabet plus the 8px
+    ellipsis and the uppercase umlauts (band only: no bigram tiles for them).
+    A style without its own uppercase umlauts gets capital + dots."""
+    hk = dict(HALF_GLYPHS)
+    hk.setdefault('…', _ELLIPSIS_HALF)
+    if style.UMLAUTS_UPPER is not None:
+        hk.update(style.UMLAUTS_UPPER)
+    else:
+        hk.update({up: _capital_with_dots(base)
+                   for up, base in (('Ä', 'A'), ('Ö', 'O'), ('Ü', 'U'))})
+    return hk
+
+
+HANKAKU_HALF_GLYPHS = _build_hankaku_half_glyphs(FONT_STYLES[DEFAULT_FONT_STYLE])
+
+
+def apply_style(name: str) -> None:
+    """Make `name` the active font style. Refills every art dict IN PLACE
+    (other modules keep references to HALF_GLYPHS and friends)."""
+    global ACTIVE_FONT_STYLE
+    style = FONT_STYLES[name]
+    _fill_style_art(style)
+    HALF_GLYPHS.clear()
+    HALF_GLYPHS.update(build_half_glyphs())
+    hk = _build_hankaku_half_glyphs(style)
+    HANKAKU_HALF_GLYPHS.clear()
+    HANKAKU_HALF_GLYPHS.update(hk)
+    ACTIVE_FONT_STYLE = name
 
 
 def compose_bigram(a: str, b: str) -> bytes:
@@ -1570,7 +1495,15 @@ def write_layout_csv(path: str) -> int:
 # --- Promote the data-driven layout as the production exports -----------------
 BIGRAM_TILE_MAP = build_bigram_layout()
 ENGLISH_FONT_TILES = NEW_FONT_TILES
-generate_english_font = _generate_data_driven_font
+
+
+def generate_english_font(jp_font: bytes, style: str | None = None) -> bytes:
+    """The production FONT.BIN. `style` picks the Latin art (FONT_STYLES);
+    None keeps the active style."""
+    if style is not None:
+        apply_style(style)
+    return _generate_data_driven_font(jp_font)
+
 TILE_CHAR_MAP = {v: k for k, v in CHAR_TILE_MAP.items()}
 
 # Re-derive the FNT_SYS surface maps from the PACKED layout. build_fntsys_maps()

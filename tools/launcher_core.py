@@ -58,9 +58,54 @@ def check_disc_dir(disc_dir: Path) -> tuple[bool, str]:
     return True, "Japanese disc found."
 
 
-def build_args(disc_dir: Path, encode_movie: bool) -> list[str]:
+# The font selector: build.py --font values and their labels in the window.
+# Must match font_tools.FONT_STYLES / DEFAULT_FONT_STYLE (tests/test_font_styles.py);
+# kept here so the window opens without importing the font tables.
+FONT_CHOICES = (("dosv", "Original style (DOS/V)"),
+                ("eagle", "Eagle III"))
+FONT_NOTES = {"dosv": "Closest to the Japanese game's own letters",
+              "eagle": "Bolder letters, used by earlier versions of the patch"}
+DEFAULT_FONT = "dosv"
+
+# The preview beside each font: a line drawn with the style's own 8x16 art
+# (tools/font_style_<key>.py), light on a dark window like the game's.
+PREVIEW_TEXT = "Diehärte: Leave it to me!"
+PREVIEW_FG, PREVIEW_BG = (255, 255, 255), (16, 24, 56)
+
+
+def font_preview(key: str, text: str = PREVIEW_TEXT, scale: int = 2,
+                 margin: int = 4):
+    """(width, height, rgb) of text drawn in font style key, each pixel
+    scale x scale, with margin background pixels around it."""
+    import importlib
+    style = importlib.import_module(f"font_style_{key}")
+    glyphs = {}
+    for table in ("LETTERS", "DIGITS", "PUNCT", "EXTRA_PUNCT",
+                  "UMLAUTS", "UMLAUTS_UPPER"):
+        glyphs.update(getattr(style, table, None) or {})
+    w = len(text) * 8 * scale + 2 * margin
+    h = 16 * scale + 2 * margin
+    rgb = bytearray(bytes(PREVIEW_BG) * (w * h))
+    for i, ch in enumerate(text):
+        art = glyphs.get(ch, bytes(16))
+        for y in range(16):
+            for x in range(8):
+                if not art[y] >> (7 - x) & 1:
+                    continue
+                for dy in range(scale):
+                    row = margin + y * scale + dy
+                    col = margin + (i * 8 + x) * scale
+                    o = (row * w + col) * 3
+                    rgb[o:o + 3 * scale] = bytes(PREVIEW_FG) * scale
+    return w, h, rgb
+
+
+def build_args(disc_dir: Path, encode_movie: bool,
+               font: str | None = None) -> list[str]:
     """The build.py command-line arguments for this choice."""
     args = ["--jp-iso", str(disc_dir)]
+    if font:
+        args += ["--font", font]
     if encode_movie:
         args.append("--encode-movie")
     return args

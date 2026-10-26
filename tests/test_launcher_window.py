@@ -61,3 +61,26 @@ def test_finish_unlocks_them(app):
     assert _locked(app) == {'browse': False, 'folder': False}
     app._toggle_movie()
     assert app.movie_var.get() is True
+
+
+def test_window_opens_on_the_dosv_font(monkeypatch, app):
+    """User request 2026-10-23: DOS/V is preselected every time the window
+    opens, even when the last build used another font.
+    Red state: the window restored the font saved in the settings."""
+    import launcher
+    monkeypatch.setattr(launcher.lc, 'load_settings', lambda: {'font': 'eagle'})
+    w = launcher.Launcher()
+    try:
+        assert w.font_var.get() == 'dosv'
+    finally:
+        w.destroy()
+
+
+def test_each_font_shows_its_preview(app):
+    """One row per font, each with a preview drawn in that font.
+    Red state: the two fonts were radio labels on one row, no preview."""
+    import launcher
+    assert set(app.previews) == {k for k, _label in launcher.lc.FONT_CHOICES}
+    for key, photo in app.previews.items():
+        w, h, _rgb = launcher.lc.font_preview(key)
+        assert (photo.width(), photo.height()) == (w, h)

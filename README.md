@@ -66,8 +66,9 @@ Nothing to install, no Python, no terminal.
    - **Linux**: `Langrisser3-Patcher-linux.tar.gz` (extract it first)
 2. **Open it.** Allow it to run if your system asks (see the note above).
 3. **Choose your Japanese disc folder** with **Browse…**. The patcher checks that it really is the Langrisser III disc. When it is, a character from the disc's own art gallery shows up behind the window.
-4. **Press Build patched game.** It takes a few seconds, or about five minutes with the English opening movie. When it finishes, **Open folder** shows the patched game, in a `build/` folder next to the patcher.
-5. **Load the `.cue`** from that folder in your emulator and play. On real hardware, burn the `.cue` image or copy it to your optical drive emulator (tested on Saroo).
+4. **Pick a font.** **Original style (DOS/V)** is the default: thin letters close to the ones the Japanese game uses. **Eagle III** is the bolder font of v0.8 and earlier. The window shows a line of text in each font, and DOS/V is selected every time it opens. The opening movie subtitles use the same font. You can build again with the other one at any time.
+5. **Press Build patched game.** It takes a few seconds, or about five minutes with the English opening movie. When it finishes, **Open folder** shows the patched game, in a `build/` folder next to the patcher.
+6. **Load the `.cue`** from that folder in your emulator and play. On real hardware, burn the `.cue` image or copy it to your optical drive emulator (tested on Saroo).
 
 The English opening movie option needs [ffmpeg](https://ffmpeg.org/download.html) installed. Without it the game keeps the Japanese opening.
 
@@ -82,6 +83,8 @@ For developers, or if the patcher does not run on your system. You need **Python
 ```bash
 python3 build.py --jp-iso "/path/to/Langrisser III (Japan)"
 ```
+
+Add `--font eagle` for the Eagle III font of v0.8 and earlier (the default is `--font dosv`).
 
 This produces a self-contained folder under `build/` named after the `.cue` (e.g. `build/Langrisser III (English v0.8.1)/`) holding the `.cue` and all track `.bin` files, ready to play.
 
@@ -132,7 +135,7 @@ The code in this repository is licensed under the **GNU General Public License, 
 
 ### Third-party assets
 
-* **`data/fonts/Mx437_CL_EagleIII_8x16.ttf`** and the in-game glyphs derived from it are from VileR's *Ultimate Oldschool PC Font Pack*, under **CC BY-SA 4.0**. Attribution: VileR / int10h.org. Details in [`data/fonts/SOURCES.md`](data/fonts/SOURCES.md).
+* **`data/fonts/Mx437_DOS-V_re_ANK16.ttf`** and **`data/fonts/Mx437_CL_EagleIII_8x16.ttf`**, and the in-game glyphs derived from them, are from VileR's *Ultimate Oldschool PC Font Pack*, under **CC BY-SA 4.0**. Attribution: VileR / int10h.org. Details in [`data/fonts/SOURCES.md`](data/fonts/SOURCES.md).
 * The English script began from a draft translation baseline by **Akari Dawn, ElfShadow and Oogami**, and from **CyberWarriorX's** v0.2 patch (bigram font, menu translations). Those contributions remain the work of their respective authors.
 
 ## Legal

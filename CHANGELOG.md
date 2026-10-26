@@ -6,6 +6,16 @@ The repository ships only source: you build the patched game from your own Japan
 (see the [README](README.md)). No copyrighted game data is included. Format loosely
 follows [Keep a Changelog](https://keepachangelog.com/); dates are `YYYY-MM-DD`.
 
+## [Unreleased]
+
+### Choose your font
+- The patcher has a font selector. **Original style (DOS/V)**, the new default, has thin
+  letters close to the ones the Japanese game uses for its own Latin text. **Eagle III**
+  is the bolder font of every release up to v0.8, unchanged. Each one shows a line of
+  sample text, so you can see the difference before you build.
+- The English subtitles of the opening movie are drawn in the font you pick, too.
+- Building from source takes the same choice: `--font dosv` or `--font eagle`.
+
 ## [0.8.1] - 2026-10-26
 
 ### Fixes

@@ -9,7 +9,10 @@ corruption during the data-driven rebuild turns it RED.
 See archive/docs/20260625_new_font_from_scratch_plan.md (Part 0) and the
 engine-fixed map in 20260625_font_refactor_handoff.md.
 
-Glyph note: tiles 0,1,7-16 are immutable. Tile 44 (the engine の glue) keeps
+Glyph note: tiles 0,1,7-16 keep their POSITION forever; since the v0.9 font
+selector (2026-10-23) the ART of 1 (": ") and 7-16 (digits) follows the font
+style, so GOLDEN below is the eagle style and the dosv style is checked
+against its own glyphs. Tile 44 (the engine の glue) keeps
 its POSITION fixed forever. Its glyph history: compact "'s " (2026-06-14), a
 "normal 's" that glued every composed line ("Tiaris'sMagic Herb", Part 3), and
 since 2026-10-08 the right arrow (Ralf), the same art as the ADV button
@@ -26,7 +29,7 @@ import new_font as nf     # noqa: E402
 JP_FONT = REPO / "data" / "jp" / "font_jp.bin"
 TILE = 32  # bytes per 16x16 1bpp tile
 
-# Byte-exact golden for the engine-mandatory tiles in the NEW (shipping) font.
+# Byte-exact golden for the engine-mandatory tiles in the eagle style.
 # 0,1,7-16 are preserved from the JP base; tile 44 is the glue arrow drawn by
 # the legacy generator at the の position. Deterministic.
 GOLDEN = {
@@ -46,13 +49,17 @@ GOLDEN = {
 }
 
 
-def _font():
-    return nf.generate_new_font(JP_FONT.read_bytes())
+def _font(style):
+    prev = ft.ACTIVE_FONT_STYLE
+    try:
+        return ft.generate_english_font(JP_FONT.read_bytes(), style=style)
+    finally:
+        ft.apply_style(prev)
 
 
 def test_engine_mandatory_tiles_byte_locked():
     """The engine-mandatory tiles stay byte-identical at their fixed positions."""
-    font = _font()
+    font = _font("eagle")
     bad = []
     for tile, expected in GOLDEN.items():
         got = font[tile * TILE:(tile + 1) * TILE].hex()
@@ -65,6 +72,18 @@ def test_engine_mandatory_tiles_byte_locked():
             "`mov #imm` / the number formatter and MUST stay put):\n"
             + "\n".join(lines)
         )
+
+
+def test_engine_mandatory_tiles_in_the_dosv_style():
+    """Same positions in the dosv style: blank and arrow unchanged, ": " and
+    the digits drawn from the dosv glyphs (digit = value + 7, centered)."""
+    import font_style_dosv as dosv
+    font = _font("dosv")
+    tile = lambda t: font[t * TILE:(t + 1) * TILE]
+    assert tile(0).hex() == GOLDEN[0] and tile(44).hex() == GOLDEN[44]
+    assert tile(1) == ft._interleave(dosv.PUNCT[':'], bytes(16))
+    for d in range(10):
+        assert tile(7 + d) == ft._render_glyph_centered(dosv.DIGITS[str(d)])
 
 
 def test_engine_mandatory_semantic_anchors():

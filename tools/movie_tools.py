@@ -47,15 +47,19 @@ DURATION = 84.0                  # seconds; matches the JP audio exactly
 AUDIO_RATE = 22050
 AUDIO_CH = 1
 
-# Subtitles use the SAME face as the langrisser3-english in-game text — Eagle III
-# (Mx437 CL EagleIII 8x16, bundled here in fonts/) — so the opening reads
-# consistently with the rest of that localisation. It is a pixel font built on a
-# 16px cell. To render it PIXEL-EXACT we burn it through a generated .ass whose
+# Subtitles use the SAME face as the langrisser3-english in-game text, the
+# font style picked for the build (build.py --font, font_tools.FONT_STYLES), so
+# the opening reads consistently with the rest of that localisation. Each is a
+# pixel font built on a 16px cell, bundled in data/fonts/. To render it PIXEL-EXACT we burn it through a generated .ass whose
 # PlayResY equals the frame height (224): then FontSize 16 == 16 real px == 8x16
 # glyphs with no scaling blur. (Burning a raw .srt lets libass default to
 # PlayResY 288, which scales the font to ~12.4px and softens it.)
 FONTS_DIR = REPO_ROOT / "data" / "fonts"
-SUB_FONT = "Mx437 CL EagleIII 8x16"
+SUB_FONTS = {                    # style -> (family name for libass, TTF file)
+    "dosv": ("Mx437 DOS/V re. ANK16", "Mx437_DOS-V_re_ANK16.ttf"),
+    "eagle": ("Mx437 CL EagleIII 8x16", "Mx437_CL_EagleIII_8x16.ttf"),
+}
+DEFAULT_SUB_FONT = "dosv"
 SUB_FONT_SIZE = 16               # == cell height -> pixel-exact at PlayResY=HEIGHT
 SUB_MARGIN_V = 22                # px from the bottom (raised ~one line from 6)
 
@@ -278,9 +282,9 @@ def _srt_ts_to_ass(ts: str) -> str:
     return f"{int(hh)}:{mm}:{ss}.{int(ms) // 10:02d}"
 
 
-def _srt_to_pixel_ass(srt: Path) -> str:
+def _srt_to_pixel_ass(srt: Path, font: str = DEFAULT_SUB_FONT) -> str:
     """Render an .srt as an .ass whose PlayRes matches the 320x224 frame, so the
-    Eagle III pixel font lands 1:1 (FontSize 16 == 16px). Style: white fill, 1px
+    pixel font of style ``font`` (SUB_FONTS) lands 1:1 (FontSize 16 == 16px). Style: white fill, 1px
     black outline, bottom-centred, raised SUB_MARGIN_V px."""
     import re
     blocks = re.split(r"\n\s*\n", srt.read_text(encoding="utf-8").strip())
@@ -303,7 +307,7 @@ def _srt_to_pixel_ass(srt: Path) -> str:
         "BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, "
         "Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, "
         "MarginR, MarginV, Encoding\n"
-        f"Style: Default,{SUB_FONT},{SUB_FONT_SIZE},&H00FFFFFF,&H00000000,"
+        f"Style: Default,{SUB_FONTS[font][0]},{SUB_FONT_SIZE},&H00FFFFFF,&H00000000,"
         f"&H00000000,0,0,0,0,100,100,0,0,1,1,0,2,4,4,{SUB_MARGIN_V},1\n\n"
         "[Events]\n"
         "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, "
@@ -350,6 +354,7 @@ def build_movie_cpk(
     fps: int = FPS,
     interpolate: bool = False,
     video_bitrate: str = DEFAULT_VIDEO_BITRATE,
+    font: str = DEFAULT_SUB_FONT,
     quiet: bool = False,
 ) -> Path:
     """Encode ``out`` (Sega FILM/CPK) from ``source`` video + ``srt`` subtitles,
@@ -366,10 +371,10 @@ def build_movie_cpk(
 
     # Run from the .srt's directory so the subtitles filter gets a bare filename
     # (no path-escaping headaches inside the filtergraph). Generate a pixel-exact
-    # .ass next to it (PlayResY == frame height -> Eagle III renders 1:1).
+    # .ass next to it (PlayResY == frame height -> the pixel font renders 1:1).
     cwd = srt.parent
     ass = srt.with_suffix(".pixel.ass")
-    ass.write_text(_srt_to_pixel_ass(srt), encoding="utf-8")
+    ass.write_text(_srt_to_pixel_ass(srt, font), encoding="utf-8")
     # Subtitles are burned AFTER any frame interpolation so the text itself is
     # never motion-warped — interpolation only touches the underlying picture.
     parts = [f"scale={WIDTH}:{HEIGHT}:flags=lanczos"]
@@ -475,10 +480,12 @@ def main() -> None:
                     help=f"output framerate (default {FPS}; use 30 for smoother)")
     ap.add_argument("--interpolate", action="store_true",
                     help="motion-interpolate to --fps (source is natively 15fps)")
+    ap.add_argument("--font", choices=sorted(SUB_FONTS), default=DEFAULT_SUB_FONT,
+                    help=f"subtitle font style (default {DEFAULT_SUB_FONT})")
     args = ap.parse_args()
     build_movie_cpk(args.source, args.srt, args.jp_cpk, args.out,
                     fps=args.fps, interpolate=args.interpolate,
-                    video_bitrate=args.bitrate)
+                    video_bitrate=args.bitrate, font=args.font)
 
 
 if __name__ == "__main__":
