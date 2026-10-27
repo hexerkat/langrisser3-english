@@ -230,7 +230,7 @@ def test_ffmpeg_really_parses_a_windows_style_fonts_dir(movie_tools, tmp_path):
         pytest.skip("ffmpeg not installed")
     ttf = movie_tools.FONTS_DIR / "Mx437_CL_EagleIII_8x16.ttf"
     ass = tmp_path / "t.ass"
-    ass.write_text(movie_tools._srt_to_pixel_ass(SRT), encoding="utf-8")
+    ass.write_text(movie_tools._srt_to_pixel_ass(SRT, font="eagle"), encoding="utf-8")
 
     def render(fontsdir, name):
         vf = movie_tools.subtitles_filter(ass.name, fontsdir) + ",format=rgb24"
@@ -256,3 +256,74 @@ def test_ffmpeg_really_parses_a_windows_style_fonts_dir(movie_tools, tmp_path):
         "the escaped fonts dir did not reach libass (font substituted)"
     assert lit != render(tmp_path / "nowhere", "missing.png"), \
         "test is blind: the render looks the same with no fonts dir at all"
+
+
+# --- the burned subtitles follow the patcher's font choice (2026-10-23) -----
+# User request: "quando vai queimar a legenda tem que usar a fonte selecionada".
+# Red state: the subtitle style was hardwired to Eagle III (SUB_FONT), so a
+# DOS/V build still burned the opening in Eagle III.
+
+def _burn_one_frame(movie_tools, tmp_path, font, fontsdir, name):
+    ass = tmp_path / f"{name}.ass"
+    ass.write_text(movie_tools._srt_to_pixel_ass(SRT, font=font), encoding="utf-8")
+    vf = movie_tools.subtitles_filter(ass.name, fontsdir) + ",format=gray"
+    raw = subprocess.run(
+        ["ffmpeg", "-v", "error", "-f", "lavfi",
+         "-i", f"color=c=black:s={movie_tools.WIDTH}x{movie_tools.HEIGHT}:d=1",
+         "-ss", "0.5", "-filter:v", vf, "-frames:v", "1",
+         "-f", "rawvideo", "-"],
+        cwd=tmp_path, check=True, capture_output=True).stdout
+    return raw
+
+
+def test_every_font_style_has_a_subtitle_face(movie_tools):
+    import font_tools
+    assert set(movie_tools.SUB_FONTS) == set(font_tools.FONT_STYLES)
+    assert movie_tools.DEFAULT_SUB_FONT == font_tools.DEFAULT_FONT_STYLE
+    for family, ttf in movie_tools.SUB_FONTS.values():
+        assert (movie_tools.FONTS_DIR / ttf).exists(), ttf
+
+
+def test_burned_subtitle_uses_the_selected_font(movie_tools, tmp_path):
+    """Burned through the shared fonts dir, each style's frame equals the frame
+    burned with ONLY that style's TTF available: libass found the chosen face
+    and did not substitute. The two styles give different pictures."""
+    if not shutil.which("ffmpeg"):
+        pytest.skip("ffmpeg not installed")
+    frames = {}
+    for key, (_family, ttf) in movie_tools.SUB_FONTS.items():
+        alone = tmp_path / f"only_{key}"
+        alone.mkdir()
+        shutil.copy(movie_tools.FONTS_DIR / ttf, alone)
+        frames[key] = _burn_one_frame(movie_tools, tmp_path, key,
+                                      movie_tools.FONTS_DIR, f"{key}_all")
+        assert any(b > 128 for b in frames[key]), f"{key}: no subtitle drawn"
+        assert frames[key] == _burn_one_frame(movie_tools, tmp_path, key,
+                                              alone, f"{key}_alone"), key
+    assert frames["dosv"] != frames["eagle"]
+
+
+def test_encode_from_disc_passes_the_font(movie_tools, tmp_path, monkeypatch):
+    seen = {}
+
+    def fake_build(source, srt, jp_cpk, dest, **kw):
+        seen.update(kw)
+        Path(dest).write_bytes(b"FILM")
+        return Path(dest)
+
+    monkeypatch.setattr(movie_tools, "build_movie_cpk", fake_build)
+    monkeypatch.setattr(movie_tools.shutil, "which", lambda name: "/usr/bin/" + name)
+    jp = tmp_path / "LANG_JP.CPK"
+    jp.write_bytes(b"FILM")
+    movie_tools.encode_from_disc(jp, tmp_path / "out.CPK", font="eagle")
+    assert seen["font"] == "eagle"
+
+
+def test_build_burns_the_movie_in_the_build_font(movie_tools, tmp_path, monkeypatch):
+    import build
+    seen = {}
+    monkeypatch.setattr(movie_tools, "encode_from_disc",
+                        lambda jp, out, **kw: seen.update(kw) or Path(out))
+    args = build.build_arg_parser().parse_args(["--font", "eagle"])
+    build.encode_movie(args, tmp_path / "jp.CPK", tmp_path / "en.CPK")
+    assert seen["font"] == "eagle"

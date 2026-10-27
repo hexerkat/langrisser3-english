@@ -29,6 +29,7 @@ class Sh2:
         self.T = 0
         self.PR = 0
         self.MACL = 0
+        self.MACH = 0
         self.steps = 0
 
     # -- memory ---------------------------------------------------------------
@@ -123,12 +124,20 @@ class Sh2:
             R[n] = _sx(self.rw(at + 4 + (w & 0xFF) * 2), 16) & M32
         elif top == 0xD:                                         # mov.l @(d,PC)
             R[n] = self.rl(((at + 4) & ~3) + (w & 0xFF) * 4)
+        elif (w & 0xFF00) == 0xC700:                             # mova @(d,PC),r0
+            R[0] = (((at + 4) & ~3) + (w & 0xFF) * 4) & M32
+        elif top == 0x0 and (w & 0xFF) == 0x29:                  # movt Rn
+            R[n] = self.T
         elif (w & 0xFF00) == 0x8800:                             # cmp/eq #imm,r0
             self.T = int(R[0] == (_sx(w & 0xFF, 8) & M32))
         elif top == 0x0 and low == 0x7:                         # mul.l Rm,Rn
             self.MACL = (R[n] * R[m]) & M32
         elif top == 0x0 and (w & 0xFF) == 0x1A:                  # sts macl,Rn
             R[n] = self.MACL
+        elif top == 0x0 and (w & 0xFF) == 0x0A:                  # sts mach,Rn
+            R[n] = self.MACH
+        elif top == 0x0 and low == 0x4:                          # mov.b Rm,@(r0,Rn)
+            self.wb((R[0] + R[n]) & M32, R[m])
         elif top == 0x0 and low == 0xD:                          # mov.w @(r0,Rm),Rn
             R[n] = _sx(self.rw((R[0] + R[m]) & M32), 16) & M32
         elif top == 0x0 and low == 0xC:                          # mov.b @(r0,Rm),Rn
@@ -162,6 +171,12 @@ class Sh2:
                 R[n] = R[m] & 0xFF                               # extu.b
             elif low == 0xF:
                 R[n] = _sx(R[m] & 0xFFFF, 16) & M32              # exts.w
+            elif low == 0xE:
+                R[n] = _sx(R[m] & 0xFF, 8) & M32                 # exts.b
+            elif low == 0x7:
+                R[n] = ~R[m] & M32                               # not
+            elif low == 0xB:
+                R[n] = -R[m] & M32                               # neg
             else:
                 raise AssertionError(f'unimplemented {w:04X} @0x{at:X}')
         elif top == 0x1:                                         # mov.l Rm,@(d,Rn)
@@ -191,6 +206,9 @@ class Sh2:
                 R[n] = (R[n] + R[m]) & M32                       # add
             elif low == 0x8:
                 R[n] = (R[n] - R[m]) & M32                       # sub
+            elif low == 0x5:                                     # dmulu.l
+                prod = R[n] * R[m]
+                self.MACH, self.MACL = prod >> 32, prod & M32
             elif low == 0x0:
                 self.T = int(R[n] == R[m])                       # cmp/eq
             elif low == 0x6:

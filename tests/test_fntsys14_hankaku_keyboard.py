@@ -154,12 +154,32 @@ def test_uppercase_umlaut_art_is_the_capital_with_dots():
     """Body = our A/O/U half-glyph (rows 3..15), 1px dots on row 1 at the
     letter's side columns (c6, like ö), a blank row 2 between dots and body.
     Playtest 2026-10-13: dots on rows 0-1 sat too high; then dots on rows
-    1-2 merged with the U stems into a long U. Red state: 00 c6 c6."""
+    1-2 merged with the U stems into a long U. Red state: 00 c6 c6.
+    Eagle style only: the dosv style draws its own A/O/U-diaeresis (below)."""
     import font_tools as ft
-    for up, base in (('Ä', 'A'), ('Ö', 'O'), ('Ü', 'U')):
-        g, b = ft.HANKAKU_HALF_GLYPHS[up], ft.HALF_GLYPHS[base]
-        assert g[3:] == b[3:]
-        assert g[:3] == bytes([0x00, 0xC6, 0x00])
+    prev = ft.ACTIVE_FONT_STYLE
+    ft.apply_style('eagle')
+    try:
+        for up, base in (('Ä', 'A'), ('Ö', 'O'), ('Ü', 'U')):
+            g, b = ft.HANKAKU_HALF_GLYPHS[up], ft.HALF_GLYPHS[base]
+            assert g[3:] == b[3:]
+            assert g[:3] == bytes([0x00, 0xC6, 0x00])
+    finally:
+        ft.apply_style(prev)
+
+
+def test_uppercase_umlaut_art_in_the_dosv_style():
+    """The dosv style keeps the TTF's own capital umlauts (a shorter capital
+    under the dots); composing dots over its taller capitals has no room."""
+    import font_tools as ft
+    import font_style_dosv as dosv
+    prev = ft.ACTIVE_FONT_STYLE
+    ft.apply_style('dosv')
+    try:
+        for up in 'ÄÖÜ':
+            assert ft.HANKAKU_HALF_GLYPHS[up] == dosv.UMLAUTS_UPPER[up]
+    finally:
+        ft.apply_style(prev)
 
 
 def test_hyphen_key_follows_the_question_mark():

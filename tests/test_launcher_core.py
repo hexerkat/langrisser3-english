@@ -240,3 +240,26 @@ class TestPicture:
 
     def test_wallpaper_size(self):
         assert lc.WINDOW_SIZE == (768, 580)
+
+
+class TestFontPreview:
+    """The patcher shows each font as the game draws it.
+    Red state (2026-10-23): no preview existed."""
+
+    def test_pixels_are_the_style_glyphs(self):
+        import font_tools as ft
+        for key, _label in lc.FONT_CHOICES:
+            style = ft.FONT_STYLES[key]
+            w, h, rgb = lc.font_preview(key, text="Dä", scale=1, margin=0)
+            assert (w, h) == (16, 16)
+            for x0, ch, art in ((0, "D", style.LETTERS["D"]),
+                                (8, "ä", style.UMLAUTS["ä"])):
+                for y in range(16):
+                    for x in range(8):
+                        lit = rgb[(y * w + x0 + x) * 3] == lc.PREVIEW_FG[0]
+                        assert lit == bool(art[y] >> (7 - x) & 1), (key, ch, x, y)
+
+    def test_default_preview_fits_beside_the_label(self):
+        for key, _label in lc.FONT_CHOICES:
+            w, h, rgb = lc.font_preview(key)
+            assert w <= lc.WINDOW_SIZE[0] - 260 and len(rgb) == w * h * 3

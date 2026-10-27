@@ -1,6 +1,8 @@
 # Langrisser III : English Patch (Sega Saturn)
 
-A work-in-progress English translation patch for *Langrisser III* (Sega Saturn, Japan), built from your own Japanese disc image.
+An English translation patch for *Langrisser III* (Sega Saturn, Japan), built from your own Japanese disc image.
+
+**[Download the patcher](https://github.com/hexerkat/langrisser3-english/releases/latest)** · **[Strategy guide](https://hexerkat.github.io/langrisser3-strategy-guide/)** · [How to install](#installing-the-patch) · [Changelog](CHANGELOG.md)
 
 ## About this patch
 
@@ -8,25 +10,32 @@ A work-in-progress English translation patch for *Langrisser III* (Sega Saturn, 
 
 **Version 0.7 made the patch 100% this project's own work.** Every change on the disc is generated from this repository against the original Japanese game: no third-party binaries in the pipeline, nothing carried over from CyberWarriorX's earlier v0.2 patch (credited below as groundwork, not as shipped code or data). The English script was reworked line by line against the Japanese, correcting mistranslations and trimming a few additions that weren't in the original, so each character's voice and the tone of every line follow the source.
 
-## Status : v0.7.2 (playable start to finish)
+## Status : v0.8.1 (playable start to finish)
 
 **Working**
 
 - The whole story plays start to finish in English, with every dialogue and narration line translated.
 - The interface is translated: menus, the save/load screen, the name-entry keyboard, and item / class / spell names with their descriptions.
-- The opening movie plays with English subtitles (see [The opening movie](#the-opening-movie)).
-- A layout-QA toolkit that checks how every line wraps inside the game's text boxes, so dialogue is fitted correctly before the disc is built.
-- A companion English strategy guide ([text](strategy-guide/langrisser3-guide.txt), [HTML](strategy-guide/langrisser3-guide.html)) generated from the translation itself.
+- Text uses a mix of wide and narrow letters, so words sit naturally in dialogue, menus and battle windows.
+- Your name can be up to 16 letters, with Ä, Ö, Ü and a hyphen on the keyboard.
+- The staff roll after the ending, the credits in the scenario 3 opening, the title screen credit and the hidden sound test are in English.
+- The opening movie can play with English subtitles (see [The opening movie](#the-opening-movie)).
+- A ready-to-run patcher for Windows and Linux builds the game from your disc in a few seconds.
 
 **Still to do toward v1.0**
 
-- Some in-game messages still use the original Japanese layout, like the misaligned level-up messages.
-- A couple of menu boxes need resizing (e.g. in the equipment menu).
-- A few in-game graphics are still in Japanese and need translating (e.g. the mid-game opening and the ending credits).
-- A font and text-encoder refactor to tighten the remaining typography.
-- A full playthrough test, including cheat codes, the secret scenarios, and both endings.
+- The digits of the magic resistances on the status screen are still wide.
+- The hidden debug menu still shows Japanese text.
+- A full validation playthrough, including the secret stages and both endings, on Ymir, Beetle Saturn and real hardware (Saroo).
 
-## Applying the patch
+## Strategy guide
+
+A complete English strategy guide goes with the patch:
+**https://hexerkat.github.io/langrisser3-strategy-guide/**
+
+It covers character creation, classes, the heroine love-index system, every item, all 36 scenarios and the five secret stages with their battle maps, the endings and the best-ending route, and the secrets and cheats. Every line of game text it quotes comes from this patch's scripts, so it uses the same words as your game. Its source lives in [langrisser3-strategy-guide](https://github.com/hexerkat/langrisser3-strategy-guide).
+
+## Installing the patch
 
 You need **your own Japanese *Langrisser III* disc image**: a folder with a `.cue` file, the Track 01 data `.bin`, and the audio track `.bin` files. This patch requires the original disc. No game data is distributed here.
 
@@ -46,13 +55,20 @@ The patcher and `build.py` refuse any other Track 01. The "7M" dump is Rev A, a 
 
 Nothing to install, no Python, no terminal.
 
-1. **Download the patcher** for your system from [GitHub Releases](https://github.com/hexerkat/langrisser3-english/releases):
+> **The patcher is not signed.** It is a free fan project, so it has no paid code signing certificate, and your system will ask you to allow it the first time:
+> - **Windows**: a blue window says "Windows protected your PC". Click **More info**, then **Run anyway**. Some antivirus programs may also ask before letting it run.
+> - **Linux**: if it does not open with a double click, allow it to run as a program (file properties, or `chmod +x Langrisser3-Patcher` in a terminal).
+>
+> Only download the patcher from this repository's releases.
+
+1. **Download the patcher** for your system from the [latest release](https://github.com/hexerkat/langrisser3-english/releases/latest):
    - **Windows**: `Langrisser3-Patcher-windows.exe`
    - **Linux**: `Langrisser3-Patcher-linux.tar.gz` (extract it first)
-2. **Open it.** Windows may say it protected your PC, because the patcher is not signed. Click **More info**, then **Run anyway**.
+2. **Open it.** Allow it to run if your system asks (see the note above).
 3. **Choose your Japanese disc folder** with **Browse…**. The patcher checks that it really is the Langrisser III disc. When it is, a character from the disc's own art gallery shows up behind the window.
-4. **Press Build patched game.** It takes a few seconds, or about five minutes with the English opening movie. When it finishes, **Open folder** shows the patched game, in a `build/` folder next to the patcher.
-5. **Load the `.cue`** from that folder in your emulator and play.
+4. **Pick a font.** **Original style (DOS/V)** is the default: thin letters close to the ones the Japanese game uses. **Eagle III** is the bolder font of v0.8 and earlier. The window shows a line of text in each font, and DOS/V is selected every time it opens. The opening movie subtitles use the same font. You can build again with the other one at any time.
+5. **Press Build patched game.** It takes a few seconds, or about five minutes with the English opening movie. When it finishes, **Open folder** shows the patched game, in a `build/` folder next to the patcher.
+6. **Load the `.cue`** from that folder in your emulator and play. On real hardware, burn the `.cue` image or copy it to your optical drive emulator (tested on Saroo).
 
 The English opening movie option needs [ffmpeg](https://ffmpeg.org/download.html) installed. Without it the game keeps the Japanese opening.
 
@@ -68,7 +84,9 @@ For developers, or if the patcher does not run on your system. You need **Python
 python3 build.py --jp-iso "/path/to/Langrisser III (Japan)"
 ```
 
-This produces a self-contained folder under `build/` named after the `.cue` (e.g. `build/Langrisser III (English v0.7.2)/`) holding the `.cue` and all track `.bin` files, ready to play.
+Add `--font eagle` for the Eagle III font of v0.8 and earlier (the default is `--font dosv`).
+
+This produces a self-contained folder under `build/` named after the `.cue` (e.g. `build/Langrisser III (English v0.8.1)/`) holding the `.cue` and all track `.bin` files, ready to play.
 
 3. **Load in your emulator**: open the `.cue` inside that folder and play.
 
@@ -107,13 +125,17 @@ The encoder lives in [`tools/movie_tools.py`](tools/movie_tools.py) and is devel
 * **Akari Dawn, ElfShadow, Oogami**: original English translation scripts, used as a draft baseline and revised against the Japanese source.
 * **VermillionDesserts**: independent translation build and D00.DAT research.
 
+### Special thanks
+
+D (Langrisser.info), Privateye, [langrisser.wiki](https://www.langrisser.wiki/), Langrisser Fandom, and everyone who reported a bug: Starman99x, bqio, nE0sIghT, therion23, pickled-jonaye.
+
 ## License
 
 The code in this repository is licensed under the **GNU General Public License, version 3 or later** (`GPL-3.0-or-later`). See [`LICENSE`](LICENSE). This covers the build pipeline, the tools (`tools/`), the tests, the schemas and authored glossaries, and the English translation scripts (`scripts/`) : the project's own contributions, to the extent of the rights held. It cannot grant rights over the original game or over the prior third-party work this project builds on.
 
 ### Third-party assets
 
-* **`data/fonts/Mx437_CL_EagleIII_8x16.ttf`** and the in-game glyphs derived from it are from VileR's *Ultimate Oldschool PC Font Pack*, under **CC BY-SA 4.0**. Attribution: VileR / int10h.org. Details in [`data/fonts/SOURCES.md`](data/fonts/SOURCES.md).
+* **`data/fonts/Mx437_DOS-V_re_ANK16.ttf`** and **`data/fonts/Mx437_CL_EagleIII_8x16.ttf`**, and the in-game glyphs derived from them, are from VileR's *Ultimate Oldschool PC Font Pack*, under **CC BY-SA 4.0**. Attribution: VileR / int10h.org. Details in [`data/fonts/SOURCES.md`](data/fonts/SOURCES.md).
 * The English script began from a draft translation baseline by **Akari Dawn, ElfShadow and Oogami**, and from **CyberWarriorX's** v0.2 patch (bigram font, menu translations). Those contributions remain the work of their respective authors.
 
 ## Legal

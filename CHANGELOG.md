@@ -8,6 +8,24 @@ follows [Keep a Changelog](https://keepachangelog.com/); dates are `YYYY-MM-DD`.
 
 ## [Unreleased]
 
+### Choose your font
+- The patcher has a font selector. **Original style (DOS/V)**, the new default, has thin
+  letters close to the ones the Japanese game uses for its own Latin text. **Eagle III**
+  is the bolder font of every release up to v0.8, unchanged. Each one shows a line of
+  sample text, so you can see the difference before you build.
+- The English subtitles of the opening movie are drawn in the font you pick, too.
+- Building from source takes the same choice: `--font dosv` or `--font eagle`.
+
+## [0.8.1] - 2026-10-26
+
+### Fixes
+- The terrain info in the bottom right corner of the battle map shows the whole
+  terrain name again, instead of broken graphics. Reported by @badspott (#10).
+- The Unit Orientation menu no longer mixes up "Allies" and "Enemies" when you
+  switch between them. Reported by @badspott (#10).
+
+## [0.8.0] - 2026-10-18
+
 ### A patcher you just run
 - A ready-to-run patcher for Windows and Linux. Download it, choose the folder of your
   Japanese Sega Saturn disc, and press Build. No Python and no terminal needed.
@@ -49,9 +67,14 @@ follows [Keep a Changelog](https://keepachangelog.com/); dates are `YYYY-MM-DD`.
 - The opening that plays at the start of scenario 3 credits its staff and voice cast in
   English, in a slanted font close to the original.
 - The title screen credit shows the exact patch version and credits Hexerkat and
-  RalfGuth.
+  RalfGuth. The title menu box has the same size and place with or without a save.
 - The hidden sound test on the title screen lists its sounds, war cries and screams in
   English.
+
+### Strategy guide
+- The strategy guide moved online at https://hexerkat.github.io/langrisser3-strategy-guide/
+  and was reviewed against the game and the Japanese guides. Every scenario chapter now
+  shows its battle map.
 
 ## [0.7.2] - 2026-08-24
 

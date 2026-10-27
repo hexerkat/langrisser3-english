@@ -43,6 +43,7 @@ from d00_tools import (
 )
 from font_tools import (
     CHAR_TILE_MAP, BIGRAM_TILE_MAP, generate_english_font,
+    FONT_STYLES, DEFAULT_FONT_STYLE,
 )
 from plot_tools import (
     encode_plot_script, parse_plot, round_trip_test as plot_round_trip,
@@ -94,6 +95,8 @@ from prog6_battle_cmd_width import PROG6_BATTLE_CMD_WIDTH
 from prog4_spell_name_table import PROG4_SPELL_NAME_TABLE
 from prog2_sound_test import PROG2_SOUND_TEST
 from prog5_menu_geometry import PROG5_MENU_GEOMETRY
+from prog5_terrain_hud_ascii import PROG5_TERRAIN_HUD_ASCII
+from prog5_orientation_toggle_refresh import PROG5_ORIENTATION_TOGGLE_REFRESH
 from prog4_menu_geometry import PROG4_MENU_GEOMETRY
 from patch_registry import is_enabled, disabled_modules, validate as validate_disabled
 import title_dg2
@@ -308,6 +311,8 @@ ENGINE_MODULE_DICTS = {
     "prog6_battle_cmd_width": PROG6_BATTLE_CMD_WIDTH,
     "prog4_spell_name_table": PROG4_SPELL_NAME_TABLE,
     "prog5_menu_geometry": PROG5_MENU_GEOMETRY,
+    "prog5_terrain_hud_ascii": PROG5_TERRAIN_HUD_ASCII,
+    "prog5_orientation_toggle_refresh": PROG5_ORIENTATION_TOGGLE_REFRESH,
     "prog4_menu_geometry": PROG4_MENU_GEOMETRY,
     "prog2_sound_test": PROG2_SOUND_TEST,
 }
@@ -356,6 +361,12 @@ def build_arg_parser():
              'assets/movie/LANG.CPK if present, else keeps the JP opening.',
     )
     parser.add_argument(
+        '--font', default=DEFAULT_FONT_STYLE, choices=sorted(FONT_STYLES),
+        help=f'Latin font style (default: {DEFAULT_FONT_STYLE}). dosv = DOS/V '
+             f'ANK16, the closest to the Japanese game\'s own Latin letters; '
+             f'eagle = Eagle III, the font of releases up to v0.8.',
+    )
+    parser.add_argument(
         '--movie-source', type=Path, default=None,
         help='Encode --encode-movie from this video instead of the disc\'s own '
              'Cinepak (a cleaner master of the same 84s opening gives a sharper '
@@ -373,6 +384,14 @@ def preflight(args) -> None:
     if args.encode_movie:
         import movie_tools
         movie_tools.require_ffmpeg()
+
+
+def encode_movie(args, jp_cpk, out):
+    """Encode the English opening from the disc's own CPK, its subtitles
+    burned in the build's font style (tools/movie_tools.py)."""
+    import movie_tools
+    return movie_tools.encode_from_disc(jp_cpk, out, source=args.movie_source,
+                                        font=args.font, quiet=True)
 
 
 def main(argv=None):
@@ -513,8 +532,9 @@ def _main(argv, cache):
     print('[3/7] Generating English font...')
     build_progress.report('prepare', 0.4)
     if is_enabled('font'):
-        new_font = generate_english_font(font_data)
-        print(f'  English font: {len(new_font):,} bytes ({len(new_font) // 32} tiles)')
+        new_font = generate_english_font(font_data, style=args.font)
+        print(f'  English font: {len(new_font):,} bytes ({len(new_font) // 32} tiles), '
+              f'style {args.font}')
     else:
         new_font = font_data
         print('  [disabled] shipping JP FONT.BIN')
@@ -713,9 +733,8 @@ def _main(argv, cache):
             print('  LANG.CPK: encoding the English opening from your disc '
                   '(ffmpeg). This can take a while — it is not stuck.')
             t_movie = time.time()
-            new_movie = movie_tools.encode_from_disc(
-                jp_cpk_path, cache / 'LANG_EN.CPK',
-                source=args.movie_source, quiet=True).read_bytes()
+            new_movie = encode_movie(args, jp_cpk_path,
+                                     cache / 'LANG_EN.CPK').read_bytes()
             print(f'    encoded in {time.time() - t_movie:.0f}s')
         elif MOVIE_CPK.exists():
             new_movie = MOVIE_CPK.read_bytes()

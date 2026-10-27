@@ -74,7 +74,7 @@ class _QueueWriter:
 class Launcher(tk.Tk):
 
     W, H = lc.WINDOW_SIZE            # the gallery picture at 2/3
-    TOP = 300                        # the picture is clear above this row
+    TOP = 250                        # the picture is clear above this row
     PANEL = (0, TOP, W, H)           # the controls, lower part, full width
     PAD = 24
     LOG_LINES = 2
@@ -101,6 +101,9 @@ class Launcher(tk.Tk):
         start_dir = self.settings.get("disc_dir") or os.environ.get("LANG3_JP_DIR", "")
         self.disc_var = tk.StringVar(value=start_dir)
         self.movie_var = tk.BooleanVar(value=bool(self.settings.get("encode_movie")))
+        # DOS/V is preselected every time (user request 2026-10-23).
+        self.font_var = tk.StringVar(value=lc.DEFAULT_FONT)
+        self.previews = {}          # font key -> PhotoImage of its preview
         self.has_ffmpeg = shutil.which("ffmpeg") is not None
         if not self.has_ffmpeg:
             self.movie_var.set(False)
@@ -165,10 +168,37 @@ class Launcher(tk.Tk):
                         width=W - 2 * P - 120, height=34)
         self._text(P, top + 86, tag="status", width=W - 2 * P)
 
+        # Font selector drawn on the canvas, like the movie option below: one
+        # row per font, its name and note on the left, a preview on the right.
+        y = top + 112
+        for key, label in lc.FONT_CHOICES:
+            tag = f"font_{key}"
+            c.create_oval(P + 1, y + 3, P + 17, y + 19, outline=self.TEXT, width=1,
+                          tags=(tag, "font"))
+            c.create_oval(P + 6, y + 8, P + 12, y + 14, outline="", fill="",
+                          tags=(tag, "font_dot", f"font_dot_{key}"))
+            pw, ph, rgb = lc.font_preview(key)
+            self.previews[key] = tk.PhotoImage(master=self, data=lc.ppm(pw, ph, rgb),
+                                               format="PPM")
+            px = W - P - pw
+            self._text(P + 26, y + 2, label, tag=(tag, "font_label"), fill=self.DIM)
+            self._text(P + 26, y + 21, lc.FONT_NOTES[key], tag=(tag, "font_label"),
+                       fill=self.DIM, font=("TkDefaultFont", 8), width=px - P - 40)
+            c.create_rectangle(px - 2, y - 2, px + pw + 1, y + ph + 1, width=2,
+                               outline="", tags=(tag, "font_frame", f"font_frame_{key}"))
+            c.create_image(px, y, image=self.previews[key], anchor="nw", tags=tag)
+            c.tag_bind(tag, "<Button-1>", lambda e, k=key: self._pick_font(k))
+            c.tag_bind(tag, "<Enter>",
+                       lambda e: c.config(cursor="" if self.running else "hand2"))
+            c.tag_bind(tag, "<Leave>", lambda e: c.config(cursor=""))
+            y += ph + 8
+        self.font_var.trace_add("write", lambda *_: self._draw_font())
+        self._draw_font()
+
         # Movie option drawn on the canvas: a ttk checkbox is an opaque box.
         on = self.has_ffmpeg
         color = self.TEXT if on else "#76809a"
-        y = top + 122
+        y = top + 210
         c.create_rectangle(P + 1, y + 3, P + 17, y + 19, outline=color, width=1, tags="movie")
         self._text(P + 3, y, "", fill=self.OK, tag="movie_mark",
                    font=("TkDefaultFont", 11, "bold"))
@@ -187,9 +217,9 @@ class Launcher(tk.Tk):
         # Build, with the progress bar beside it.
         self.build_btn = ttk.Button(c, text="Build patched game", command=self._build,
                                     style="Build.TButton")
-        c.create_window(P, top + 166, window=self.build_btn, anchor="nw")
+        c.create_window(P, top + 238, window=self.build_btn, anchor="nw")
         self.progress = ttk.Progressbar(c, mode="indeterminate")
-        self.progress_item = c.create_window(P + 230, top + 180, window=self.progress,
+        self.progress_item = c.create_window(P + 230, top + 252, window=self.progress,
                                              anchor="nw", width=W - 2 * P - 230,
                                              state="hidden")
 
@@ -206,6 +236,16 @@ class Launcher(tk.Tk):
     def _draw_movie(self):
         self._set_text("movie_mark", "✓" if self.movie_var.get() else "")
 
+    def _draw_font(self):
+        for key, _label in lc.FONT_CHOICES:
+            on = key == self.font_var.get()
+            self.canvas.itemconfigure(f"font_dot_{key}", fill=self.OK if on else "")
+            self.canvas.itemconfigure(f"font_frame_{key}", outline=self.OK if on else "")
+
+    def _pick_font(self, key):
+        if not self.running:
+            self.font_var.set(key)
+
     def _toggle_movie(self):
         if self.has_ffmpeg and not self.running:
             self.movie_var.set(not self.movie_var.get())
@@ -214,6 +254,11 @@ class Launcher(tk.Tk):
         """While a build runs, the folder and the movie option stay as built."""
         for widget in (self.browse_btn, self.disc_entry):
             widget.state(["disabled"] if on else ["!disabled"])
+        gray = "#76809a"
+        self.canvas.itemconfigure("font_label", fill=gray if on else self.DIM)
+        for item in self.canvas.find_withtag("font"):
+            if self.canvas.type(item) == "oval" and "font_dot" not in self.canvas.gettags(item):
+                self.canvas.itemconfigure(item, outline=gray if on else self.TEXT)
         if self.has_ffmpeg:
             c, gray = self.canvas, "#76809a"
             for item in c.find_withtag("movie"):
@@ -338,7 +383,7 @@ class Launcher(tk.Tk):
         self.running = True
         self._lock(True)
         self._busy(True)
-        args = lc.build_args(disc, movie)
+        args = lc.build_args(disc, movie, font=self.font_var.get())
         threading.Thread(target=self._run_build, args=(args,), daemon=True).start()
         self.after(100, self._poll)
 

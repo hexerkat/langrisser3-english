@@ -24,18 +24,41 @@ without hunting external URLs.
 
 ### How it is used
 
-`tools/font_jbm_generate.py` rasterizes this TTF at 8×16 / 16×16 cells via
-PIL `Image.new('1', ...)` (FreeType MONO), emitting Python `bytes.fromhex()`
-literals that get hand-pasted into `tools/font_tools.py`. The build pipeline
-itself does **not** import the TTF — the inline hex bytes in `font_tools.py`
-are the source of truth at build time. The TTF lives here for reproducibility
-of the regeneration step.
+The **eagle** font style (`build.py --font eagle`, the font of v0.6 to v0.8).
+Its 8x16 glyphs live in `tools/font_style_eagle.py` as `bytes.fromhex()`
+literals: this TTF re-rasterized, moved one row down (baseline row 12), with
+hand-tuned punctuation. The build does **not** import the TTF, and the bytes
+are not regenerated from it (the hand tuning would be lost). The TTF itself
+is read by `tools/movie_tools.py` to burn the opening movie subtitles of an
+eagle build.
 
-### Regeneration
+## Mx437_DOS-V_re_ANK16.ttf
+
+- **Family**: Mx437 DOS/V re. ANK16 (VileR's re-creation of the IBM DOS/V
+  Japanese half-width "ANK" font, 8x16).
+- **Source pack**: VileR, *The Ultimate Oldschool PC Font Pack*, **v2.2**
+  (same pack file and URL as above).
+- **Path inside zip**: `ttf - Mx (mixed outline+bitmap)/Mx437_DOS-V_re_ANK16.ttf`
+- **TTF SHA256**: `394a8f01ce2b1b64940b1a739b2a26f488432a63466915cbcf1334379d9e9ef8`
+- **TTF size**: 53,972 bytes
+- **License**: CC BY-SA 4.0. Attribution: VileR / int10h.org.
+- **Why this face**: of the 361 faces in the pack, its letters and digits are
+  the closest in shape to the Latin glyphs of the Japanese game's own font
+  (thin strokes, no serifs). Chosen by the user on 2026-10-23.
+
+### How it is used
+
+The **dosv** font style, the default (`build.py --font dosv`).
+`tools/font_style_generate.py dosv` (needs Pillow) rasterizes the embedded
+8x16 bitmap and moves it one row up so its baseline sits on row 12, like the
+eagle style. It writes `tools/font_style_dosv.py`, which the build reads
+(standard library only). `tests/test_font_styles.py` checks that the stored
+bytes are exactly what the generator draws from this TTF. The TTF itself is
+read by `tools/movie_tools.py` to burn the opening movie subtitles of a dosv
+build.
 
 ```bash
-python3 tools/font_jbm_generate.py > /tmp/eagle3_glyphs.py
-# Hand-paste the dict literals into tools/font_tools.py.
+python3 tools/font_style_generate.py dosv > tools/font_style_dosv.py
 ```
 
 ## title_credit_atlas.json
