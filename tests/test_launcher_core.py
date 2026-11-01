@@ -242,24 +242,77 @@ class TestPicture:
         assert lc.WINDOW_SIZE == (768, 580)
 
 
-class TestFontPreview:
-    """The patcher shows each font as the game draws it.
-    Red state (2026-10-23): no preview existed."""
+class TestBalloonPreview:
+    """The font preview is a game balloon with a line the game really shows,
+    drawn with the tiles the build writes to the disc.
+    Red state (2026-11-01, user playtest of the patcher): the preview was the
+    made up line "Diehärte: Leave it to me!" (no balloon in the game puts the
+    name, a colon and the line together), drawn glyph by glyph from the style
+    art, fixed in the main window."""
 
-    def test_pixels_are_the_style_glyphs(self):
+    def _script_first_line(self):
+        for line in (PROJECT / "scripts" / "en" / "scen001E.txt").read_text(
+                encoding="utf-8").splitlines():
+            if line.endswith("<$FFFE>"):
+                return line
+        raise AssertionError("no dialogue entry in scen001E.txt")
+
+    def test_line_is_lushiris_first_line(self):
+        line = lc.preview_line()
+        assert line == self._script_first_line()
+        assert "Open your eyes." in line
+
+    def test_pixels_are_the_disc_tiles(self):
         import font_tools as ft
+        from hybrid_encoder import encode_hybrid
+        from width_class import is_narrow_tile
+        line = lc.preview_line()
+        before = ft.ACTIVE_FONT_STYLE
         for key, _label in lc.FONT_CHOICES:
-            style = ft.FONT_STYLES[key]
-            w, h, rgb = lc.font_preview(key, text="Dä", scale=1, margin=0)
-            assert (w, h) == (16, 16)
-            for x0, ch, art in ((0, "D", style.LETTERS["D"]),
-                                (8, "ä", style.UMLAUTS["ä"])):
-                for y in range(16):
-                    for x in range(8):
-                        lit = rgb[(y * w + x0 + x) * 3] == lc.PREVIEW_FG[0]
-                        assert lit == bool(art[y] >> (7 - x) & 1), (key, ch, x, y)
+            try:
+                font = ft.generate_english_font(bytes(1691 * 32), style=key)
+                words = encode_hybrid(line, ft.BIGRAM_TILE_MAP)
+            finally:
+                ft.apply_style(before)    # later tests read the build's style
+            tiles = [int.from_bytes(words[i:i + 2], "big")
+                     for i in range(0, len(words), 2)]
+            w, h, rgb = lc.balloon_preview(key, scale=1)
+            x0, y0 = lc.BALLOON_TEXT_ORIGIN
+            x, y, checked = x0, y0, 0
+            for t in tiles:
+                if t == 0xFFFC:
+                    x, y = x0, y + 16
+                    continue
+                if t >= 0xF000:
+                    continue
+                width = 8 if is_narrow_tile(t) else 16
+                tile = font[t * 32:(t + 1) * 32]
+                for r in range(16):
+                    bits = tile[2 * r] << 8 | tile[2 * r + 1]
+                    for c in range(width):
+                        o = ((y + r) * w + x + c) * 3
+                        lit = tuple(rgb[o:o + 3]) == lc.PREVIEW_FG
+                        assert lit == bool(bits >> (15 - c) & 1), (key, t, r, c)
+                        checked += lit
+                x += width
+            assert checked > 300, key          # the line really got drawn
+            assert len(rgb) == w * h * 3
 
-    def test_default_preview_fits_beside_the_label(self):
+    def test_fonts_look_different(self):
+        a, b = (lc.balloon_preview(k)[2] for k, _label in lc.FONT_CHOICES)
+        assert a != b
+
+    def test_active_style_is_kept(self):
+        """The build runs in the same process: a preview must not leave the
+        font tables switched to another style."""
+        import font_tools as ft
+        before = ft.ACTIVE_FONT_STYLE
         for key, _label in lc.FONT_CHOICES:
-            w, h, rgb = lc.font_preview(key)
-            assert w <= lc.WINDOW_SIZE[0] - 260 and len(rgb) == w * h * 3
+            lc.balloon_preview(key)
+        assert ft.ACTIVE_FONT_STYLE == before
+        assert ft.HALF_GLYPHS["a"] == ft.FONT_STYLES[before].LETTERS["a"]
+
+    def test_balloon_fits_the_screen(self):
+        for key, _label in lc.FONT_CHOICES:
+            w, h, _rgb = lc.balloon_preview(key)
+            assert w <= lc.WINDOW_SIZE[0] and h <= lc.WINDOW_SIZE[1] // 2

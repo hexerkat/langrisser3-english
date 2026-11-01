@@ -67,36 +67,67 @@ FONT_NOTES = {"dosv": "Closest to the Japanese game's own letters",
               "eagle": "Bolder letters, used by earlier versions of the patch"}
 DEFAULT_FONT = "dosv"
 
-# The preview beside each font: a line drawn with the style's own 8x16 art
-# (tools/font_style_<key>.py), light on a dark window like the game's.
-PREVIEW_TEXT = "Diehärte: Leave it to me!"
+# The font preview: a game balloon with Lushiris' first line (the first
+# dialogue entry of scen001E.txt), drawn with the tiles the build writes to
+# the disc, light on a dark window like the game's.
+PREVIEW_SCRIPT = Path(__file__).resolve().parent.parent / "scripts" / "en" / "scen001E.txt"
 PREVIEW_FG, PREVIEW_BG = (255, 255, 255), (16, 24, 56)
+BALLOON_FRAME = (200, 208, 224)
+BALLOON_COLS, BALLOON_ROWS = 32, 5    # 8px cells by 16px lines, as in the game
+BALLOON_TEXT_ORIGIN = (10, 10)        # 2px frame + 8px inner margin
 
 
-def font_preview(key: str, text: str = PREVIEW_TEXT, scale: int = 2,
-                 margin: int = 4):
-    """(width, height, rgb) of text drawn in font style key, each pixel
-    scale x scale, with margin background pixels around it."""
-    import importlib
-    style = importlib.import_module(f"font_style_{key}")
-    glyphs = {}
-    for table in ("LETTERS", "DIGITS", "PUNCT", "EXTRA_PUNCT",
-                  "UMLAUTS", "UMLAUTS_UPPER"):
-        glyphs.update(getattr(style, table, None) or {})
-    w = len(text) * 8 * scale + 2 * margin
-    h = 16 * scale + 2 * margin
-    rgb = bytearray(bytes(PREVIEW_BG) * (w * h))
-    for i, ch in enumerate(text):
-        art = glyphs.get(ch, bytes(16))
-        for y in range(16):
-            for x in range(8):
-                if not art[y] >> (7 - x) & 1:
-                    continue
-                for dy in range(scale):
-                    row = margin + y * scale + dy
-                    col = margin + (i * 8 + x) * scale
-                    o = (row * w + col) * 3
-                    rgb[o:o + 3 * scale] = bytes(PREVIEW_FG) * scale
+def preview_line(script: Path = PREVIEW_SCRIPT) -> str:
+    """The first dialogue entry of the script (the name table rows before it
+    end in <$FFFF>)."""
+    for line in Path(script).read_text(encoding="utf-8").splitlines():
+        if line.endswith("<$FFFE>"):
+            return line
+    raise ValueError(f"no dialogue entry in {script}")
+
+
+def balloon_preview(key: str, scale: int = 2):
+    """(width, height, rgb) of the preview balloon in font style key, each
+    pixel scale x scale. The tiles come from the build's own encoder and
+    FONT.BIN generator; the active style is put back afterwards, since the
+    build runs in this process."""
+    import font_tools as ft
+    from hybrid_encoder import encode_hybrid
+    from width_class import is_narrow_tile
+    before = ft.ACTIVE_FONT_STYLE
+    try:
+        font = ft.generate_english_font(bytes(1691 * 32), style=key)
+        words = encode_hybrid(preview_line(), ft.BIGRAM_TILE_MAP)
+    finally:
+        ft.apply_style(before)
+    x0, y0 = BALLOON_TEXT_ORIGIN
+    bw, bh = BALLOON_COLS * 8 + 2 * x0, BALLOON_ROWS * 16 + 2 * y0
+    pix = [[PREVIEW_BG] * bw for _ in range(bh)]
+    for yy in range(bh):
+        for xx in range(bw):
+            if min(xx, yy, bw - 1 - xx, bh - 1 - yy) < 2:
+                pix[yy][xx] = BALLOON_FRAME
+    x, y = x0, y0
+    for i in range(0, len(words), 2):
+        t = int.from_bytes(words[i:i + 2], "big")
+        if t == 0xFFFC:
+            x, y = x0, y + 16
+            continue
+        if t >= 0xF000:                # other control words draw nothing
+            continue
+        width = 8 if is_narrow_tile(t) else 16
+        tile = font[t * 32:(t + 1) * 32]
+        for r in range(16):
+            bits = tile[2 * r] << 8 | tile[2 * r + 1]
+            for c in range(width):
+                if bits >> (15 - c) & 1:
+                    pix[y + r][x + c] = PREVIEW_FG
+        x += width
+    w, h = bw * scale, bh * scale
+    rgb = bytearray()
+    for row in pix:
+        line = b"".join(bytes(px) * scale for px in row)
+        rgb += line * scale
     return w, h, rgb
 
 
