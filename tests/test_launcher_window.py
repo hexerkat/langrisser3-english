@@ -76,11 +76,27 @@ def test_window_opens_on_the_dosv_font(monkeypatch, app):
         w.destroy()
 
 
-def test_each_font_shows_its_preview(app):
-    """One row per font, each with a preview drawn in that font.
-    Red state: the two fonts were radio labels on one row, no preview."""
+def test_preview_opens_a_balloon_popup(app):
+    """The fonts are compared in a popup, one game balloon per font; the main
+    window carries no preview picture.
+    Red state (2026-11-01, user playtest): each font row had a fixed preview
+    of a made up line beside it, and there was no popup."""
     import launcher
-    assert set(app.previews) == {k for k, _label in launcher.lc.FONT_CHOICES}
-    for key, photo in app.previews.items():
-        w, h, _rgb = launcher.lc.font_preview(key)
+    assert not any(app.canvas.type(i) == 'image'
+                   for i in app.canvas.find_withtag('font'))
+    app.preview_btn.invoke()
+    win = app.preview_win
+    assert win is not None and win.winfo_exists()
+    assert set(win.balloons) == {k for k, _label in launcher.lc.FONT_CHOICES}
+    for key, photo in win.balloons.items():
+        w, h, _rgb = launcher.lc.balloon_preview(key)
         assert (photo.width(), photo.height()) == (w, h)
+    app.preview_btn.invoke()                 # a second click reuses the popup
+    assert app.preview_win is win
+
+
+def test_preview_locked_while_building(app):
+    app._lock(True)
+    assert app.preview_btn.instate(['disabled'])
+    app._lock(False)
+    assert not app.preview_btn.instate(['disabled'])

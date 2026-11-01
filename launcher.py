@@ -103,7 +103,7 @@ class Launcher(tk.Tk):
         self.movie_var = tk.BooleanVar(value=bool(self.settings.get("encode_movie")))
         # DOS/V is preselected every time (user request 2026-10-23).
         self.font_var = tk.StringVar(value=lc.DEFAULT_FONT)
-        self.previews = {}          # font key -> PhotoImage of its preview
+        self.preview_win = None     # the font preview popup, while open
         self.has_ffmpeg = shutil.which("ffmpeg") is not None
         if not self.has_ffmpeg:
             self.movie_var.set(False)
@@ -168,37 +168,36 @@ class Launcher(tk.Tk):
                         width=W - 2 * P - 120, height=34)
         self._text(P, top + 86, tag="status", width=W - 2 * P)
 
-        # Font selector drawn on the canvas, like the movie option below: one
-        # row per font, its name and note on the left, a preview on the right.
-        y = top + 112
+        # Options, set apart from the disc folder by a thin rule. The font
+        # style is one row: its label, the choices and Preview side by side,
+        # with the note of the chosen font below.
+        c.create_line(P, top + 114, W - P, top + 114, fill="#4a5670")
+        y = top + 126
+        x = c.bbox(self._text(P, y + 2, "Font style", fill=self.TEXT,
+                              font=("TkDefaultFont", 10, "bold")))[2] + 22
         for key, label in lc.FONT_CHOICES:
             tag = f"font_{key}"
-            c.create_oval(P + 1, y + 3, P + 17, y + 19, outline=self.TEXT, width=1,
+            c.create_oval(x + 1, y + 3, x + 17, y + 19, outline=self.TEXT, width=1,
                           tags=(tag, "font"))
-            c.create_oval(P + 6, y + 8, P + 12, y + 14, outline="", fill="",
+            c.create_oval(x + 6, y + 8, x + 12, y + 14, outline="", fill="",
                           tags=(tag, "font_dot", f"font_dot_{key}"))
-            pw, ph, rgb = lc.font_preview(key)
-            self.previews[key] = tk.PhotoImage(master=self, data=lc.ppm(pw, ph, rgb),
-                                               format="PPM")
-            px = W - P - pw
-            self._text(P + 26, y + 2, label, tag=(tag, "font_label"), fill=self.DIM)
-            self._text(P + 26, y + 21, lc.FONT_NOTES[key], tag=(tag, "font_label"),
-                       fill=self.DIM, font=("TkDefaultFont", 8), width=px - P - 40)
-            c.create_rectangle(px - 2, y - 2, px + pw + 1, y + ph + 1, width=2,
-                               outline="", tags=(tag, "font_frame", f"font_frame_{key}"))
-            c.create_image(px, y, image=self.previews[key], anchor="nw", tags=tag)
+            x = c.bbox(self._text(x + 26, y + 2, label, tag=(tag, "font_label"),
+                                  fill=self.DIM))[2] + 24
             c.tag_bind(tag, "<Button-1>", lambda e, k=key: self._pick_font(k))
             c.tag_bind(tag, "<Enter>",
                        lambda e: c.config(cursor="" if self.running else "hand2"))
             c.tag_bind(tag, "<Leave>", lambda e: c.config(cursor=""))
-            y += ph + 8
+        self.preview_btn = ttk.Button(c, text="Preview fonts…", command=self._show_preview)
+        c.create_window(x, y + 11, window=self.preview_btn, anchor="w")
+        self._text(P, y + 28, tag=("font_note", "font_label"), fill=self.DIM,
+                   font=("TkDefaultFont", 9))
         self.font_var.trace_add("write", lambda *_: self._draw_font())
         self._draw_font()
 
         # Movie option drawn on the canvas: a ttk checkbox is an opaque box.
         on = self.has_ffmpeg
         color = self.TEXT if on else "#76809a"
-        y = top + 210
+        y = top + 186
         c.create_rectangle(P + 1, y + 3, P + 17, y + 19, outline=color, width=1, tags="movie")
         self._text(P + 3, y, "", fill=self.OK, tag="movie_mark",
                    font=("TkDefaultFont", 11, "bold"))
@@ -237,10 +236,38 @@ class Launcher(tk.Tk):
         self._set_text("movie_mark", "✓" if self.movie_var.get() else "")
 
     def _draw_font(self):
+        self._set_text("font_note", lc.FONT_NOTES[self.font_var.get()])
         for key, _label in lc.FONT_CHOICES:
             on = key == self.font_var.get()
             self.canvas.itemconfigure(f"font_dot_{key}", fill=self.OK if on else "")
-            self.canvas.itemconfigure(f"font_frame_{key}", outline=self.OK if on else "")
+            win = self.preview_win
+            if win is not None and win.winfo_exists():
+                win.frames[key].configure(bg=self.OK if on else self.BG)
+
+    def _show_preview(self):
+        """A popup with Lushiris' first line in a game balloon, once per font;
+        clicking a balloon picks that font."""
+        win = self.preview_win
+        if win is not None and win.winfo_exists():
+            win.lift()
+            return
+        win = self.preview_win = tk.Toplevel(self, bg=self.BG, padx=self.PAD, pady=self.PAD)
+        win.title("Font preview")
+        win.resizable(False, False)
+        win.balloons, win.frames = {}, {}
+        for key, label in lc.FONT_CHOICES:
+            w, h, rgb = lc.balloon_preview(key)
+            photo = tk.PhotoImage(master=win, data=lc.ppm(w, h, rgb), format="PPM")
+            tk.Label(win, text=label, bg=self.BG, fg=self.TEXT,
+                     anchor="w").pack(fill="x", pady=(0, 4))
+            frame = tk.Frame(win, bg=self.BG, padx=3, pady=3, cursor="hand2")
+            frame.pack(pady=(0, 12))
+            img = tk.Label(frame, image=photo, bd=0)
+            img.pack()
+            for widget in (frame, img):
+                widget.bind("<Button-1>", lambda e, k=key: self._pick_font(k))
+            win.balloons[key], win.frames[key] = photo, frame
+        self._draw_font()
 
     def _pick_font(self, key):
         if not self.running:
@@ -252,7 +279,7 @@ class Launcher(tk.Tk):
 
     def _lock(self, on):
         """While a build runs, the folder and the movie option stay as built."""
-        for widget in (self.browse_btn, self.disc_entry):
+        for widget in (self.browse_btn, self.disc_entry, self.preview_btn):
             widget.state(["disabled"] if on else ["!disabled"])
         gray = "#76809a"
         self.canvas.itemconfigure("font_label", fill=gray if on else self.DIM)
